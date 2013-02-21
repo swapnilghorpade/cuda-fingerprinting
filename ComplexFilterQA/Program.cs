@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -50,8 +52,9 @@ namespace ComplexFilterQA
         {
            
             FillDirections();
-
-
+            //SaveImageAsBinary("C:\\temp\\104_6.tif","C:\\temp\\104_6.bin");
+            SaveBinaryAsImage("C:\\temp\\104_6_e1.bin", "C:\\temp\\104_6_e1.png");
+            PreprocessFingerprint("C:\\temp\\104_6.tif");
             var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_6.bin");
 
             var minutiae2 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_3.bin");
@@ -65,6 +68,29 @@ namespace ComplexFilterQA
                 rotation);
 
             MarkMinutiae("C:\\temp\\104_6.tif", minutiae2, translatedMinutiae, "C:\\temp\\15.02.2013\\Marked_with_translation_104_6.png");
+        }
+
+        private static void SaveBinaryAsImage(string pathFrom, string pathTo)
+        {
+            using (var fs = new FileStream(pathFrom, FileMode.Open, FileAccess.Read))
+            {
+                using (var bw = new BinaryReader(fs))
+                {
+                    var width = bw.ReadInt32();
+                    var height = bw.ReadInt32();
+                    var bmp = new Bitmap(width, height);
+                    for (int row = 0; row < bmp.Height; row++)
+                    {
+                        for (int column = 0; column < bmp.Width; column++)
+                        {
+                            var value = bw.ReadInt32();
+                            var c = Color.FromArgb(value, value, value);
+                            bmp.SetPixel(column,row,c);
+                        }
+                    }
+                    bmp.Save(pathTo,ImageFormat.Png);
+                }
+            }
         }
 
         private static void FillDirections()
@@ -158,7 +184,7 @@ namespace ComplexFilterQA
             var g2 = Reduce2(g1, 1.21d);
             var g3 = Reduce2(g2, K);
             var g4 = Reduce2(g3, K);
-
+            SaveArray(g4, "C:\\temp\\104_6_r4_cpu.png");
 
             var p3 = Expand2(g4, K, new Size(g3.GetLength(0), g3.GetLength(1)));
             var p2 = Expand2(g3, K, new Size(g2.GetLength(0), g2.GetLength(1)));
@@ -579,6 +605,28 @@ namespace ComplexFilterQA
             }
             
             bmp.Save(path, ImageFormat.Png);
+        }
+
+        private static void SaveImageAsBinary(string pathFrom, string pathTo)
+        {
+            var bmp = new Bitmap(pathFrom);
+            using(var fs = new FileStream(pathTo,FileMode.Create,FileAccess.Write))
+            {
+                using(BinaryWriter bw = new BinaryWriter(fs))
+                {
+                    bw.Write(bmp.Width);
+                    bw.Write(bmp.Height);
+                    for (int row = 0; row < bmp.Height; row++)
+                    {
+                        for (int column = 0; column < bmp.Width; column++)
+                        {
+                            var value = (int) bmp.GetPixel(column, row).R;
+                            bw.Write(value);
+                        }
+                    }
+                }
+            }
+            
         }
 
         private static void SaveArray(double[,] data, string path)
