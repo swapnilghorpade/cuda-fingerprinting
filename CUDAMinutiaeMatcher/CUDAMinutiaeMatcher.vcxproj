@@ -84,6 +84,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="ConvolutionHelper.h" />
     <ClInclude Include="CUDAArray.h" />
     <ClInclude Include="Gaussian.h" />
+    <ClInclude Include="LinearSymmetry.h" />
     <ClInclude Include="Resizing.h" />
   </ItemGroup>
   <ItemGroup>

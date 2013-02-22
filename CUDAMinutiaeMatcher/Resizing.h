@@ -27,7 +27,7 @@ __global__ void resizeArray(CUDAArray<float> target, CUDAArray<float> source, fl
 				if(rowSource<0)continue;
 				if(rowSource>=source.Height)break;
 
-				float filterValue = Gasussian2D(x-columnSource, y-rowSource, sigma);
+				float filterValue = Gaussian2D(x-columnSource, y-rowSource, sigma);
 				filterSum += filterValue;
 				float value=source.At(rowSource, columnSource);
 				sum+= value*filterValue;
