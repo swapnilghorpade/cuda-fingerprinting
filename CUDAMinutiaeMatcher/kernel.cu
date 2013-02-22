@@ -44,18 +44,22 @@ int main()
 	CUDAArray<float> p2 = Expand(g3, 1.3f, g2.Width, g2.Height);
 	CUDAArray<float> p1 = Expand(g2, 1.21f,g1.Width, g1.Height);
 
+	
 	SubtractArray(g3,p3);
+	EnhanceContrast(g3);
 	SubtractArray(g2,p2);
+	EnhanceContrast(g2);
 	SubtractArray(g1,p1);
+	EnhanceContrast(g1);
 
-	float* arTest = p1.GetData();
-	f = fopen("C:\\temp\\104_6_e1.bin","wb");
-	fwrite(&p1.Width,sizeof(int),1,f);
-	fwrite(&p1.Height,sizeof(int),1,f);
-	for(int i=0;i<p1.Width*p1.Height;i++)
+	float* arTest = g1.GetData();
+	f = fopen("C:\\temp\\104_6_l1.bin","wb");
+	fwrite(&g1.Width,sizeof(int),1,f);
+	fwrite(&g1.Height,sizeof(int),1,f);
+	for(int i=0;i<g1.Width*p1.Height;i++)
 	{
-		int value = (int)arTest[i];
-		int result = fwrite(&value,sizeof(int),1,f);
+		float value = (float)arTest[i];
+		int result = fwrite(&value,sizeof(float),1,f);
 		result++;
 	}
 	fclose(f);

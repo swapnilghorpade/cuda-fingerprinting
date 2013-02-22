@@ -13,8 +13,8 @@ __global__ void cudaEnhanceContrast(CUDAArray<float> source)
 	if(source.Width>column&&source.Height>row)
 	{
 		float oldValue = source.At(row,column);
-
 		float newValue = sqrt(abs(oldValue));
+		if(oldValue<0)newValue = -newValue;
 		source.SetAt(row,column,newValue);
 	}
 }
@@ -73,6 +73,18 @@ __global__ void cudaConvolve(CUDAArray<float> target, CUDAArray<float> source, C
 
 // CPU FUNCTIONS
 
+void EnhanceContrast(CUDAArray<float> source)
+{
+	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	dim3 gridSize = 
+		dim3(ceilMod(source.Width,defaultThreadCount),
+		ceilMod(source.Height,defaultThreadCount));
+
+	cudaEnhanceContrast<<<gridSize,blockSize>>>(source);
+
+	cudaError_t error = cudaDeviceSynchronize();
+}
+
 void AddArray(CUDAArray<float> source, CUDAArray<float> addition)
 {
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
@@ -87,10 +99,10 @@ void SubtractArray(CUDAArray<float> source, CUDAArray<float> subtract)
 {
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
 	dim3 gridSize = 
-		dim3((source.Width+defaultThreadCount-1)/defaultThreadCount,
-		(source.Width+defaultThreadCount-1)/defaultThreadCount);
+		dim3(ceilMod(source.Width,defaultThreadCount),
+		ceilMod(source.Height,defaultThreadCount));
 
-	cudaArrayAdd<<<gridSize,blockSize>>>(source, subtract);
+	cudaArraySubtract<<<gridSize,blockSize>>>(source, subtract);
 }
 
 void Convolve(CUDAArray<float> target, CUDAArray<float> source, CUDAArray<float> filter)

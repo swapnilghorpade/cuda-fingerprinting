@@ -53,7 +53,8 @@ namespace ComplexFilterQA
            
             FillDirections();
             //SaveImageAsBinary("C:\\temp\\104_6.tif","C:\\temp\\104_6.bin");
-            SaveBinaryAsImage("C:\\temp\\104_6_e1.bin", "C:\\temp\\104_6_e1.png");
+            SaveBinaryAsImage("C:\\temp\\104_6_l1.bin", "C:\\temp\\104_6_l1.png", true);
+            
             PreprocessFingerprint("C:\\temp\\104_6.tif");
             var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_6.bin");
 
@@ -70,7 +71,7 @@ namespace ComplexFilterQA
             MarkMinutiae("C:\\temp\\104_6.tif", minutiae2, translatedMinutiae, "C:\\temp\\15.02.2013\\Marked_with_translation_104_6.png");
         }
 
-        private static void SaveBinaryAsImage(string pathFrom, string pathTo)
+        private static void SaveBinaryAsImage(string pathFrom, string pathTo, bool applyNormalization = false)
         {
             using (var fs = new FileStream(pathFrom, FileMode.Open, FileAccess.Read))
             {
@@ -79,13 +80,42 @@ namespace ComplexFilterQA
                     var width = bw.ReadInt32();
                     var height = bw.ReadInt32();
                     var bmp = new Bitmap(width, height);
-                    for (int row = 0; row < bmp.Height; row++)
+                    if (!applyNormalization)
                     {
-                        for (int column = 0; column < bmp.Width; column++)
+                        for (int row = 0; row < bmp.Height; row++)
                         {
-                            var value = bw.ReadInt32();
-                            var c = Color.FromArgb(value, value, value);
-                            bmp.SetPixel(column,row,c);
+                            for (int column = 0; column < bmp.Width; column++)
+                            {
+                                var value = bw.ReadInt32();
+                                var c = Color.FromArgb(value, value, value);
+                                bmp.SetPixel(column, row, c);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        float[,] arr = new float[height,width];
+                        float min = float.MaxValue;
+                        float max = float.MinValue;
+                        for (int row = 0; row < bmp.Height; row++)
+                        {
+                            for (int column = 0; column < bmp.Width; column++)
+                            {
+                                float result = bw.ReadSingle();
+                                arr[row, column] = result;
+                                if (result < min) min = result;
+                                if (result > max) max = result;
+                            }
+                        }
+                        for (int row = 0; row < bmp.Height; row++)
+                        {
+                            for (int column = 0; column < bmp.Width; column++)
+                            {
+                                var value = arr[row, column];
+                                int c = (int) ((value - min)/(max - min)*255);
+                                Color color = Color.FromArgb(c, c, c);
+                                bmp.SetPixel(column, row, color);
+                            }
                         }
                     }
                     bmp.Save(pathTo,ImageFormat.Png);
@@ -184,7 +214,6 @@ namespace ComplexFilterQA
             var g2 = Reduce2(g1, 1.21d);
             var g3 = Reduce2(g2, K);
             var g4 = Reduce2(g3, K);
-            SaveArray(g4, "C:\\temp\\104_6_r4_cpu.png");
 
             var p3 = Expand2(g4, K, new Size(g3.GetLength(0), g3.GetLength(1)));
             var p2 = Expand2(g3, K, new Size(g2.GetLength(0), g2.GetLength(1)));
@@ -193,7 +222,7 @@ namespace ComplexFilterQA
             var l3 = ContrastEnhancement(KernelHelper.Subtract(g3, p3));
             var l2 = ContrastEnhancement(KernelHelper.Subtract(g2, p2));
             var l1 = ContrastEnhancement(KernelHelper.Subtract(g1, p1));
-
+            SaveArray(l1,"C:\\temp\\104_6_l1_cpu.png");
 
             var ls1 = EstimateLS(l1, sigma1, sigma2);
             var ls2 = EstimateLS(l2, sigma1, sigma3);
