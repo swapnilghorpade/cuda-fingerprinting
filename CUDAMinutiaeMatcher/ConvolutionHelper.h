@@ -113,6 +113,23 @@ void Convolve(CUDAArray<float> target, CUDAArray<float> source, CUDAArray<float>
 		ceilMod(source.Height,defaultThreadCount));
 
 	cudaConvolve<<<gridSize,blockSize>>>(target, source, filter);
+	cudaDeviceSynchronize();
+}
+
+void SaveArray(CUDAArray<float> ar, const char* fname)
+{
+	float* arTest = ar.GetData();
+	FILE* f = fopen(fname,"wb");
+	fwrite(&ar.Width,sizeof(int),1,f);
+	fwrite(&ar.Height,sizeof(int),1,f);
+	for(int i=0;i<ar.Width*ar.Height;i++)
+	{
+		float value = (float)arTest[i];
+		int result = fwrite(&value,sizeof(float),1,f);
+		result++;
+	}
+	fclose(f);
+	free(arTest);
 }
 
 void ComplexConvolve(CUDAArray<float> targetReal, CUDAArray<float> targetImaginary,

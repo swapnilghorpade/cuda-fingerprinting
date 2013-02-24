@@ -1,10 +1,9 @@
-﻿
-#include "cuda_runtime.h"
+﻿#include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
-#include "ConvolutionHelper.h"
-
+#include "LinearSymmetry.h"
+#include <time.h>
 extern "C"{
 
 __declspec(dllexport) int main();
@@ -33,6 +32,7 @@ int main()
 		ar2[i]=ar[i];
 	}
 	fclose(f);
+	clock_t clk1 = clock();
 	CUDAArray<float> sourceImage = CUDAArray<float>(ar2,width,height);
 
 	CUDAArray<float> g1 = Reduce(sourceImage,1.7f);
@@ -52,17 +52,18 @@ int main()
 	SubtractArray(g1,p1);
 	EnhanceContrast(g1);
 
-	float* arTest = g1.GetData();
-	f = fopen("C:\\temp\\104_6_l1.bin","wb");
-	fwrite(&g1.Width,sizeof(int),1,f);
-	fwrite(&g1.Height,sizeof(int),1,f);
-	for(int i=0;i<g1.Width*p1.Height;i++)
-	{
-		float value = (float)arTest[i];
-		int result = fwrite(&value,sizeof(float),1,f);
-		result++;
-	}
-	fclose(f);
+	CUDAArray<float> ls1Real;
+	CUDAArray<float> ls1Im;
+	EstimateLS(&ls1Real, &ls1Im, g1, 0.9f, 1.5f);
+
+	CUDAArray<float> ls2Real;
+	CUDAArray<float> ls2Im;
+	EstimateLS(&ls2Real, &ls2Im, g2, 0.9f, 3.2f);
+
+	CUDAArray<float> ls3Real;
+	CUDAArray<float> ls3Im;
+	EstimateLS(&ls3Real, &ls3Im, g3, 0.9f, 3.2f);
+
 	sourceImage.Dispose();
 	g1.Dispose();
 	g2.Dispose();
@@ -73,7 +74,9 @@ int main()
 	p3.Dispose();
 	free(ar);
 	free(ar2);
-	free(arTest);
+	clock_t clk2 = clock();
+
+	float dt = ((float)clk2-clk1)/ CLOCKS_PER_SEC;
 	cudaDeviceReset();
     return 0;
 }

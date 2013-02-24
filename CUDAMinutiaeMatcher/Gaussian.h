@@ -3,7 +3,7 @@
 #include "math_constants.h"
 #include "math.h"
 
-__device__ float Gaussian2D(float x, float y, float sigma)
+__host__ __device__ float Gaussian2D(float x, float y, float sigma)
 {
 	float commonDenom = sigma*sigma*2.0f;
 	float denominator = commonDenom*CUDART_PI_F;
