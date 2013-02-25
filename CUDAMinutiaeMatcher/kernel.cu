@@ -64,6 +64,16 @@ int main()
 	CUDAArray<float> ls3Im;
 	EstimateLS(&ls3Real, &ls3Im, g3, 0.9f, 3.2f);
 
+	CorrectLS1WithLS2(ls1Real, ls1Im, ls2Real, ls2Im);
+
+	CUDAArray<float> magnitude = CUDAArray<float>(ls1Real.Width,ls1Real.Height);
+		dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	dim3 gridSize = 
+		dim3(ceilMod(magnitude.Width, defaultThreadCount),
+		ceilMod(magnitude.Height, defaultThreadCount));
+	cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, ls1Real, ls1Im);
+	SaveArray(magnitude,"C:\\temp\\104_6_mag3.bin");
+
 	sourceImage.Dispose();
 	g1.Dispose();
 	g2.Dispose();

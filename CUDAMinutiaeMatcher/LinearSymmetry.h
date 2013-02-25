@@ -45,6 +45,26 @@ __global__ void cudaNormalizeLS(CUDAArray<float> real, CUDAArray<float> im, CUDA
 	}
 }
 
+__global__ void correctLS1WithLS2(CUDAArray<float> ls1Real, CUDAArray<float> ls1Im,
+	CUDAArray<float> ls2Real, CUDAArray<float> ls2Im)
+{
+	int row = defaultRow();
+	int column = defaultColumn();
+	if(ls1Real.Width>column&&ls1Real.Height>row)
+	{
+		float real1 = ls1Real.At(row,column);
+		float im1 = ls1Im.At(row,column);
+		float real2 = ls2Real.At(row,column);
+		float im2 = ls2Im.At(row,column);
+		float a1 = atan2(im1, real1);
+		float a2 = atan2(im2, real2);
+		float multiplier = abs(cos(a1-a2));
+
+		ls1Real.SetAt(row,column,real1*multiplier);
+		ls1Im.SetAt(row,column,im1*multiplier);
+	}
+}
+
 // CPU FUNCTIONS
 
 CUDAArray<float> MakeDifferentialGaussianKernel(float kx, float ky, float c, float sigma)
@@ -129,4 +149,19 @@ void EstimateLS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 
 	sourceX.Dispose();
 	sourceY.Dispose();
+}
+
+void CorrectLS1WithLS2(CUDAArray<float> ls1Real, CUDAArray<float> ls1Im, 
+	CUDAArray<float> ls2Real, CUDAArray<float> ls2Im)
+{
+	CUDAArray<float> ls2RealScaled = Expand(ls2Real, 1.3f, ls1Real.Width, ls1Real.Height);
+	CUDAArray<float> ls2ImScaled = Expand(ls2Im, 1.3f, ls1Im.Width, ls1Im.Height);
+
+	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	dim3 gridSize = 
+		dim3(ceilMod(ls1Real.Width, defaultThreadCount),
+		ceilMod(ls1Real.Height, defaultThreadCount));
+
+	correctLS1WithLS2<<<gridSize, blockSize>>>(ls1Real, ls1Im, ls2Real, ls2Im);
+
 }
