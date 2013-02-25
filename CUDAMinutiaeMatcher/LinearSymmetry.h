@@ -99,7 +99,11 @@ void EstimateLS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 	
 	CUDAArray<float> resultReal = CUDAArray<float>(source.Width, source.Height);
 	CUDAArray<float> resultIm = CUDAArray<float>(source.Width, source.Height);
-    ComplexConvolve(resultReal, resultIm, sourceX, sourceY, kernel3, kernel4);
+
+	Convolve(resultReal, sourceX ,kernel3);
+	Convolve(resultIm, sourceY ,kernel3);
+
+    //ComplexConvolve(resultReal, resultIm, sourceX, sourceY, kernel3, kernel4);
 
 	CUDAArray<float> 
 		magnitude = CUDAArray<float>(source.Width, source.Height);
@@ -111,7 +115,8 @@ void EstimateLS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 	Convolve(I11, magnitude, kernel3);
 
 	cudaNormalizeLS<<<gridSize,blockSize>>>(resultReal, resultIm, I11);
-	cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, resultReal, resultIm);
+	//cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, resultReal, resultIm);
+	//SaveArray(magnitude,"C:\\temp\\104_6_mag2.bin");
 	*real = resultReal;
 	*im = resultIm;
 

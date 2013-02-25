@@ -45,6 +45,17 @@ __global__ void cudaConvolve(CUDAArray<float> target, CUDAArray<float> source, C
 {
 	int row = defaultRow();
 	int column = defaultColumn();
+	int tX = threadIdx.x;
+	int tY = threadIdx.y;
+	__shared__ float filterCache[32*32];
+
+	if(tX<filter.Width&&tY<filter.Height)
+	{
+		int indexLocal = tX+tY*filter.Width;
+		filterCache[indexLocal] = filter.At(tY,tX);
+	}
+	__syncthreads();
+
 	int center = filter.Width/2;
 
 	float sum = 0.0f;
@@ -53,7 +64,7 @@ __global__ void cudaConvolve(CUDAArray<float> target, CUDAArray<float> source, C
 	{
 		for(int dcolumn=-center;dcolumn<=center;dcolumn++)
 		{
-			float filterValue = filter.At(drow+center,dcolumn+center);
+			float filterValue1 = filterCache[filter.Width*(drow+center)+dcolumn+center];
 
 			int valueRow = row+drow;
 			if(valueRow<0)valueRow=0;
@@ -64,7 +75,7 @@ __global__ void cudaConvolve(CUDAArray<float> target, CUDAArray<float> source, C
 			if(valueColumn>=source.Width)valueColumn = source.Width-1;
 
 			float value = source.At(valueRow,valueColumn);
-			sum+=filterValue*value;
+			sum+=filterValue1*value;
 		}
 	}
 
@@ -113,7 +124,8 @@ void Convolve(CUDAArray<float> target, CUDAArray<float> source, CUDAArray<float>
 		ceilMod(source.Height,defaultThreadCount));
 
 	cudaConvolve<<<gridSize,blockSize>>>(target, source, filter);
-	cudaDeviceSynchronize();
+	cudaError_t error  = cudaDeviceSynchronize();
+	int i=0;
 }
 
 void SaveArray(CUDAArray<float> ar, const char* fname)
