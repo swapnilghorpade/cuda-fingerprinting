@@ -162,6 +162,8 @@ void CorrectLS1WithLS2(CUDAArray<float> ls1Real, CUDAArray<float> ls1Im,
 		dim3(ceilMod(ls1Real.Width, defaultThreadCount),
 		ceilMod(ls1Real.Height, defaultThreadCount));
 
-	correctLS1WithLS2<<<gridSize, blockSize>>>(ls1Real, ls1Im, ls2Real, ls2Im);
+	correctLS1WithLS2<<<gridSize, blockSize>>>(ls1Real, ls1Im, ls2RealScaled, ls2ImScaled);
 
+	ls2RealScaled.Dispose();
+	ls2ImScaled.Dispose();
 }
