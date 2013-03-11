@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Drawing;
+using System.Numerics;
 
 namespace ComplexFilterQA
 {
@@ -44,19 +45,42 @@ namespace ComplexFilterQA
             var dataReal = KernelHelper.GetRealPart(data);
             var dataImaginary = KernelHelper.GetImaginaryPart(data);
 
-
             var kernelReal = KernelHelper.GetRealPart(kernel);
             var kernelImaginary = KernelHelper.GetImaginaryPart(kernel);
 
             var resultRealPart1 = Convolve(dataReal, kernelReal);
             var resultRealPart2 = Convolve(dataImaginary, kernelImaginary);
-
+            
             var resultImaginaryPart1 = Convolve(dataReal, kernelImaginary);
             var resultImaginaryPart2 = Convolve(dataImaginary, kernelReal);
 
             return KernelHelper.MakeComplexFromDouble(
                 KernelHelper.Subtract(resultRealPart1, resultRealPart2),
                 KernelHelper.Add(resultImaginaryPart1, resultImaginaryPart2));
+        }
+
+        private static void SaveArray(double[,] data, string path)
+        {
+            int X = data.GetLength(0);
+            int Y = data.GetLength(1);
+            var max = double.NegativeInfinity;
+            var min = double.PositiveInfinity;
+            foreach (var num in data)
+            {
+                if (num > max) max = num;
+                if (num < min) min = num;
+            }
+            var bmp = new Bitmap(X, Y);
+            for (int x = 0; x < X; x++)
+            {
+                for (int y = 0; y < Y; y++)
+                {
+                    var gray = (int)((data[x, y] - min) / (max - min) * 255);
+                    bmp.SetPixel(x, y, Color.FromArgb(gray, gray, gray));
+                }
+            }
+
+            bmp.Save(path);
         }
     }
 }

@@ -10,6 +10,9 @@ __declspec(dllexport) int main();
 
 }
 
+const float tau1 = 0.35f;
+const float tau2 = 0.45f;
+
 int main()
 {
 	// Choose which GPU to run on, change this on a multi-GPU system.
@@ -68,15 +71,29 @@ int main()
 
 	CorrectLS1WithLS2(ls1Real, ls1Im, ls2Real, ls2Im);
 
-	CUDAArray<float> magnitude = CUDAArray<float>(ls1Real.Width,ls1Real.Height);
-		dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
-	dim3 gridSize = 
-		dim3(ceilMod(magnitude.Width, defaultThreadCount),
-		ceilMod(magnitude.Height, defaultThreadCount));
-	cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, ls1Real, ls1Im);
-	SaveArray(magnitude,"C:\\temp\\104_6_mag3.bin");
+	DirectionFiltering(g1, ls1Real, ls1Im, tau1, tau2);
+	DirectionFiltering(g2, ls2Real, ls2Im, tau1, tau2);
+	DirectionFiltering(g3, ls3Real, ls3Im, tau1, tau2);
+
+	CUDAArray<float> el3 = Expand(g3, 1.3f, g2.Width, g2.Height);
+	AddArray(el3,g2);
+	CUDAArray<float> el2 = Expand(el3, 1.21f,g1.Width, g1.Height);
+	el3.Dispose();
+	AddArray(el2,g1);
+	CUDAArray<float> enhanced = Expand(el2, 1.7f,sourceImage.Width, sourceImage.Height);
+	el2.Dispose();
+	EnhanceContrast(enhanced);
+	//SaveArray(enhanced, "C:\\temp\\104_6_enh.bin");
+	//CUDAArray<float> magnitude = CUDAArray<float>(ls1Real.Width,ls1Real.Height);
+	//	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	//dim3 gridSize = 
+	//	dim3(ceilMod(magnitude.Width, defaultThreadCount),
+	//	ceilMod(magnitude.Height, defaultThreadCount));
+	//cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, ls1Real, ls1Im);
+	//SaveArray(magnitude,"C:\\temp\\104_6_mag3.bin");
 
 	sourceImage.Dispose();
+	enhanced.Dispose();
 	g1.Dispose();
 	g2.Dispose();
 	g3.Dispose();

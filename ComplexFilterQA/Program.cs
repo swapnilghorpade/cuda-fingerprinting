@@ -52,8 +52,12 @@ namespace ComplexFilterQA
         {
            
             FillDirections();
-            //SaveImageAsBinary("C:\\temp\\104_6.tif","C:\\temp\\104_6.bin");
-            
+            SaveBinaryAsImage("C:\\temp\\104_6_enh.bin", "C:\\temp\\104_6_enh.png", true);
+
+            //SaveBinaryAsImage("C:\\temp\\dirX.bin", "C:\\temp\\dirX.png", true);
+            //SaveBinaryAsImage("C:\\temp\\dirY.bin", "C:\\temp\\dirY.png", true);
+            //SaveBinaryAsImage("C:\\temp\\l1.bin", "C:\\temp\\l1.png", true);
+
             PreprocessFingerprint("C:\\temp\\104_6.tif");
             var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_6.bin");
 
@@ -126,15 +130,15 @@ namespace ComplexFilterQA
         {
             for (int n = 0; n < 10; n++)
             {
-                var angle = Math.PI * n / 20;
+                var angle = Math.PI*n/20;
 
                 directions[5, n] = new Point(0, 0);
                 var tan = Math.Tan(angle);
-                if (angle <= Math.PI / 4)
+                if (angle <= Math.PI/4)
                 {
                     for (int x = 1; x <= 5; x++)
                     {
-                        var y = (int)Math.Round(tan * x);
+                        var y = (int) Math.Round(tan*x);
                         directions[5 + x, n] = new Point(x, y);
                         directions[5 - x, n] = new Point(-x, -y);
                     }
@@ -143,7 +147,7 @@ namespace ComplexFilterQA
                 {
                     for (int y = 1; y <= 5; y++)
                     {
-                        var x = (int)Math.Round((double)y/tan);
+                        var x = (int) Math.Round((double) y/tan);
                         directions[5 + y, n] = new Point(x, y);
                         directions[5 - y, n] = new Point(-x, -y);
                     }
@@ -154,9 +158,23 @@ namespace ComplexFilterQA
                 for (int i = 0; i < 11; i++)
                 {
                     var p = directions[i, n - 10];
-                    directions[i, n] = new Point(p.Y,-p.X);
+                    directions[i, n] = new Point(p.Y, -p.X);
                 }
             }
+
+            //double[,] dx = new double[11,20];
+            //double[,] dy = new double[11,20];
+
+            //for (int x = 0; x < 11; x++)
+            //{
+            //    for (int y = 0; y < 20; y++)
+            //    {
+            //        dx[x, y] = directions[x, y].X;
+            //        dy[x, y] = directions[x, y].Y;
+            //    }
+            //}
+            //SaveArray(dx, "C:\\temp\\dirX_cpu.png");
+            //SaveArray(dy, "C:\\temp\\dirY_cpu.png");
         }
 
         /*private static void DrawNeatRectangles()
@@ -208,7 +226,8 @@ namespace ComplexFilterQA
                     imgBytes[x, y] = bmp.GetPixel(x, y).R;
                 }
             }
-
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             var g1 = Reduce2(imgBytes, 1.7d);
             var g2 = Reduce2(g1, 1.21d);
             var g3 = Reduce2(g2, K);
@@ -255,7 +274,7 @@ namespace ComplexFilterQA
             var ll0 = Expand2(l1, 1.7d, new Size(imgBytes.GetLength(0), imgBytes.GetLength(1)));
 
             ll0 = ContrastEnhancement(ll0);
-
+            sw.Stop();
             var enhanced = ll0;
             var lsEnhanced = EstimateLS(enhanced, sigma1, sigma2);
             var psEnhanced = EstimatePS(enhanced, 0.9, 2.5);
@@ -396,6 +415,14 @@ namespace ComplexFilterQA
 
         private static void DirectionFiltering(double[,] l1, Complex[,] ls, double tau1, double tau2)
         {
+            var l1Copy = new double[l1.GetLength(0),l1.GetLength(1)];
+            for(int x=0;x<l1.GetLength(0);x++)
+            {
+                for (int y = 0; y < l1.GetLength(1); y++)
+                {
+                    l1Copy[x, y] = l1[x, y];
+                }   
+            }
             var sigmaDirection = 1.6d;
             var kernel = new double[11];
             var ksum = 0d;
@@ -435,10 +462,10 @@ namespace ComplexFilterQA
                         if (sum / (annulusSize * 2 + 1) * (annulusSize * 2 + 1) < tau2) l1[x, y] = 0;
                         else
                         {
-                            var phase = ls[x, y].Phase/ 2 - Math.PI / 2;
+                            var phase = ls[x, y].Phase/2 - Math.PI/2;
                             if (phase > Math.PI*39/40) phase -= Math.PI;
                             if (phase < -Math.PI/40) phase += Math.PI;
-                            var direction = (int)Math.Round(phase / (Math.PI / 20));
+                            var direction = (int) Math.Round(phase/(Math.PI/20));
 
                             var avg = 0.0d;
                             for (int i = 0; i < 11; i++)
@@ -450,7 +477,7 @@ namespace ComplexFilterQA
                                 int yy = y - p.Y;
                                 if (yy < 0) yy = 0;
                                 if (yy >= l1.GetLength(1)) yy = l1.GetLength(1) - 1;
-                                avg += kernel[i] * l1[xx, yy];
+                                avg += kernel[i]*l1Copy[xx, yy];
                             }
                             l1[x, y] = avg;
                         }

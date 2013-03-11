@@ -23,6 +23,8 @@ __global__ void cudaDirectionalFiltering(CUDAArray<float> result, CUDAArray<floa
 {
 	// step 1: copy locally all necessary values for annulus calculation
 	__shared__ float imageCache[32*32];
+	__shared__ float magnitudeCache[32*32];
+	__shared__ float kernel[KernelSize];
 
 	int realThreadX = threadIdx.x-HalfSize;
 	int realThreadY = threadIdx.y-HalfSize;
@@ -30,58 +32,67 @@ __global__ void cudaDirectionalFiltering(CUDAArray<float> result, CUDAArray<floa
 	int realBlockSize = blockDim.x-HalfSize*2; // block without apron
 
 	int rowToCopy = blockIdx.y*realBlockSize + realThreadY; 
-	if(rowToCopy<0)rowToCopy = 0;
-	if(rowToCopy>lsMagnitude.Height)rowToCopy = lsMagnitude.Height-1;
-
 	int columnToCopy = blockIdx.x*realBlockSize + realThreadX;
-	if(columnToCopy<0)columnToCopy = 0;
-	if(columnToCopy>lsMagnitude.Height)rowToCopy = lsMagnitude.Width-1;
+	if(threadIdx.y==0&&threadIdx.x<KernelSize)
+	{
+		kernel[threadIdx.x] = constDirectionsKernel[threadIdx.x];
+	}
+	if(rowToCopy<0)rowToCopy = 0;
+	if(rowToCopy>=lsMagnitude.Height)rowToCopy = lsMagnitude.Height-1;
 
-	imageCache[32*rowToCopy+columnToCopy] = lsMagnitude.At(rowToCopy, columnToCopy);
+	
+	if(columnToCopy<0)columnToCopy = 0;
+	if(columnToCopy>=lsMagnitude.Width)columnToCopy = lsMagnitude.Width-1;
+
+	imageCache[32*threadIdx.y+threadIdx.x] = result.At(rowToCopy, columnToCopy);
+	magnitudeCache[32*threadIdx.y+threadIdx.x] = lsMagnitude.At(rowToCopy, columnToCopy);
 
 	__syncthreads();
 	// step 2: do the filtering
-
-	rowToCopy = blockIdx.y*realBlockSize + realThreadY; 
-	columnToCopy = blockIdx.x*realBlockSize + realThreadX;
-	if(rowToCopy>=0&&rowToCopy<lsMagnitude.Height&&
-		columnToCopy>=0&&columnToCopy<lsMagnitude.Width)
+	if(realThreadY>=0&&realThreadX>=0&&realThreadY<realBlockSize&&realThreadX<realBlockSize)
 	{
-		if(imageCache[threadIdx.y*32+threadIdx.x] < tau1)
+		rowToCopy = blockIdx.y*realBlockSize + realThreadY; 
+		columnToCopy = blockIdx.x*realBlockSize + realThreadX;
+		if(rowToCopy<lsMagnitude.Height&&columnToCopy<lsMagnitude.Width)
 		{
-			result.SetAt(rowToCopy,columnToCopy,0.0f);
-		}
-		else
-		{
-			// annulus testing
-			float sum = 0;
-			for (int dx = -annulusRadius; dx <= annulusRadius; dx++)
+
+			if(magnitudeCache[threadIdx.y*32+threadIdx.x] < tau1)
 			{
-				for (int dy = -annulusRadius; dy <= annulusRadius; dy++)
-				{
-					sum += imageCache[(threadIdx.y+dy)*32+threadIdx.x+dx];
-				}
-			}
-			if (sum / (annulusRadius * 2 + 1) * (annulusRadius * 2 + 1) < tau2) 
 				result.SetAt(rowToCopy,columnToCopy,0.0f);
+			}
 			else
 			{
-				float phase = lsPhase.At(rowToCopy, columnToCopy) / 2 - CUDART_PIO2_F;
-				if (phase > CUDART_PI_F*39/40) phase -= CUDART_PI_F;
-				if (phase < -CUDART_PI_F/40) phase += CUDART_PI_F;
-				
-				int direction = (int)round(phase / (CUDART_PI_F / 20));
-				
-				float avg = 0.0f;
-				
-				for (int i = 0; i < KernelSize; i++)
+				// annulus testing
+				float sum = 0;
+				for (int dx = -annulusRadius; dx <= annulusRadius; dx++)
 				{
-					int x = constDirectionsX[i*DirectionsNumber+ direction];
-					int y = constDirectionsY[i*DirectionsNumber+ direction];
-					
-					avg += constDirectionsKernel[i] * imageCache[32*(y+threadIdx.y)+x+threadIdx.x];
+					for (int dy = -annulusRadius; dy <= annulusRadius; dy++)
+					{
+						sum += magnitudeCache[(threadIdx.y+dy)*32+threadIdx.x+dx];
+					}
 				}
-				result.SetAt(rowToCopy, columnToCopy, avg);
+				if (sum / (annulusRadius * 2 + 1) * (annulusRadius * 2 + 1) < tau2) 
+					result.SetAt(rowToCopy,columnToCopy,0.0f);
+				else
+				{
+					float phase = lsPhase.At(rowToCopy, columnToCopy);
+					phase = phase / 2.0f - CUDART_PIO2_F;
+					if (phase > CUDART_PI_F*39/40) phase -= CUDART_PI_F;
+					if (phase < -CUDART_PI_F/40) phase += CUDART_PI_F;
+				
+					int direction = (int)round(phase / (CUDART_PI_F / 20));
+				
+					float avg = 0.0f;
+				
+					for (int i = 0; i < KernelSize; i++)
+					{
+						int x = constDirectionsX[i + KernelSize*direction];
+						int y = constDirectionsY[i + KernelSize*direction];
+					
+						avg += kernel[i] * imageCache[32*( -y+threadIdx.y)+x+threadIdx.x];
+					}
+					result.SetAt(rowToCopy, columnToCopy, avg);
+				}
 			}
 		}
 	}
@@ -93,13 +104,15 @@ void FillDirections()
 {
 	int* directionsX = (int*)malloc(sizeof(int)*DirectionsNumber*KernelSize);
 	int* directionsY = (int*)malloc(sizeof(int)*DirectionsNumber*KernelSize);
+	//float* fX = (float*)malloc(sizeof(float)*DirectionsNumber*KernelSize);
+	//float* fY = (float*)malloc(sizeof(float)*DirectionsNumber*KernelSize);
 
 	for (int n = 0; n < DirectionsNumber/2; n++)
 	{
 		float angle = CUDART_PI_F*n/DirectionsNumber;
 		
-		directionsX[(KernelSize/2)*DirectionsNumber + n] = 0;
-		directionsY[(KernelSize/2)*DirectionsNumber + n] = 0;
+		directionsX[(KernelSize/2) +n*KernelSize] = 0;
+		directionsY[(KernelSize/2) +n*KernelSize] = 0;
 
 		float tg = tan(angle);
 		
@@ -108,10 +121,10 @@ void FillDirections()
 			for (int x = 1; x <= KernelSize/2; x++)
 			{
 				int y = (int)round(tg * x);
-				directionsX[(KernelSize/2+x)*DirectionsNumber+ n] = x;
-				directionsY[(KernelSize/2+x)*DirectionsNumber+ n] = y;
-				directionsX[(KernelSize/2-x)*DirectionsNumber+ n] = -x;
-				directionsY[(KernelSize/2-x)*DirectionsNumber+ n] = -y;
+				directionsX[(KernelSize/2+x)+n*KernelSize] = x;
+				directionsY[(KernelSize/2+x)+n*KernelSize] = y;
+				directionsX[(KernelSize/2-x)+n*KernelSize] = -x;
+				directionsY[(KernelSize/2-x)+n*KernelSize] = -y;
 			}
 		}
 		else
@@ -120,10 +133,10 @@ void FillDirections()
 			{
 				int x = (int)round((float)y/tg);
 
-				directionsX[(KernelSize/2+y)*DirectionsNumber+ n] = x;
-				directionsY[(KernelSize/2+y)*DirectionsNumber+ n] = y;
-				directionsX[(KernelSize/2-y)*DirectionsNumber+ n] = -x;
-				directionsY[(KernelSize/2-y)*DirectionsNumber+ n] = -y;
+				directionsX[(KernelSize/2+y)+n*KernelSize] = x;
+				directionsY[(KernelSize/2+y)+n*KernelSize] = y;
+				directionsX[(KernelSize/2-y)+n*KernelSize] = -x;
+				directionsY[(KernelSize/2-y)+n*KernelSize] = -y;
 			}
 		}
 	}
@@ -132,11 +145,11 @@ void FillDirections()
 	{
 		for (int i = 0; i < KernelSize; i++)
 		{
-			int x = directionsX[i*DirectionsNumber+ n - 10];
-			int y = directionsY[i*DirectionsNumber+ n - 10];
+			int x = directionsX[i + (n - DirectionsNumber/2)*KernelSize];
+			int y = directionsY[i + (n - DirectionsNumber/2)*KernelSize];
 			
-			directionsX[i*DirectionsNumber+ n - 10] = y;
-			directionsY[i*DirectionsNumber+ n - 10] = -x;
+			directionsX[i+ n*KernelSize] = y;
+			directionsY[i+ n*KernelSize] = -x;
 		}
 	}
 	
@@ -160,6 +173,15 @@ void FillDirections()
 	error = cudaMemcpyToSymbol(constDirectionsKernel, kernel, sizeof(float)*KernelSize);
 
 	free(kernel);
+	//for(int i=0;i<KernelSize*DirectionsNumber;i++)
+	//{
+	//	fX[i]=directionsX[i];
+	//	fY[i]=directionsY[i];
+	//}
+	//CUDAArray<float> dirX = CUDAArray<float>(fX,KernelSize, DirectionsNumber);
+	//CUDAArray<float> dirY = CUDAArray<float>(fY,KernelSize, DirectionsNumber);
+	//SaveArray(dirX,"C:\\temp\\dirX.bin");
+	//SaveArray(dirY,"C:\\temp\\dirY.bin");
 	//kernel = (float*)malloc(KernelSize*sizeof(float));
 	free(directionsX);
 	free(directionsY);
@@ -188,10 +210,15 @@ void DirectionFiltering(CUDAArray<float> l, CUDAArray<float> lsReal, CUDAArray<f
 	error = cudaDeviceSynchronize();
 
 	gridSize = 
-		dim3(ceilMod(l.Width, defaultThreadCount-HalfSize*2),
-		ceilMod(l.Height, defaultThreadCount-HalfSize*2));
-
-	cudaDirectionalFiltering<<<gridSize, blockSize>>>(phase, lsReal, lsImaginary);
-
+		dim3(ceilMod(l.Width, (defaultThreadCount-HalfSize*2)),
+		ceilMod(l.Height, (defaultThreadCount-HalfSize*2)));
+	//SaveArray(l,"C:\\temp\\l1.bin");
+	cudaDirectionalFiltering<<<gridSize, blockSize>>>(l, magnitude, phase, tau1, tau2);
+	
 	error = cudaDeviceSynchronize();
+
+	magnitude.Dispose();
+	phase.Dispose();
+
+	//SaveArray(l,"C:\\temp\\104_6_df_sq.bin");
 }
