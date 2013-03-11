@@ -10,7 +10,7 @@ __host__ __device__ float Gaussian2D(float x, float y, float sigma)
 	return expf(-(x*x+y*y)/commonDenom)/denominator;
 }
 
-__device__ float Gaussian1D(float x, float sigma)
+__host__ __device__ float Gaussian1D(float x, float sigma)
 {
 	float commonDenom = sigma*sigma*2.0f;
 	float denominator = sigma*sqrtf(CUDART_PI_F*2.0f);

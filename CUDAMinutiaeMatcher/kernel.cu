@@ -2,7 +2,7 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
-#include "LinearSymmetry.h"
+#include "DirectionalFiltering.h"
 #include <time.h>
 extern "C"{
 
@@ -14,6 +14,8 @@ int main()
 {
 	// Choose which GPU to run on, change this on a multi-GPU system.
     cudaSetDevice(0);
+
+	FillDirections();
 
 	FILE* f = fopen("C:\\temp\\104_6.bin","rb");
 

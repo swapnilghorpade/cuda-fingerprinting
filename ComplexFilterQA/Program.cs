@@ -53,7 +53,6 @@ namespace ComplexFilterQA
            
             FillDirections();
             //SaveImageAsBinary("C:\\temp\\104_6.tif","C:\\temp\\104_6.bin");
-            SaveBinaryAsImage("C:\\temp\\104_6_l1.bin", "C:\\temp\\104_6_l1.png", true);
             
             PreprocessFingerprint("C:\\temp\\104_6.tif");
             var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_6.bin");
@@ -222,7 +221,7 @@ namespace ComplexFilterQA
             var l3 = ContrastEnhancement(KernelHelper.Subtract(g3, p3));
             var l2 = ContrastEnhancement(KernelHelper.Subtract(g2, p2));
             var l1 = ContrastEnhancement(KernelHelper.Subtract(g1, p1));
-            SaveArray(l1,"C:\\temp\\104_6_l1_cpu.png");
+            
 
             var ls1 = EstimateLS(l1, sigma1, sigma2);
             var ls2 = EstimateLS(l2, sigma1, sigma3);
@@ -234,7 +233,6 @@ namespace ComplexFilterQA
                 KernelHelper.MakeComplexFromDouble(
                     Expand2(KernelHelper.GetRealPart(ls2), K, new Size(l1.GetLength(0), l1.GetLength(1))),
                     Expand2(KernelHelper.GetImaginaryPart(ls2), K, new Size(l1.GetLength(0), l1.GetLength(1))));
-
             var multiplier = KernelHelper.Subtract(KernelHelper.GetPhase(ls1), KernelHelper.GetPhase(ls2Scaled));
 
             double d = double.NegativeInfinity;
@@ -245,7 +243,7 @@ namespace ComplexFilterQA
                     ls1[x, y] *= Math.Abs(Math.Cos(multiplier[x, y]));
                 }
             }
-
+            
             DirectionFiltering(l1, ls1, tau1, tau2);
             DirectionFiltering(l2, ls2, tau1, tau2);
             DirectionFiltering(l3, ls3, tau1, tau2);

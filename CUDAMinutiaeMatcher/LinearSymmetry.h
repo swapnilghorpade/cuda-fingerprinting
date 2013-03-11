@@ -31,6 +31,18 @@ __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> re
 	}
 }
 
+__global__ void cudaGetPhase(CUDAArray<float> phase, CUDAArray<float> real, CUDAArray<float> im)
+{
+	int row = defaultRow();
+	int column = defaultColumn();
+	if(im.Width>column&&im.Height>row)
+	{
+		float realValue = real.At(row,column);
+		float imValue = im.At(row,column);
+		phase.SetAt(row,column,atan2f(imValue, realValue));
+	}
+}
+
 __global__ void cudaNormalizeLS(CUDAArray<float> real, CUDAArray<float> im, CUDAArray<float> i11)
 {
 	int row = defaultRow();
