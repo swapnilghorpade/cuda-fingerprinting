@@ -19,6 +19,36 @@ __global__ void cudaComplexSquare(CUDAArray<float> real, CUDAArray<float> im)
 	}
 }
 
+__global__ void cudaNormalizePS(CUDAArray<float> real, CUDAArray<float> im, float max)
+{
+	int row = defaultRow();
+	int column = defaultColumn();
+	if(im.Width>column&&im.Height>row)
+	{
+		float realValue = real.At(row,column);
+		float imValue = im.At(row,column);
+		if(realValue*realValue+imValue*imValue<0.01) // tauPS = 0.1;
+		{
+			realValue = 0;
+			imValue = 0;
+		}
+		real.SetAt(row,column,realValue/max);
+		im.SetAt(row,column,imValue/max);
+	}
+}
+
+__global__ void cudaEstimateMeasure(CUDAArray<float> psi, CUDAArray<float> ls, CUDAArray<float> ps)
+{
+	int row = defaultRow();
+	int column = defaultColumn();
+	if(ls.Width>column&&ls.Height>row)
+	{
+		float lsValue = ls.At(row,column);
+		float psValue = ps.At(row,column);
+		psi.SetAt(row,column,(1.0f-lsValue)*psValue);
+	}
+}
+
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> real, CUDAArray<float> im)
 {
 	int row = defaultRow();
@@ -161,6 +191,88 @@ void EstimateLS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 
 	sourceX.Dispose();
 	sourceY.Dispose();
+}
+
+void EstimatePS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> source, float sigma1, float sigma2)
+{
+	CUDAArray<float> kernel1 = MakeDifferentialGaussianKernel(-1,0,0,sigma1);
+	CUDAArray<float> kernel2 = MakeDifferentialGaussianKernel(0,1,0,sigma1);
+
+	CUDAArray<float> sourceX = CUDAArray<float>(source.Width, source.Height);
+	Convolve(sourceX, source, kernel1);
+
+	CUDAArray<float> sourceY = CUDAArray<float>(source.Width, source.Height);
+	Convolve(sourceY, source, kernel2);
+
+	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	dim3 gridSize = 
+		dim3(ceilMod(source.Width, defaultThreadCount),
+		ceilMod(source.Height, defaultThreadCount));
+
+	cudaComplexSquare<<<gridSize, blockSize>>>(sourceX, sourceY);
+
+	CUDAArray<float> kernel3 = MakeDifferentialGaussianKernel(1,0,0,sigma2);
+	CUDAArray<float> kernel4 = MakeDifferentialGaussianKernel(0,1,0,sigma2);
+	
+	CUDAArray<float> resultReal = CUDAArray<float>(source.Width, source.Height);
+	CUDAArray<float> resultIm = CUDAArray<float>(source.Width, source.Height);
+
+
+    ComplexConvolve(resultReal, resultIm, sourceX, sourceY, kernel3, kernel4);
+
+	
+	CUDAArray<float> 
+		magnitude = CUDAArray<float>(source.Width, source.Height);
+
+	cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, resultReal, resultIm);
+	float* data = magnitude.GetData();
+	float max=0;
+	for(int i=0;i<magnitude.Width*magnitude.Height;i++)
+	{
+		if(data[i]>max)max=data[i];
+	}
+
+	cudaNormalizePS<<<gridSize,blockSize>>>(resultReal, resultIm, max);
+	cudaError_t error;
+	error = cudaDeviceSynchronize();
+	//cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, resultReal, resultIm);
+	//error = cudaDeviceSynchronize();
+	//data = magnitude.GetData();
+	// max=0;
+	//for(int i=0;i<magnitude.Width*magnitude.Height;i++)
+	//{
+	//	if(data[i]>max)max=data[i];
+	//}
+	//SaveArray(magnitude,"C:\\temp\\104_6_mag2.bin");
+	magnitude.Dispose();
+	*real = resultReal;
+	*im = resultIm;
+
+	kernel1.Dispose();
+	kernel2.Dispose();
+	kernel3.Dispose();
+	kernel4.Dispose();
+
+	sourceX.Dispose();
+	sourceY.Dispose();
+}
+
+void EstimateMeasure(CUDAArray<float> psi, CUDAArray<float> lsM, CUDAArray<float> psM)
+{
+	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	dim3 gridSize = 
+		dim3(ceilMod(psi.Width, defaultThreadCount),
+		ceilMod(psi.Height, defaultThreadCount));
+	cudaEstimateMeasure<<<gridSize,blockSize>>>(psi, lsM, psM);
+}
+
+void GetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> real, CUDAArray<float> im)
+{
+	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	dim3 gridSize = 
+		dim3(ceilMod(magnitude.Width, defaultThreadCount),
+		ceilMod(magnitude.Height, defaultThreadCount));
+	cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, real, im);
 }
 
 void CorrectLS1WithLS2(CUDAArray<float> ls1Real, CUDAArray<float> ls1Im, 

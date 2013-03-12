@@ -92,6 +92,29 @@ int main()
 	//cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, ls1Real, ls1Im);
 	//SaveArray(magnitude,"C:\\temp\\104_6_mag3.bin");
 
+	// minutia extraction
+	CUDAArray<float> psReal;
+	CUDAArray<float> psIm;
+	CUDAArray<float> psM=CUDAArray<float>(enhanced.Width,enhanced.Height);
+	CUDAArray<float> lsReal;
+	CUDAArray<float> lsIm;
+	CUDAArray<float> lsM=CUDAArray<float>(enhanced.Width,enhanced.Height);
+	EstimateLS(&lsReal, &lsIm, enhanced, 0.9f, 1.5f);
+	EstimatePS(&psReal, &psIm, enhanced, 0.9f, 2.5f);
+
+	GetMagnitude(lsM, lsReal, lsIm);
+	GetMagnitude(psM, psReal, psIm);
+
+	CUDAArray<float> psi = CUDAArray<float>(lsM.Width, lsM.Height);
+	EstimateMeasure(psi,lsM, psM);
+
+	lsIm.Dispose();
+	lsReal.Dispose();
+	psIm.Dispose();
+	psReal.Dispose();
+
+	SaveArray(psi,"C:\\temp\\104_6_psi.bin");
+
 	sourceImage.Dispose();
 	enhanced.Dispose();
 	g1.Dispose();

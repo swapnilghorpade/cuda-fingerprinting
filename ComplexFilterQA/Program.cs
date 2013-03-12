@@ -52,7 +52,7 @@ namespace ComplexFilterQA
         {
            
             FillDirections();
-            SaveBinaryAsImage("C:\\temp\\104_6_enh.bin", "C:\\temp\\104_6_enh.png", true);
+            SaveBinaryAsImage("C:\\temp\\104_6_psi.bin", "C:\\temp\\104_6_psi.png", true);
 
             //SaveBinaryAsImage("C:\\temp\\dirX.bin", "C:\\temp\\dirX.png", true);
             //SaveBinaryAsImage("C:\\temp\\dirY.bin", "C:\\temp\\dirY.png", true);
@@ -275,12 +275,17 @@ namespace ComplexFilterQA
 
             ll0 = ContrastEnhancement(ll0);
             sw.Stop();
-            var enhanced = ll0;
+            var enhanced = RearrangeArray(ll0, 0, 255);
+
+
+            SaveArray(enhanced,"C:\\temp\\104_6_enh.png");
             var lsEnhanced = EstimateLS(enhanced, sigma1, sigma2);
             var psEnhanced = EstimatePS(enhanced, 0.9, 2.5);
-
+            SaveComplexArrayAsHSV(lsEnhanced,"C:\\temp\\lsenh.png");
+            SaveArray(NormalizeArray(KernelHelper.GetMagnitude(psEnhanced)), "C:\\temp\\psenh.png");
             var psi = KernelHelper.Zip2D(NormalizeArray(KernelHelper.GetMagnitude(psEnhanced)),
                 KernelHelper.GetMagnitude(lsEnhanced), (x, y) => x * (1.0d - y));
+            SaveArray(psi,"C:\\temp\\104_6_psi_cpu.png");
             var minutiae = SearchMinutiae(psi, lsEnhanced, psEnhanced);
             return minutiae;
             /*SaveArray(KernelHelper.GetMagnitude(psEnhanced), "C:\\temp\\psEnhanced.png");
@@ -349,6 +354,8 @@ namespace ComplexFilterQA
 
         private static List<Minutia> SearchMinutiae(double[,] psi, Complex[,] lsEnhanced, Complex[,] ps)
         {
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             var size = new Size(psi.GetLength(0), psi.GetLength(1));
 
             for (int x = 0; x < size.Width; x++)
@@ -400,7 +407,7 @@ namespace ComplexFilterQA
                     }
                     if (sum / count > tauLS)
                     {
-                        if(!minutiae.Where(pt=>(pt.X-xMax)*(pt.X-xMax)+(pt.Y-yMax)*(pt.Y-yMax)<30).Any())
+                        if(!minutiae.Any(pt=>(pt.X-xMax)*(pt.X-xMax)+(pt.Y-yMax)*(pt.Y-yMax)<30))
                             minutiae.Add(new Minutia() { X = xMax, Y = yMax, Angle = ps[xMax,yMax].Phase });
                     }
                 }
@@ -409,7 +416,7 @@ namespace ComplexFilterQA
             var endList = minutiae.OrderByDescending(x => ps[x.X, x.Y].Magnitude)
                 .Take(MaxMinutiaeCount)
                 .ToList();
-
+            sw.Stop();
             return endList;
         }
 
