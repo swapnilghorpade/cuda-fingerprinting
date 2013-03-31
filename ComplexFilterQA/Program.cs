@@ -52,26 +52,24 @@ namespace ComplexFilterQA
         {
            
             FillDirections();
-            SaveBinaryAsImage("C:\\temp\\104_6_psi.bin", "C:\\temp\\104_6_psi.png", true);
+            //SaveBinaryAsImage("C:\\temp\\104_6_psi.bin", "C:\\temp\\104_6_psi.png", true);
 
             //SaveBinaryAsImage("C:\\temp\\dirX.bin", "C:\\temp\\dirX.png", true);
             //SaveBinaryAsImage("C:\\temp\\dirY.bin", "C:\\temp\\dirY.png", true);
             //SaveBinaryAsImage("C:\\temp\\l1.bin", "C:\\temp\\l1.png", true);
 
-            PreprocessFingerprint("C:\\temp\\104_6.tif");
+            //PreprocessFingerprint("C:\\temp\\104_6.tif");
             var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_6.bin");
 
             var minutiae2 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_3.bin");
 
-            var correlation = MinutiaeMatcher.GetBestFoundMinutiaCorrelation(minutiae1, minutiae2);
-            var rotation = MinutiaeMatcher.CalculateRotation(minutiae1, minutiae2, correlation.First(), correlation.Skip(1).ToList());
+            var score = MinutiaeMatcher.Match(minutiae1.Take(32).ToList(), minutiae2.Take(32).ToList());
+            
 
-            var score = MinutiaeMatcher.TranslateAndMatch(minutiae1, minutiae1[correlation.First().X], minutiae2, minutiae2[correlation.First().Y], rotation);
-
-            var translatedMinutiae = MinutiaeMatcher.TranslateToSecond(minutiae1, minutiae1[correlation.First().X], minutiae2[correlation.First().Y],
+            /*var translatedMinutiae = MinutiaeMatcher.TranslateToSecond(minutiae1, minutiae1[correlation.First().X], minutiae2[correlation.First().Y],
                 rotation);
 
-            MarkMinutiae("C:\\temp\\104_6.tif", minutiae2, translatedMinutiae, "C:\\temp\\15.02.2013\\Marked_with_translation_104_6.png");
+            MarkMinutiae("C:\\temp\\104_6.tif", minutiae2, translatedMinutiae, "C:\\temp\\15.02.2013\\Marked_with_translation_104_6.png");*/
         }
 
         private static void SaveBinaryAsImage(string pathFrom, string pathTo, bool applyNormalization = false)
