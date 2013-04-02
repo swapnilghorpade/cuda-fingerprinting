@@ -2,7 +2,7 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
-#include "DirectionalFiltering.h"
+#include "MinutiaMatching.h"
 #include <time.h>
 extern "C"{
 
@@ -37,7 +37,7 @@ int main()
 		ar2[i]=ar[i];
 	}
 	fclose(f);
-	clock_t clk1 = clock();
+	
 	CUDAArray<float> sourceImage = CUDAArray<float>(ar2,width,height);
 
 	CUDAArray<float> g1 = Reduce(sourceImage,1.7f);
@@ -93,6 +93,7 @@ int main()
 	//SaveArray(magnitude,"C:\\temp\\104_6_mag3.bin");
 
 	// minutia extraction
+	clock_t clk1 = clock();
 	CUDAArray<float> psReal;
 	CUDAArray<float> psIm;
 	CUDAArray<float> psM=CUDAArray<float>(enhanced.Width,enhanced.Height);
@@ -129,6 +130,9 @@ int main()
 	clock_t clk2 = clock();
 
 	float dt = ((float)clk2-clk1)/ CLOCKS_PER_SEC;
+
+	// minutia matching
+	MatchFingers();
 	cudaDeviceReset();
     return 0;
 }
