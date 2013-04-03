@@ -133,14 +133,15 @@ int main()
 
 	// minutia matching
 
-	int* x1 = (int*)malloc(sizeof(int)*32);
-	int* y1 = (int*)malloc(sizeof(int)*32);
-	int* x2 = (int*)malloc(sizeof(int)*32);
-	int* y2 = (int*)malloc(sizeof(int)*32);
+	int* x1 = (int*)malloc(sizeof(int)*32*1000);
+	int* y1 = (int*)malloc(sizeof(int)*32*1000);
+	int* x2 = (int*)malloc(sizeof(int)*32*1000);
+	int* y2 = (int*)malloc(sizeof(int)*32*1000);
 
 	FILE* f1 = fopen("C:\\temp\\Minutiae_104_6.bin","rb");
 	FILE* f2 = fopen("C:\\temp\\Minutiae_104_3.bin","rb");
-
+	fread(x1,sizeof(int),1,f1);
+	fread(x1,sizeof(int),1,f2);
 	for(int i=0;i<32;i++)
 	{
 		fread(x1+i,sizeof(int),1,f1);
@@ -148,17 +149,29 @@ int main()
 		fread(x2+i,sizeof(int),1,f2);
 		fread(y2+i,sizeof(int),1,f2);
 	}
+
+	for(int i=1;i<1000;i++)
+	{
+		for(int j=0;j<32;j++)
+		{
+			x1[i*32+j]=x1[j];
+			y1[i*32+j]=y1[j];
+			x2[i*32+j]=x2[j];
+			y2[i*32+j]=y2[j];
+		}
+	}
 	
 	fclose(f1);
 	fclose(f2);
 
-	CUDAArray<int> cx1 = CUDAArray<int>(x1,32,1);
-	CUDAArray<int> cy1 = CUDAArray<int>(y1,32,1);
-	CUDAArray<int> cx2 = CUDAArray<int>(x2,32,1);
-	CUDAArray<int> cy2 = CUDAArray<int>(y2,32,1);
-
+	CUDAArray<int> cx1 = CUDAArray<int>(x1,32,1000);
+	CUDAArray<int> cy1 = CUDAArray<int>(y1,32,1000);
+	CUDAArray<int> cx2 = CUDAArray<int>(x2,32,1000);
+	CUDAArray<int> cy2 = CUDAArray<int>(y2,32,1000);
+	clk1 = clock();
 	MatchFingers(cx1,cy1,cx2,cy2);
-
+	clk2 = clock();
+	dt = ((float)clk2-clk1)/ CLOCKS_PER_SEC;
 	cx1.Dispose();
 	cx2.Dispose();
 	cy1.Dispose();
