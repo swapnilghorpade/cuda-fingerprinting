@@ -57,11 +57,13 @@ namespace ComplexFilterQA
             //SaveBinaryAsImage("C:\\temp\\dirX.bin", "C:\\temp\\dirX.png", true);
             //SaveBinaryAsImage("C:\\temp\\dirY.bin", "C:\\temp\\dirY.png", true);
             //SaveBinaryAsImage("C:\\temp\\l1.bin", "C:\\temp\\l1.png", true);
+            MinutiaeMatcher.SaveMinutiae(
+                PreprocessFingerprint("C:\\temp\\104_6.tif"), "C:\\temp\\Minutiae_104_6.bin");
+            MinutiaeMatcher.SaveMinutiae(
+                PreprocessFingerprint("C:\\temp\\104_3.tif"), "C:\\temp\\Minutiae_104_3.bin");
+            var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\Minutiae_104_6.bin");
 
-            //PreprocessFingerprint("C:\\temp\\104_6.tif");
-            var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_6.bin");
-
-            var minutiae2 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\06.02.2013\\Minutiae_104_3.bin");
+            var minutiae2 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\Minutiae_104_3.bin");
 
             var score = MinutiaeMatcher.Match(minutiae1.Take(32).ToList(), minutiae2.Take(32).ToList());
             
@@ -284,7 +286,7 @@ namespace ComplexFilterQA
             var psi = KernelHelper.Zip2D(NormalizeArray(KernelHelper.GetMagnitude(psEnhanced)),
                 KernelHelper.GetMagnitude(lsEnhanced), (x, y) => x * (1.0d - y));
             SaveArray(psi,"C:\\temp\\104_6_psi_cpu.png");
-            var minutiae = SearchMinutiae(psi, lsEnhanced, psEnhanced);
+            var minutiae = SearchMinutiae(psi, lsEnhanced, psEnhanced).Take(32).ToList();
             return minutiae;
             /*SaveArray(KernelHelper.GetMagnitude(psEnhanced), "C:\\temp\\psEnhanced.png");
             SaveArray(psi, "C:\\temp\\psi.png");

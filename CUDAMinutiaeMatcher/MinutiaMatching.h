@@ -35,7 +35,7 @@ __global__ void MatchMinutiae(CUDAArray<float> result, CUDAArray<int> X1, CUDAAr
 	__syncthreads();
 
 	// now threadidx.x is the row for the 1st, threadidx.y - for second
-	float max=0;
+	int max=0;
 	for(int i=0;i<32;i++)
 	{
 		if(i==threadIdx.x)continue;
@@ -56,7 +56,36 @@ __global__ void MatchMinutiae(CUDAArray<float> result, CUDAArray<int> X1, CUDAAr
 
 			// do fancy stuff
 
-			if(max>max)max=max;
+			float cos = cosf(angle2 - angle);
+			float sin = -sinf(angle2 - angle);
+			int mask = 0;
+			int count=0;
+			for(int m =0; m<32;m++)
+			{
+				float xDash = cos * x1[threadIdx.x][m] - sin * y1[threadIdx.x][m];
+                float yDash = sin * x1[threadIdx.x][m] + cos * y1[threadIdx.x][m];
+
+				int nMax = -1;
+				float dMax = 100500.0f;
+
+				for(int n=0;n<32;n++)
+				{
+					float d = (xDash - x2[threadIdx.y][n]) * (xDash - x2[threadIdx.y][n]) + (yDash - y2[threadIdx.y][n]) * (y2[threadIdx.y][n]);
+					if(d<MatchingToleranceBox&&d<dMax&&((mask>>n)&1==0))
+					{
+						dMax = d;
+						nMax = n;
+					}
+				}
+
+				if(nMax!=-1)
+				{
+					mask = mask | (1<<nMax);
+					count++;
+				}
+			}
+
+			if(count>max)max=count;
 		}
 	}
 

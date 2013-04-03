@@ -41,7 +41,7 @@ namespace ComplexFilterQA
                     {
                         sr.Write(m.X);
                         sr.Write(m.Y);
-                        sr.Write(m.Angle);
+                        //sr.Write(m.Angle);
                     }
                 }
             }
@@ -60,7 +60,7 @@ namespace ComplexFilterQA
                         Minutia m = new Minutia();
                         m.X = sr.ReadInt32();
                         m.Y = sr.ReadInt32();
-                        m.Angle = sr.ReadDouble();
+                        //m.Angle = sr.ReadDouble();
                         result.Add(m);
                     }
                 }

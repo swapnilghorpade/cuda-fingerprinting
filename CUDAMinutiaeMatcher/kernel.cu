@@ -132,7 +132,41 @@ int main()
 	float dt = ((float)clk2-clk1)/ CLOCKS_PER_SEC;
 
 	// minutia matching
-	MatchFingers();
+
+	int* x1 = (int*)malloc(sizeof(int)*32);
+	int* y1 = (int*)malloc(sizeof(int)*32);
+	int* x2 = (int*)malloc(sizeof(int)*32);
+	int* y2 = (int*)malloc(sizeof(int)*32);
+
+	FILE* f1 = fopen("C:\\temp\\Minutiae_104_6.bin","rb");
+	FILE* f2 = fopen("C:\\temp\\Minutiae_104_3.bin","rb");
+
+	for(int i=0;i<32;i++)
+	{
+		fread(x1+i,sizeof(int),1,f1);
+		fread(y1+i,sizeof(int),1,f1);
+		fread(x2+i,sizeof(int),1,f2);
+		fread(y2+i,sizeof(int),1,f2);
+	}
+	
+	fclose(f1);
+	fclose(f2);
+
+	CUDAArray<int> cx1 = CUDAArray<int>(x1,32,1);
+	CUDAArray<int> cy1 = CUDAArray<int>(y1,32,1);
+	CUDAArray<int> cx2 = CUDAArray<int>(x2,32,1);
+	CUDAArray<int> cy2 = CUDAArray<int>(y2,32,1);
+
+	MatchFingers(cx1,cy1,cx2,cy2);
+
+	cx1.Dispose();
+	cx2.Dispose();
+	cy1.Dispose();
+	cy2.Dispose();
+	free(x1);
+	free(y1);
+	free(x2);
+	free(y2);
 	cudaDeviceReset();
     return 0;
 }
