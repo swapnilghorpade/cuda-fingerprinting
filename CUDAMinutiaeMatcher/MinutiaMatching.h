@@ -14,7 +14,7 @@ __device__ float DetermineLength(int dx, int dy)
 	return sqrt((float)(dx*dx+dy*dy));
 }
 
-__global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArray<int> X2, CUDAArray<int> Y1, CUDAArray<int> Y2)
+__global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArray<int> Y1, CUDAArray<int> X2, CUDAArray<int> Y2)
 {
 	__shared__ int x1[32][32];
 	__shared__ int y1[32][32];
@@ -32,9 +32,9 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 	x1[threadIdx.x][threadIdx.y] = X1.At(0,threadIdx.y)-dx;
 	dx = Y1.At(0,threadIdx.x);
 	y1[threadIdx.x][threadIdx.y] = Y1.At(0,threadIdx.y)-dx;
-	dx = X2.At(0,threadIdx.x);
+	dx = X2.At(blockIdx.x,threadIdx.x);
 	x2[threadIdx.x][threadIdx.y] = X2.At(blockIdx.x,threadIdx.y)-dx;
-	dx = Y2.At(0,threadIdx.x);
+	dx = Y2.At(blockIdx.x,threadIdx.x);
 	y2[threadIdx.x][threadIdx.y] = Y2.At(blockIdx.x,threadIdx.y)-dx;
 
 	length1[threadIdx.x][threadIdx.y] = DetermineLength(x1[threadIdx.x][threadIdx.y], y1[threadIdx.x][threadIdx.y]);
@@ -78,7 +78,7 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 						int dX = xDash - x2[threadIdx.y][n];
 						int dY = yDash - y2[threadIdx.y][n];
 						int d = dX*dX+dY*dY;
-						if(d<MatchingToleranceBox&&d<dMax&&((mask>>n)&1)==0)
+						if(d<MatchingToleranceBox&&d<dMax&&(mask&(1<<n)==0))
 						{
 							dMax = d;
 							nMax = n;
@@ -134,11 +134,12 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 
 void MatchFingers(CUDAArray<int> x1, CUDAArray<int> y1, CUDAArray<int> x2, CUDAArray<int> y2)
 {
-	CUDAArray<int> result = CUDAArray<int>(1000,1);
+	int n = 1;
+	CUDAArray<int> result = CUDAArray<int>(n,1);
 
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
 	dim3 gridSize = 
-		dim3(1000,1);
+		dim3(n,1);
 
 	MatchMinutiae<<<gridSize, blockSize>>>(result, x1,y1,x2,y2);
 
@@ -146,6 +147,6 @@ void MatchFingers(CUDAArray<int> x1, CUDAArray<int> y1, CUDAArray<int> x2, CUDAA
 	cudaError_t error2 = cudaGetLastError();
 	int* res = result.GetData();
 	int m =0;
-	for(int i=0;i<1000;i++)if(res[i]>m)m=res[i];
+	for(int i=0;i<n;i++)if(res[i]>m)m=res[i];
 	result.Dispose();
 }

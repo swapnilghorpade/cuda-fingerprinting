@@ -47,6 +47,7 @@ public:
 		error = cudaMemcpy2D(cudaPtr, Stride, cpuPtr, Width*sizeof(T), 
 			Width*sizeof(T), Height, cudaMemcpyHostToDevice);
 		error = cudaDeviceSynchronize();
+		error = cudaGetLastError();
 	}
 
 	CUDAArray(int width, int height)

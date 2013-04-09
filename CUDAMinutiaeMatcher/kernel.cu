@@ -17,7 +17,7 @@ int main()
 {
 	// Choose which GPU to run on, change this on a multi-GPU system.
     cudaSetDevice(0);
-
+		cudaDeviceReset();
 	FillDirections();
 
 	FILE* f = fopen("C:\\temp\\104_6.bin","rb");
@@ -132,9 +132,9 @@ int main()
 	float dt = ((float)clk2-clk1)/ CLOCKS_PER_SEC;
 
 	// minutia matching
-
-	int* x1 = (int*)malloc(sizeof(int)*32*1000);
-	int* y1 = (int*)malloc(sizeof(int)*32*1000);
+	printf("%f",dt);
+	int* x1 = (int*)malloc(sizeof(int)*32);
+	int* y1 = (int*)malloc(sizeof(int)*32);
 	int* x2 = (int*)malloc(sizeof(int)*32*1000);
 	int* y2 = (int*)malloc(sizeof(int)*32*1000);
 
