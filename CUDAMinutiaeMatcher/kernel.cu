@@ -92,7 +92,7 @@ int main()
 	//cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, ls1Real, ls1Im);
 	//SaveArray(magnitude,"C:\\temp\\104_6_mag3.bin");
 
-	// minutia extraction
+	//// minutia extraction
 	clock_t clk1 = clock();
 	CUDAArray<float> psReal;
 	CUDAArray<float> psIm;
@@ -154,8 +154,6 @@ int main()
 	{
 		for(int j=0;j<32;j++)
 		{
-			x1[i*32+j]=x1[j];
-			y1[i*32+j]=y1[j];
 			x2[i*32+j]=x2[j];
 			y2[i*32+j]=y2[j];
 		}
@@ -164,8 +162,8 @@ int main()
 	fclose(f1);
 	fclose(f2);
 
-	CUDAArray<int> cx1 = CUDAArray<int>(x1,32,1000);
-	CUDAArray<int> cy1 = CUDAArray<int>(y1,32,1000);
+	CUDAArray<int> cx1 = CUDAArray<int>(x1,32,1);
+	CUDAArray<int> cy1 = CUDAArray<int>(y1,32,1);
 	CUDAArray<int> cx2 = CUDAArray<int>(x2,32,1000);
 	CUDAArray<int> cy2 = CUDAArray<int>(y2,32,1000);
 	clk1 = clock();

@@ -8,7 +8,6 @@
 
 const int DistanceToleranceBox = 9;
 const int MatchingToleranceBox = 36;
-const float AngleToleranceBox = CUDART_PI_F/8;
 
 __device__ float DetermineLength(int dx, int dy)
 {
@@ -30,9 +29,9 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 
 	//each shared row corresponds to the fprint centered at its index's minutia
 	int dx = X1.At(0,threadIdx.x);
-	x1[threadIdx.x][threadIdx.y] = X1.At(blockIdx.x,threadIdx.y)-dx;
+	x1[threadIdx.x][threadIdx.y] = X1.At(0,threadIdx.y)-dx;
 	dx = Y1.At(0,threadIdx.x);
-	y1[threadIdx.x][threadIdx.y] = Y1.At(blockIdx.x,threadIdx.y)-dx;
+	y1[threadIdx.x][threadIdx.y] = Y1.At(0,threadIdx.y)-dx;
 	dx = X2.At(0,threadIdx.x);
 	x2[threadIdx.x][threadIdx.y] = X2.At(blockIdx.x,threadIdx.y)-dx;
 	dx = Y2.At(0,threadIdx.x);
@@ -46,7 +45,8 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 
 
 	__syncthreads();
-	int m =0;
+
+	int maxcount =0;
 	// now threadidx.x is the row for the 1st, threadidx.y - for second
 	for(int i=0;i<32;i++)
 	{
@@ -75,7 +75,9 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 
 					for(int n=0;n<32;n++)
 					{
-						float d = (xDash - x2[threadIdx.y][n]) * (xDash - x2[threadIdx.y][n]) + (yDash - y2[threadIdx.y][n]) * (yDash - y2[threadIdx.y][n]);
+						int dX = xDash - x2[threadIdx.y][n];
+						int dY = yDash - y2[threadIdx.y][n];
+						int d = dX*dX+dY*dY;
 						if(d<MatchingToleranceBox&&d<dMax&&((mask>>n)&1)==0)
 						{
 							dMax = d;
@@ -90,31 +92,60 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 					}
 				}
 
-				if(count>m)
-					m=count;
+				if(count>maxcount)
+					maxcount=count;
 			}
 		}
 	}
 
-	result.SetAt(threadIdx.x,threadIdx.y,m);
+	x1[threadIdx.x][threadIdx.y] = maxcount;
+
+	__syncthreads();
+
+	if(threadIdx.y == 0)
+	{
+		for(int i=1;i<32;i++)
+		{
+			if(x1[0][threadIdx.x]<=x1[i][threadIdx.x])
+			{
+				x1[0][threadIdx.x]=x1[i][threadIdx.x];
+			}
+		}
+	}
+
+	__syncthreads();
+
+	if(threadIdx.x==0&&threadIdx.y==0)
+	{
+		int absolutemax = 0;
+		for(int i=0;i<32;i++)
+		{
+			if(x1[0][i]>absolutemax)
+			{
+				absolutemax = x1[0][i];
+			}
+		}
+			
+		result.SetAt(0,blockIdx.x,absolutemax);
+	}
 }
 
 // CPU FUNCTIONS
 
 void MatchFingers(CUDAArray<int> x1, CUDAArray<int> y1, CUDAArray<int> x2, CUDAArray<int> y2)
 {
-	CUDAArray<int> result = CUDAArray<int>(32,32);
+	CUDAArray<int> result = CUDAArray<int>(1000,1);
 
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
 	dim3 gridSize = 
-		dim3(16,1);
+		dim3(1000,1);
 
 	MatchMinutiae<<<gridSize, blockSize>>>(result, x1,y1,x2,y2);
 
-	cudaError_t error;
-	error = cudaDeviceSynchronize();
+	cudaError_t error = cudaDeviceSynchronize();
+	cudaError_t error2 = cudaGetLastError();
 	int* res = result.GetData();
 	int m =0;
-	for(int i=0;i<1024;i++)if(res[i]>m)m=res[i];
+	for(int i=0;i<1000;i++)if(res[i]>m)m=res[i];
 	result.Dispose();
 }
