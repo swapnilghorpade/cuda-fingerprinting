@@ -6,7 +6,7 @@
 
 // GPU FUNCITONS
 
-const int DistanceToleranceBox = 9;
+const int DistanceToleranceBox = 3;
 const int MatchingToleranceBox = 36;
 
 __device__ float DetermineLength(int dx, int dy)
@@ -27,6 +27,8 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 	__shared__ float angle1[32][32];
 	__shared__ float angle2[32][32];
 
+	__shared__ unsigned int taskCount;
+	__shared__ int tasks[4000];
 	//each shared row corresponds to the fprint centered at its index's minutia
 	int dx = X1.At(0,threadIdx.x);
 	x1[threadIdx.x][threadIdx.y] = X1.At(0,threadIdx.y)-dx;
@@ -43,10 +45,13 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 	angle1[threadIdx.x][threadIdx.y] = atan2((float)-y1[threadIdx.x][threadIdx.y],(float)x1[threadIdx.x][threadIdx.y]);
 	angle2[threadIdx.x][threadIdx.y] = atan2((float)-y2[threadIdx.x][threadIdx.y],(float)x2[threadIdx.x][threadIdx.y]);
 
+	if(threadIdx.x==0&&threadIdx.y==0)
+	{
+		taskCount =0;
+	}
 
 	__syncthreads();
 
-	int maxcount =0;
 	// now threadidx.x is the row for the 1st, threadidx.y - for second
 	for(int i=0;i<32;i++)
 	{
@@ -60,45 +65,66 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 				&&abs(angle1[threadIdx.x][i] - angle2[threadIdx.y][j]) <= CUDART_PI_F/8) 
 			{
 			// do fancy stuff
-
-				float cosine = cos(angle2[threadIdx.y][j] - angle1[threadIdx.x][i]);
-				float sine = -sin(angle2[threadIdx.y][j] - angle1[threadIdx.x][i]);
-				int mask = 0;
-				int count=0;
-				for(int m =0; m<32;m++)
-				{
-					float xDash = cosine * x1[threadIdx.x][m] - sine * y1[threadIdx.x][m];
-				    float yDash = sine * x1[threadIdx.x][m] + cosine * y1[threadIdx.x][m];
-
-					short nMax = -1;
-					float dMax = 100500.0f;
-
-					for(int n=0;n<32;n++)
-					{
-						int dX = xDash - x2[threadIdx.y][n];
-						int dY = yDash - y2[threadIdx.y][n];
-						int d = dX*dX+dY*dY;
-						if(d<MatchingToleranceBox&&d<dMax&&(mask&(1<<n)==0))
-						{
-							dMax = d;
-							nMax = n;
-						}
-					}
-
-					if(nMax!=-1)
-					{
-						mask = mask | (1<<nMax);
-						count++;
-					}
-				}
-
-				if(count>maxcount)
-					maxcount=count;
+				unsigned int localIndex = atomicInc(&taskCount ,4000);
+				tasks[localIndex-1] = (threadIdx.x<<24)|(i<<16)|(threadIdx.y<<8)|j;
 			}
 		}
 	}
 
-	x1[threadIdx.x][threadIdx.y] = maxcount;
+	__syncthreads();
+
+	/*int maxCount =0;
+
+	int limit = taskCount / 1024 + 1;
+
+	for(int i=0; i<limit; i++)
+	{
+		int index = i*1024+threadIdx.x*32+threadIdx.y;
+		if(index < taskCount)
+		{
+			int task = tasks[index];
+			int m1From = task>>24;
+			int m1To = (task>>16)&8;
+			int m2From = (task>>8)&255;
+			int m2To = task&255;
+
+			float cosine = cos(angle2[m2From][m2To] - angle1[m1From][m1To]);
+			float sine = -sin(angle2[m2From][m2To] - angle1[m1From][m1To]);
+			int mask = 0;
+			int count=0;
+			for(int m =0; m<32;m++)
+			{
+				float xDash = cosine * x1[m1From][m] - sine * y1[m1From][m];
+				float yDash = sine * x1[m1From][m] + cosine * y1[m1From][m];
+
+				short nMax = -1;
+				float dMax = MatchingToleranceBox;
+
+				for(int n=0;n<32;n++)
+				{
+					int dX = xDash - x2[m2From][n];
+					int dY = yDash - y2[m2From][n];
+					int d = dX*dX+dY*dY;
+					if(d<dMax&&(mask&(1<<n)==0))
+					{
+						dMax = d;
+						nMax = n;
+					}
+				}
+
+				if(nMax!=-1)
+				{
+					mask = mask | (1<<nMax);
+					count++;
+				}
+			}
+
+			if(count>maxCount)
+				maxCount=count;
+		}
+	}
+
+	x1[threadIdx.x][threadIdx.y] = maxCount;
 
 	__syncthreads();
 
@@ -127,14 +153,14 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X1, CUDAArra
 		}
 			
 		result.SetAt(0,blockIdx.x,absolutemax);
-	}
+	}*/
 }
 
 // CPU FUNCTIONS
 
 void MatchFingers(CUDAArray<int> x1, CUDAArray<int> y1, CUDAArray<int> x2, CUDAArray<int> y2)
 {
-	int n = 1;
+	int n = 10;
 	CUDAArray<int> result = CUDAArray<int>(n,1);
 
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
