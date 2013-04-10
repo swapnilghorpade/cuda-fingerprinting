@@ -4,6 +4,8 @@ using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace ComplexFilterQA
 {
@@ -107,7 +109,7 @@ namespace ComplexFilterQA
                     m2.Remove(m2.OrderBy(x => (xDash - x.X) * (xDash - x.X) + (yDash - x.Y) * (yDash - x.Y)).First());
                 }
             }
-            var total = (minutiae2.Count - m2.Count) / ((double)(minutiae2.Count+minutiae1.Count)/2);
+            var total = (minutiae2.Count - m2.Count) ;
             return total;
         }
 
@@ -224,36 +226,51 @@ namespace ComplexFilterQA
 
         public static double Match(List<Minutia> minutiae1, List<Minutia> minutiae2)
         {
+            var tasks =
+                new Tuple<Minutia, Minutia, Minutia, Minutia>[6000];
+
             var sw = new Stopwatch();
             sw.Start();
             double max = 0;
-            int count = 0;
-            foreach (var core1 in minutiae1)
-            {
-                foreach (var to1 in minutiae1)
-                {
-                    if (core1 == to1) continue;
-                    var angle1 = DetermineAngle(core1, to1);
-                    var length1 = DetermineDistance(core1, to1);
+            int count = -1;
+            Parallel.ForEach(minutiae1, new ParallelOptions() {MaxDegreeOfParallelism = 4},
+                             core1 =>
+                                 {
+                                     foreach (var to1 in minutiae1)
+                                     {
+                                         if (core1 == to1) continue;
+                                         var angle1 = DetermineAngle(core1, to1);
+                                         var length1 = DetermineDistance(core1, to1);
 
-                    foreach (var core2 in minutiae2)
-                    {
-                        var others2 = minutiae2.Except(new List<Minutia>() {core2});
-                        foreach (var to2 in others2)
-                        {
-                            if (core2 == to2) continue;
-                            var angle2 = DetermineAngle(core2, to2);
-                            if (Math.Abs(angle1 - angle2) > AngleToleranceBox) 
-                                continue;
-                            var length2 = DetermineDistance(core2, to2);
-                            if (Math.Abs(length1 - length2) > DistanceToleranceBox) continue;
-                            count++;
-                            var score = TranslateAndMatch(minutiae1, core1, minutiae2, core2, angle2 - angle1);
-                            if (score > max) max = score;
-                        }
-                    }
-                }
-            }
+                                         foreach (var core2 in minutiae2)
+                                         {
+                                             var others2 = minutiae2.Except(new List<Minutia>() {core2});
+                                             foreach (var to2 in others2)
+                                             {
+                                                 if (core2 == to2) continue;
+                                                 var angle2 = DetermineAngle(core2, to2);
+                                                 if (Math.Abs(angle1 - angle2) > AngleToleranceBox)
+                                                     continue;
+                                                 var length2 = DetermineDistance(core2, to2);
+                                                 if (Math.Abs(length1 - length2) > DistanceToleranceBox) continue;
+                                                 int localCount = Interlocked.Increment(ref count);
+                                                 tasks[localCount] = Tuple.Create(core1, to1, core2, to2);
+                                             }
+                                         }
+                                     }
+                                 });
+            object _lock = new object();
+            Parallel.ForEach(tasks.Take(count), new ParallelOptions() {MaxDegreeOfParallelism = 4},
+                             x =>
+                                 {
+                                     var angle1 = DetermineAngle(x.Item1, x.Item2);
+                                     var angle2 = DetermineAngle(x.Item3, x.Item4);
+                                     var score = TranslateAndMatch(minutiae1, x.Item1, minutiae2, x.Item3, angle2 - angle1);
+                                     lock(_lock)
+                                     {
+                                         if (score > max) max = score;
+                                     }
+                                 });
             //var correlation = GetBestFoundMinutiaCorrelation(minutiae1, minutiae2);
             //var rotation = CalculateRotation(minutiae1, minutiae2, correlation.First(), correlation.Skip(1).ToList());
 
