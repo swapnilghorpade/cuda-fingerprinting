@@ -132,7 +132,7 @@ int main()
 	float dt = ((float)clk2-clk1)/ CLOCKS_PER_SEC;
 
 	// minutia matching
-	printf("%f",dt);
+	
 	int* x1 = (int*)malloc(sizeof(int)*32);
 	int* y1 = (int*)malloc(sizeof(int)*32);
 	int* x2 = (int*)malloc(sizeof(int)*32*1000);
@@ -162,17 +162,13 @@ int main()
 	fclose(f1);
 	fclose(f2);
 
-	CUDAArray<int> cx1 = CUDAArray<int>(x1,32,1);
-	CUDAArray<int> cy1 = CUDAArray<int>(y1,32,1);
 	CUDAArray<int> cx2 = CUDAArray<int>(x2,32,1000);
 	CUDAArray<int> cy2 = CUDAArray<int>(y2,32,1000);
-	clk1 = clock();
-	MatchFingers(cx1,cy1,cx2,cy2);
-	clk2 = clock();
-	dt = ((float)clk2-clk1)/ CLOCKS_PER_SEC;
-	cx1.Dispose();
+	clock_t clk3 = clock();
+	MatchFingers(x1,y1,cx2,cy2);
+	clock_t clk4 = clock();
+	float dt2 = ((float)clk4-clk3)/ CLOCKS_PER_SEC;
 	cx2.Dispose();
-	cy1.Dispose();
 	cy2.Dispose();
 	free(x1);
 	free(y1);
