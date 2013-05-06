@@ -8,6 +8,11 @@ namespace ComplexFilterQA
 {
     public class KernelHelper
     {
+        public static int GetKernelSizeForGaussianSigma(double sigma)
+        {
+            return 2*(int) Math.Ceiling(sigma*3.0f) + 1;
+        }
+
         public static Complex[,] MakeComplexKernel(Func<int, int, double> realFunction,
                                                    Func<int, int, double> imaginaryFunction, int size)
         {

@@ -15,22 +15,23 @@ namespace ComplexFilterQA
 {
     internal class Program
     {
-        private static double sigma1 = 0.9;
-        private static double sigma2 = 1.5;
-        private static double sigma3 = 3.2;
+        private static double sigma1 = 0.6;
+        private static double sigma2 = 3.2;
         private static double K0 = 1.7;
         private static double K = 1.3;
         static int blockSize = 9;
-        static double tau1 = 0.35;
-        static double tau2 = 0.45;
+        static double tau1 = 0.2;
+        static double tau2 = 0.8;
         static double tauLS = 0.7;
         static double tauPS = 0.1;
-        static int annulusSize = 2;
-        static int ringInnerRadius = 2;
-        static int ringOuterRadius = 4;
+        static int ringInnerRadius = 3;
+        static int ringOuterRadius = 6;
         static int MaxMinutiaeCount = 45;
 
-        private static Point[,] directions = new Point[11,20];
+        static double sigmaDirection = 3.5d;
+        static int directionSize = KernelHelper.GetKernelSizeForGaussianSigma(sigmaDirection);
+
+        private static Point[,] directions = new Point[directionSize, 20];
 
         private static double Gaussian1D(double x, double sigma)
         {
@@ -57,8 +58,9 @@ namespace ComplexFilterQA
             //SaveBinaryAsImage("C:\\temp\\dirX.bin", "C:\\temp\\dirX.png", true);
             //SaveBinaryAsImage("C:\\temp\\dirY.bin", "C:\\temp\\dirY.png", true);
             //SaveBinaryAsImage("C:\\temp\\l1.bin", "C:\\temp\\l1.png", true);
-            MinutiaeMatcher.SaveMinutiae(
-                PreprocessFingerprint("C:\\temp\\104_6.tif"), "C:\\temp\\Minutiae_104_6.bin");
+            //MinutiaeMatcher.SaveMinutiae(
+            PreprocessFingerprint("C:\\temp\\1_7.tif");
+             //   PreprocessFingerprint("C:\\temp\\104_6.tif");//, "C:\\temp\\Minutiae_104_6.bin");
             MinutiaeMatcher.SaveMinutiae(
                 PreprocessFingerprint("C:\\temp\\104_3.tif"), "C:\\temp\\Minutiae_104_3.bin");
             var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\Minutiae_104_6.bin");
@@ -132,30 +134,30 @@ namespace ComplexFilterQA
             {
                 var angle = Math.PI*n/20;
 
-                directions[5, n] = new Point(0, 0);
+                directions[directionSize/2, n] = new Point(0, 0);
                 var tan = Math.Tan(angle);
                 if (angle <= Math.PI/4)
                 {
-                    for (int x = 1; x <= 5; x++)
+                    for (int x = 1; x <= directionSize/2; x++)
                     {
                         var y = (int) Math.Round(tan*x);
-                        directions[5 + x, n] = new Point(x, y);
-                        directions[5 - x, n] = new Point(-x, -y);
+                        directions[directionSize/2 + x, n] = new Point(x, y);
+                        directions[directionSize/2 - x, n] = new Point(-x, -y);
                     }
                 }
                 else
                 {
-                    for (int y = 1; y <= 5; y++)
+                    for (int y = 1; y <= directionSize/2; y++)
                     {
                         var x = (int) Math.Round((double) y/tan);
-                        directions[5 + y, n] = new Point(x, y);
-                        directions[5 - y, n] = new Point(-x, -y);
+                        directions[directionSize/2 + y, n] = new Point(x, y);
+                        directions[directionSize / 2 - y, n] = new Point(-x, -y);
                     }
                 }
             }
             for (int n = 10; n < 20; n++)
             {
-                for (int i = 0; i < 11; i++)
+                for (int i = 0; i < directionSize; i++)
                 {
                     var p = directions[i, n - 10];
                     directions[i, n] = new Point(p.Y, -p.X);
@@ -240,13 +242,17 @@ namespace ComplexFilterQA
             var l3 = ContrastEnhancement(KernelHelper.Subtract(g3, p3));
             var l2 = ContrastEnhancement(KernelHelper.Subtract(g2, p2));
             var l1 = ContrastEnhancement(KernelHelper.Subtract(g1, p1));
-            
+            SaveArray(l3,"C:\\temp\\l3.png");
+            SaveArray(l1, "C:\\temp\\l1.png");
+            SaveArray(l2, "C:\\temp\\l2.png");
 
             var ls1 = EstimateLS(l1, sigma1, sigma2);
-            var ls2 = EstimateLS(l2, sigma1, sigma3);
-            var ls3 = EstimateLS(l3, sigma1, sigma3);
+            var ls2 = EstimateLS(l2, sigma1, sigma2);
+            var ls3 = EstimateLS(l3, sigma1, sigma2);
 
-            // to hell with this attunement. 2 sets of constants is better
+            SaveComplexArrayAsHSV(ls1, "C:\\temp\\ls1.png");
+            SaveComplexArrayAsHSV(ls2, "C:\\temp\\ls2.png");
+            SaveComplexArrayAsHSV(ls3, "C:\\temp\\ls3.png");
 
             var ls2Scaled =
                 KernelHelper.MakeComplexFromDouble(
@@ -262,7 +268,7 @@ namespace ComplexFilterQA
                     ls1[x, y] *= Math.Abs(Math.Cos(multiplier[x, y]));
                 }
             }
-            
+
             DirectionFiltering(l1, ls1, tau1, tau2);
             DirectionFiltering(l2, ls2, tau1, tau2);
             DirectionFiltering(l3, ls3, tau1, tau2);
@@ -286,8 +292,8 @@ namespace ComplexFilterQA
             var psi = KernelHelper.Zip2D(NormalizeArray(KernelHelper.GetMagnitude(psEnhanced)),
                 KernelHelper.GetMagnitude(lsEnhanced), (x, y) => x * (1.0d - y));
             SaveArray(psi,"C:\\temp\\104_6_psi_cpu.png");
-            var minutiae = SearchMinutiae(psi, lsEnhanced, psEnhanced).Take(32).ToList();
-            return minutiae;
+            //var minutiae = SearchMinutiae(psi, lsEnhanced, psEnhanced).Take(32).ToList();
+            return null;
             /*SaveArray(KernelHelper.GetMagnitude(psEnhanced), "C:\\temp\\psEnhanced.png");
             SaveArray(psi, "C:\\temp\\psi.png");
             SaveComplexArrayAsHSV(lsEnhanced, "C:\\temp\\lsEnhanced.png");
@@ -430,15 +436,15 @@ namespace ComplexFilterQA
                     l1Copy[x, y] = l1[x, y];
                 }   
             }
-            var sigmaDirection = 1.6d;
-            var kernel = new double[11];
+
+            var kernel = new double[directionSize];
             var ksum = 0d;
-            for (int i = 0; i < 11; i++)
+            for (int i = 0; i < directionSize; i++)
             {
-                ksum+=kernel[i] = Gaussian1D(i - 5, sigmaDirection);
+                ksum += kernel[i] = Gaussian1D(i - directionSize / 2, sigmaDirection);
             }
 
-            for (int i = 0; i < 11; i++)
+            for (int i = 0; i < directionSize; i++)
             {
                 kernel[i] /= ksum;
             }
@@ -453,10 +459,12 @@ namespace ComplexFilterQA
                     else
                     {
                         double sum = 0;
-                        for (int dx = -annulusSize; dx <= annulusSize; dx++)
+                        int area = 0;
+                        for (int dx = -ringOuterRadius; dx <= ringOuterRadius; dx++)
                         {
-                            for (int dy = -annulusSize; dy <= annulusSize; dy++)
+                            for (int dy = -ringOuterRadius; dy <= ringOuterRadius; dy++)
                             {
+                                if (Math.Abs(dy) < ringInnerRadius || Math.Abs(dx) < ringInnerRadius) continue;
                                 int xx = x + dx;
                                 if (xx < 0) xx = 0;
                                 if (xx >= l1.GetLength(0)) xx = l1.GetLength(0) - 1;
@@ -464,9 +472,10 @@ namespace ComplexFilterQA
                                 if (yy < 0) yy = 0;
                                 if (yy >= l1.GetLength(1)) yy = l1.GetLength(1) - 1;
                                 sum += ls[xx, yy].Magnitude;
+                                area++;
                             }
                         }
-                        if (sum / (annulusSize * 2 + 1) * (annulusSize * 2 + 1) < tau2) l1[x, y] = 0;
+                        if (sum / area * area < tau2) l1[x, y] = 0;
                         else
                         {
                             var phase = ls[x, y].Phase/2 - Math.PI/2;
@@ -475,7 +484,7 @@ namespace ComplexFilterQA
                             var direction = (int) Math.Round(phase/(Math.PI/20));
 
                             var avg = 0.0d;
-                            for (int i = 0; i < 11; i++)
+                            for (int i = 0; i < directionSize; i++)
                             {
                                 var p = directions[i, direction];
                                 int xx = x + p.X;
@@ -495,9 +504,9 @@ namespace ComplexFilterQA
 
         private static Complex[,] EstimateLS(double[,] l1, double Sigma1, double Sigma2)
         {
-            var kernelX = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1)*x,11);
+            var kernelX = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1)*x,KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
             var resultX = ConvolutionHelper.Convolve(l1, kernelX);
-            var kernelY = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) *-y, 11);
+            var kernelY = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) * -y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
             var resultY = ConvolutionHelper.Convolve(l1, kernelY);
 
 
@@ -512,7 +521,8 @@ namespace ComplexFilterQA
                 }
             }
 
-            var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2), (x, y) => 0, 25);
+            var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2), (x, y) => 0, 
+                KernelHelper.GetKernelSizeForGaussianSigma(Sigma2));
 
             var I20 = ConvolutionHelper.ComplexConvolve(z, kernel2);
 
@@ -531,9 +541,9 @@ namespace ComplexFilterQA
 
         private static Complex[,] EstimatePS(double[,] l1, double Sigma1, double Sigma2)
         {
-            var kernelX = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) * x, 11);
+            var kernelX = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) * x, KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
             var resultX = ConvolutionHelper.Convolve(l1, kernelX);
-            var kernelY = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) * -y, 11);
+            var kernelY = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) * -y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
             var resultY = ConvolutionHelper.Convolve(l1, kernelY);
 
             var preZ = KernelHelper.MakeComplexFromDouble(resultX, resultY);
@@ -547,7 +557,7 @@ namespace ComplexFilterQA
                 }
             }
 
-            var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2) * x, (x,y)=>Gaussian(x, y, Sigma2) * y, 25);
+            var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2) * x, (x, y) => Gaussian(x, y, Sigma2) * y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma2));
 
             var I20 = ConvolutionHelper.ComplexConvolve(z, kernel2);
 
@@ -573,8 +583,12 @@ namespace ComplexFilterQA
 
         private static double[,] Reduce2(double[,] source, double factor)
         {
+
+            var smoothed = ConvolutionHelper.Convolve(source,
+                                                      KernelHelper.MakeKernel(
+                                                          (x, y) => Gaussian(x, y, factor / 2d * 0.75d), KernelHelper.GetKernelSizeForGaussianSigma(factor / 2d * 0.75d)));
             var result = new double[(int)(source.GetLength(0) / factor), (int)(source.GetLength(1) / factor)];
-            Resize(source, result, factor, (x, y) => Gaussian(x, y, factor / 2d * 0.75d));
+            Resize(smoothed, result, factor, (x, y) => Gaussian(x, y, factor/2d*0.75d));
             return result;
         }
 
