@@ -4,14 +4,15 @@
 #include <stdio.h>
 #include "LinearSymmetry.h"
 
-const float SigmaDirection = 1.6f;
+const float SigmaDirection = 2.0f;
 
-const int KernelSize = 11; //recalculate by 2*(int)ceil(SigmaDirection*3.0f)+1;
+const int KernelSize = 13; //recalculate by 2*(int)ceil(SigmaDirection*3.0f)+1;
 const int HalfSize = KernelSize/2; //recalculate by 2*(int)ceil(SigmaDirection*3.0f)+1;
 
 const int DirectionsNumber = 20;
 
-const int annulusRadius = 2;
+const int ringInnerRadius = 4;
+const int ringOuterRadius = 6;
 
 __constant__ int constDirectionsX[KernelSize*DirectionsNumber];
 __constant__ int constDirectionsY[KernelSize*DirectionsNumber];
@@ -64,14 +65,18 @@ __global__ void cudaDirectionalFiltering(CUDAArray<float> result, CUDAArray<floa
 			{
 				// annulus testing
 				float sum = 0;
-				for (int dx = -annulusRadius; dx <= annulusRadius; dx++)
+				int area = 0;
+				for (int dx = -ringOuterRadius; dx <= ringOuterRadius; dx++)
 				{
-					for (int dy = -annulusRadius; dy <= annulusRadius; dy++)
+					if(abs(dx) < ringInnerRadius) continue;
+					for (int dy = -ringOuterRadius; dy <= ringOuterRadius; dy++)
 					{
+						if (abs(dy) < ringInnerRadius)  continue;
 						sum += magnitudeCache[(threadIdx.y+dy)*32+threadIdx.x+dx];
+						area++;
 					}
 				}
-				if (sum / (annulusRadius * 2 + 1) * (annulusRadius * 2 + 1) < tau2) 
+				if (sum / area < tau2) 
 					result.SetAt(rowToCopy,columnToCopy,0.0f);
 				else
 				{

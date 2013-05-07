@@ -1,4 +1,5 @@
-#include "Resizing.h"
+#include "Gaussian.h"
+#include "CUDAArray.h"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <stdlib.h>

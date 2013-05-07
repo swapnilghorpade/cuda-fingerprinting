@@ -10,8 +10,8 @@ __declspec(dllexport) int main();
 
 }
 
-const float tau1 = 0.35f;
-const float tau2 = 0.45f;
+const float tau1 = 0.1f;
+const float tau2 = 0.3f;
 
 int main()
 {
@@ -37,7 +37,7 @@ int main()
 		ar2[i]=ar[i];
 	}
 	fclose(f);
-	
+	clock_t clk0 = clock();
 	CUDAArray<float> sourceImage = CUDAArray<float>(ar2,width,height);
 
 	CUDAArray<float> g1 = Reduce(sourceImage,1.7f);
@@ -59,15 +59,15 @@ int main()
 
 	CUDAArray<float> ls1Real;
 	CUDAArray<float> ls1Im;
-	EstimateLS(&ls1Real, &ls1Im, g1, 0.9f, 1.5f);
+	EstimateLS(&ls1Real, &ls1Im, g1, 0.6f, 3.2f);
 
 	CUDAArray<float> ls2Real;
 	CUDAArray<float> ls2Im;
-	EstimateLS(&ls2Real, &ls2Im, g2, 0.9f, 3.2f);
+	EstimateLS(&ls2Real, &ls2Im, g2, 0.6f, 3.2f);
 
 	CUDAArray<float> ls3Real;
 	CUDAArray<float> ls3Im;
-	EstimateLS(&ls3Real, &ls3Im, g3, 0.9f, 3.2f);
+	EstimateLS(&ls3Real, &ls3Im, g3, 0.6f, 3.2f);
 
 	CorrectLS1WithLS2(ls1Real, ls1Im, ls2Real, ls2Im);
 
@@ -83,7 +83,10 @@ int main()
 	CUDAArray<float> enhanced = Expand(el2, 1.7f,sourceImage.Width, sourceImage.Height);
 	el2.Dispose();
 	EnhanceContrast(enhanced);
-	//SaveArray(enhanced, "C:\\temp\\104_6_enh.bin");
+	clock_t clk00 = clock();
+	SaveArray(enhanced, "C:\\temp\\104_6_enh.bin");
+	
+	printf("%f",((float)clk00-clk0)/ CLOCKS_PER_SEC);
 	//CUDAArray<float> magnitude = CUDAArray<float>(ls1Real.Width,ls1Real.Height);
 	//	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
 	//dim3 gridSize = 

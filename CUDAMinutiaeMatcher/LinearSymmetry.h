@@ -2,7 +2,7 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
-#include "ConvolutionHelper.h"
+#include "Resizing.h"
 
 // GPU FUNCTIONS
 
@@ -109,35 +109,6 @@ __global__ void correctLS1WithLS2(CUDAArray<float> ls1Real, CUDAArray<float> ls1
 
 // CPU FUNCTIONS
 
-CUDAArray<float> MakeDifferentialGaussianKernel(float kx, float ky, float c, float sigma)
-{
-	int size = 2*(int)ceil(sigma*3.0f)+1;
-	int center=size/2;
-	float* kernel = (float*)malloc(sizeof(float)*size*size);
-	float sum=0;
-	for(int row=-center; row<=center; row++)
-	{
-		for(int column=-center; column<=center; column++)
-		{
-			sum+= kernel[column+center+(row+center)*size] = Gaussian2D(column,row,sigma)*(kx*column+ky*row+c);
-		}
-	}
-	if (abs(sum) >0.00001f)
-	for(int row=-center; row<=center; row++)
-	{
-		for(int column=-center; column<=center; column++)
-		{
-			kernel[column+center+(row+center)*size]/=sum;
-		}
-	}
-
-	CUDAArray<float> cudaKernel = CUDAArray<float>(kernel,size,size);
-
-	free(kernel);
-
-	return cudaKernel;
-}
-
 void EstimateLS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> source, float sigma1, float sigma2)
 {
 	CUDAArray<float> kernel1 = MakeDifferentialGaussianKernel(-1,0,0,sigma1);
@@ -157,7 +128,7 @@ void EstimateLS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 	cudaComplexSquare<<<gridSize, blockSize>>>(sourceX, sourceY);
 
 	CUDAArray<float> kernel3 = MakeDifferentialGaussianKernel(0,0,1,sigma2);
-	CUDAArray<float> kernel4 = MakeDifferentialGaussianKernel(0,0,0,sigma2);
+	// CUDAArray<float> kernel4 = MakeDifferentialGaussianKernel(0,0,0,sigma2);
 	
 	CUDAArray<float> resultReal = CUDAArray<float>(source.Width, source.Height);
 	CUDAArray<float> resultIm = CUDAArray<float>(source.Width, source.Height);
@@ -185,7 +156,7 @@ void EstimateLS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 	kernel1.Dispose();
 	kernel2.Dispose();
 	kernel3.Dispose();
-	kernel4.Dispose();
+	// kernel4.Dispose();
 
 	magnitude.Dispose();
 

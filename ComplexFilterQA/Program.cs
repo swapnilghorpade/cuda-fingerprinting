@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ComplexFilterQA
 {
@@ -20,15 +16,15 @@ namespace ComplexFilterQA
         private static double K0 = 1.7;
         private static double K = 1.3;
         static int blockSize = 9;
-        static double tau1 = 0.2;
-        static double tau2 = 0.8;
+        static double tau1 = 0.1;
+        static double tau2 = 0.3;
         static double tauLS = 0.7;
         static double tauPS = 0.1;
-        static int ringInnerRadius = 3;
+        static int ringInnerRadius = 4;
         static int ringOuterRadius = 6;
         static int MaxMinutiaeCount = 45;
 
-        static double sigmaDirection = 3.5d;
+        static double sigmaDirection = 2d;
         static int directionSize = KernelHelper.GetKernelSizeForGaussianSigma(sigmaDirection);
 
         private static Point[,] directions = new Point[directionSize, 20];
@@ -53,14 +49,15 @@ namespace ComplexFilterQA
         {
            
             FillDirections();
-            //SaveBinaryAsImage("C:\\temp\\104_6_psi.bin", "C:\\temp\\104_6_psi.png", true);
+            SaveImageAsBinary("C:\\temp\\1_7.tif", "C:\\temp\\1_7.bin");
+            SaveBinaryAsImage("C:\\temp\\104_6_enh.bin", "C:\\temp\\1_7_enh_GPU.png", true);
 
             //SaveBinaryAsImage("C:\\temp\\dirX.bin", "C:\\temp\\dirX.png", true);
             //SaveBinaryAsImage("C:\\temp\\dirY.bin", "C:\\temp\\dirY.png", true);
             //SaveBinaryAsImage("C:\\temp\\l1.bin", "C:\\temp\\l1.png", true);
             //MinutiaeMatcher.SaveMinutiae(
             PreprocessFingerprint("C:\\temp\\1_7.tif");
-             //   PreprocessFingerprint("C:\\temp\\104_6.tif");//, "C:\\temp\\Minutiae_104_6.bin");
+            //PreprocessFingerprint("C:\\temp\\104_6.tif");//, "C:\\temp\\Minutiae_104_6.bin");
             MinutiaeMatcher.SaveMinutiae(
                 PreprocessFingerprint("C:\\temp\\104_3.tif"), "C:\\temp\\Minutiae_104_3.bin");
             var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\Minutiae_104_6.bin");
@@ -475,7 +472,7 @@ namespace ComplexFilterQA
                                 area++;
                             }
                         }
-                        if (sum / area * area < tau2) l1[x, y] = 0;
+                        if (sum / area < tau2) l1[x, y] = 0;
                         else
                         {
                             var phase = ls[x, y].Phase/2 - Math.PI/2;
