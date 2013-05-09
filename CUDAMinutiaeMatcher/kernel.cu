@@ -2,7 +2,7 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
-#include "MinutiaMatching.h"
+#include "MinutiaExtraction.h"
 #include <time.h>
 extern "C"{
 
@@ -97,27 +97,14 @@ int main()
 
 	//// minutia extraction
 	clock_t clk1 = clock();
-	CUDAArray<float> psReal;
-	CUDAArray<float> psIm;
-	CUDAArray<float> psM=CUDAArray<float>(enhanced.Width,enhanced.Height);
-	CUDAArray<float> lsReal;
-	CUDAArray<float> lsIm;
-	CUDAArray<float> lsM=CUDAArray<float>(enhanced.Width,enhanced.Height);
-	EstimateLS(&lsReal, &lsIm, enhanced, 0.9f, 1.5f);
-	EstimatePS(&psReal, &psIm, enhanced, 0.9f, 2.5f);
 
-	GetMagnitude(lsM, lsReal, lsIm);
-	GetMagnitude(psM, psReal, psIm);
+	int* xs;
+	int* ys;
+	ExtractMinutiae(xs, ys, enhanced);
 
-	CUDAArray<float> psi = CUDAArray<float>(lsM.Width, lsM.Height);
-	EstimateMeasure(psi,lsM, psM);
-
-	lsIm.Dispose();
-	lsReal.Dispose();
-	psIm.Dispose();
-	psReal.Dispose();
-
-	SaveArray(psi,"C:\\temp\\104_6_psi.bin");
+	free(&xs);
+	free(&ys);
+	
 
 	sourceImage.Dispose();
 	enhanced.Dispose();

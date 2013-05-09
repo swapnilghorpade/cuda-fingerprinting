@@ -11,8 +11,8 @@ const int HalfSize = KernelSize/2; //recalculate by 2*(int)ceil(SigmaDirection*3
 
 const int DirectionsNumber = 20;
 
-const int ringInnerRadius = 4;
-const int ringOuterRadius = 6;
+__device__ const int ringInnerRadius = 4;
+__device__ const int ringOuterRadius = 6;
 
 __constant__ int constDirectionsX[KernelSize*DirectionsNumber];
 __constant__ int constDirectionsY[KernelSize*DirectionsNumber];

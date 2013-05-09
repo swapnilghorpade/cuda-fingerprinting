@@ -37,18 +37,6 @@ __global__ void cudaNormalizePS(CUDAArray<float> real, CUDAArray<float> im, floa
 	}
 }
 
-__global__ void cudaEstimateMeasure(CUDAArray<float> psi, CUDAArray<float> ls, CUDAArray<float> ps)
-{
-	int row = defaultRow();
-	int column = defaultColumn();
-	if(ls.Width>column&&ls.Height>row)
-	{
-		float lsValue = ls.At(row,column);
-		float psValue = ps.At(row,column);
-		psi.SetAt(row,column,(1.0f-lsValue)*psValue);
-	}
-}
-
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> real, CUDAArray<float> im)
 {
 	int row = defaultRow();
@@ -192,18 +180,18 @@ void EstimatePS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
     ComplexConvolve(resultReal, resultIm, sourceX, sourceY, kernel3, kernel4);
 
 	
-	CUDAArray<float> 
-		magnitude = CUDAArray<float>(source.Width, source.Height);
+	//CUDAArray<float> 
+	//	magnitude = CUDAArray<float>(source.Width, source.Height);
 
-	cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, resultReal, resultIm);
-	float* data = magnitude.GetData();
-	float max=0;
-	for(int i=0;i<magnitude.Width*magnitude.Height;i++)
-	{
-		if(data[i]>max)max=data[i];
-	}
+	//cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, resultReal, resultIm);
+	//float* data = magnitude.GetData();
+	//float max=0;
+	//for(int i=0;i<magnitude.Width*magnitude.Height;i++)
+	//{
+	//	if(data[i]>max)max=data[i];
+	//}
 
-	cudaNormalizePS<<<gridSize,blockSize>>>(resultReal, resultIm, max);
+	//cudaNormalizePS<<<gridSize,blockSize>>>(resultReal, resultIm, max);
 	cudaError_t error;
 	error = cudaDeviceSynchronize();
 	//cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, resultReal, resultIm);
@@ -215,7 +203,7 @@ void EstimatePS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 	//	if(data[i]>max)max=data[i];
 	//}
 	//SaveArray(magnitude,"C:\\temp\\104_6_mag2.bin");
-	magnitude.Dispose();
+	//magnitude.Dispose();
 	*real = resultReal;
 	*im = resultIm;
 
@@ -226,15 +214,6 @@ void EstimatePS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 
 	sourceX.Dispose();
 	sourceY.Dispose();
-}
-
-void EstimateMeasure(CUDAArray<float> psi, CUDAArray<float> lsM, CUDAArray<float> psM)
-{
-	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
-	dim3 gridSize = 
-		dim3(ceilMod(psi.Width, defaultThreadCount),
-		ceilMod(psi.Height, defaultThreadCount));
-	cudaEstimateMeasure<<<gridSize,blockSize>>>(psi, lsM, psM);
 }
 
 void GetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> real, CUDAArray<float> im)

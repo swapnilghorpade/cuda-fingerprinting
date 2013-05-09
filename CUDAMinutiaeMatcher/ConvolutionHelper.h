@@ -129,16 +129,16 @@ void Convolve(CUDAArray<float> target, CUDAArray<float> source, CUDAArray<float>
 	int i=0;
 }
 
-void SaveArray(CUDAArray<float> ar, const char* fname)
+template <typename T> void SaveArray(CUDAArray<T> ar, const char* fname)
 {
-	float* arTest = ar.GetData();
+	T* arTest = ar.GetData();
 	FILE* f = fopen(fname,"wb");
 	fwrite(&ar.Width,sizeof(int),1,f);
 	fwrite(&ar.Height,sizeof(int),1,f);
 	for(int i=0;i<ar.Width*ar.Height;i++)
 	{
-		float value = (float)arTest[i];
-		int result = fwrite(&value,sizeof(float),1,f);
+		T value = (T)arTest[i];
+		int result = fwrite(&value,sizeof(T),1,f);
 		result++;
 	}
 	fclose(f);

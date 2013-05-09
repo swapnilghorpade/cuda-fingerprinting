@@ -93,6 +93,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <ClInclude Include="DirectionalFiltering.h" />
     <ClInclude Include="Gaussian.h" />
     <ClInclude Include="LinearSymmetry.h" />
+    <ClInclude Include="MinutiaExtraction.h" />
     <ClInclude Include="MinutiaMatching.h" />
     <ClInclude Include="Resizing.h" />
   </ItemGroup>
