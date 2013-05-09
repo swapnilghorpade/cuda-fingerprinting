@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
 
 namespace ComplexFilterQA
 {
-    public class KernelHelper
+    public static class KernelHelper
     {
         public static int GetKernelSizeForGaussianSigma(double sigma)
         {
@@ -58,73 +55,6 @@ namespace ComplexFilterQA
             return kernel;
         }
 
-        public static double[,] GetRealPart(Complex[,] array)
-        {
-            double[,] result = new double[array.GetLength(0),array.GetLength(1)];
-            for (int x = 0; x < array.GetLength(0); x++)
-            {
-                for (int y = 0; y < array.GetLength(1); y++)
-                {
-                    result[x, y] = array[x, y].Real;
-                }
-            }
-            return result;
-        }
-
-        public static double[,] GetMagnitude(Complex[,] array)
-        {
-            double[,] result = new double[array.GetLength(0),array.GetLength(1)];
-            for (int x = 0; x < array.GetLength(0); x++)
-            {
-                for (int y = 0; y < array.GetLength(1); y++)
-                {
-                    result[x, y] = array[x, y].Magnitude;
-                }
-            }
-            return result;
-        }
-
-        public static double[,] GetPhase(Complex[,] array)
-        {
-            double[,] result = new double[array.GetLength(0),array.GetLength(1)];
-            for (int x = 0; x < array.GetLength(0); x++)
-            {
-                for (int y = 0; y < array.GetLength(1); y++)
-                {
-                    result[x, y] = array[x, y].Phase;
-                }
-            }
-            return result;
-        }
-
-        public static double[,] GetImaginaryPart(Complex[,] array)
-        {
-            double[,] result = new double[array.GetLength(0),array.GetLength(1)];
-            for (int x = 0; x < array.GetLength(0); x++)
-            {
-                for (int y = 0; y < array.GetLength(1); y++)
-                {
-                    result[x, y] = array[x, y].Imaginary;
-                }
-            }
-            return result;
-        }
-
-        public static Complex[,] MakeComplexFromPolar(double[,] magnitude, double[,] phase)
-        {
-            int maxX = magnitude.GetLength(0);
-            int maxY = magnitude.GetLength(1);
-            Complex[,] result = new Complex[maxX, maxY];
-            for (int x = 0; x < maxX; x++)
-            {
-                for (int y = 0; y < maxY; y++)
-                {
-                    result[x, y] = Complex.FromPolarCoordinates(magnitude[x, y], phase[x, y]);
-                }
-            }
-            return result;
-        }
-
     public static Complex[,] MakeComplexFromDouble(double[,] real, double[,] imaginary)
         {
             int maxX = real.GetLength(0);
@@ -168,6 +98,19 @@ namespace ComplexFilterQA
             return result;
         }
 
+        public static V[,] Zip2D<T, U, V>(T[,] arr1, U[,] arr2, Func<T, U, V> f)
+        {
+            var result = new V[arr1.GetLength(0), arr1.GetLength(1)];
+            for (int x = 0; x < arr1.GetLength(0); x++)
+            {
+                for (int y = 0; y < arr1.GetLength(1); y++)
+                {
+                    result[x, y] = f(arr1[x, y], arr2[x, y]);
+                }
+            }
+            return result;
+        }
+
         public static double[,] Add(double[,] source, double[,] value)
         {
             var maxX = source.GetLength(0);
@@ -180,6 +123,36 @@ namespace ComplexFilterQA
                     result[x, y] = source[x, y] + value[x, y];
                 }
             }
+            return result;
+        }
+
+        public static U[,] Select2D<T, U>(this T[,] array, Func<T, U> f)
+        {
+            var result = new U[array.GetLength(0),array.GetLength(1)];
+
+            for (int x = 0; x < array.GetLength(0); x++)
+            {
+                for (int y = 0; y < array.GetLength(1); y++)
+                {
+                    result[x, y] = f(array[x, y]);
+                }
+            }
+
+            return result;
+        }
+
+        public static U[,] Select2D<T, U>(this T[,] array, Func<T, int, int, U> f)
+        {
+            var result = new U[array.GetLength(0), array.GetLength(1)];
+
+            for (int row = 0; row < array.GetLength(0); row++)
+            {
+                for (int column = 0; column < array.GetLength(1); column++)
+                {
+                    result[row, column] = f(array[row, column], row, column);
+                }
+            }
+
             return result;
         }
     }

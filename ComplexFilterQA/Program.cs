@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Linq;
 using System.Numerics;
 
@@ -15,14 +13,14 @@ namespace ComplexFilterQA
         private static double sigma2 = 3.2;
         private static double K0 = 1.7;
         private static double K = 1.3;
-        static int blockSize = 9;
+        const int NeighborhoodSize = 9;
         static double tau1 = 0.1;
         static double tau2 = 0.3;
-        static double tauLS = 0.7;
-        static double tauPS = 0.1;
+        static double tauLS = 0.9;
+        static double tauPS = 0.5;
         static int ringInnerRadius = 4;
         static int ringOuterRadius = 6;
-        static int MaxMinutiaeCount = 45;
+        static int MaxMinutiaeCount = 32;
 
         static double sigmaDirection = 2d;
         static int directionSize = KernelHelper.GetKernelSizeForGaussianSigma(sigmaDirection);
@@ -47,82 +45,22 @@ namespace ComplexFilterQA
 
         private static void Main(string[] args)
         {
-           
             FillDirections();
-            SaveImageAsBinary("C:\\temp\\1_7.tif", "C:\\temp\\1_7.bin");
-            SaveBinaryAsImage("C:\\temp\\104_6_enh.bin", "C:\\temp\\1_7_enh_GPU.png", true);
+            var path1 = "C:\\temp\\enh\\6_7.tif";
+            var path2 = "C:\\temp\\enh\\6_6.tif";
+            var path3 = "C:\\temp\\enh\\104_3.tif";
+            var path4 = "C:\\temp\\enh\\108_8.tif";
 
-            //SaveBinaryAsImage("C:\\temp\\dirX.bin", "C:\\temp\\dirX.png", true);
-            //SaveBinaryAsImage("C:\\temp\\dirY.bin", "C:\\temp\\dirY.png", true);
-            //SaveBinaryAsImage("C:\\temp\\l1.bin", "C:\\temp\\l1.png", true);
-            //MinutiaeMatcher.SaveMinutiae(
-            PreprocessFingerprint("C:\\temp\\1_7.tif");
-            //PreprocessFingerprint("C:\\temp\\104_6.tif");//, "C:\\temp\\Minutiae_104_6.bin");
-            MinutiaeMatcher.SaveMinutiae(
-                PreprocessFingerprint("C:\\temp\\104_3.tif"), "C:\\temp\\Minutiae_104_3.bin");
-            var minutiae1 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\Minutiae_104_6.bin");
-
-            var minutiae2 = MinutiaeMatcher.LoadMinutiae("C:\\temp\\Minutiae_104_3.bin");
-
-            var score = MinutiaeMatcher.Match(minutiae1.Take(32).ToList(), minutiae2.Take(32).ToList());
+            //ImageHelper.MarkMinutiae(path, ProcessFingerprint(ImageHelper.LoadImage(path)), "C:\\temp\\6_7_out.png");
             
+            var minutiae1 = ProcessFingerprint(ImageHelper.LoadImage(path1));
+            var minutiae2 = ProcessFingerprint(ImageHelper.LoadImage(path2));
+            var minutiae3 = ProcessFingerprint(ImageHelper.LoadImage(path3));
+            var minutiae4 = ProcessFingerprint(ImageHelper.LoadImage(path4));
 
-            /*var translatedMinutiae = MinutiaeMatcher.TranslateToSecond(minutiae1, minutiae1[correlation.First().X], minutiae2[correlation.First().Y],
-                rotation);
-
-            MarkMinutiae("C:\\temp\\104_6.tif", minutiae2, translatedMinutiae, "C:\\temp\\15.02.2013\\Marked_with_translation_104_6.png");*/
-        }
-
-        private static void SaveBinaryAsImage(string pathFrom, string pathTo, bool applyNormalization = false)
-        {
-            using (var fs = new FileStream(pathFrom, FileMode.Open, FileAccess.Read))
-            {
-                using (var bw = new BinaryReader(fs))
-                {
-                    var width = bw.ReadInt32();
-                    var height = bw.ReadInt32();
-                    var bmp = new Bitmap(width, height);
-                    if (!applyNormalization)
-                    {
-                        for (int row = 0; row < bmp.Height; row++)
-                        {
-                            for (int column = 0; column < bmp.Width; column++)
-                            {
-                                var value = bw.ReadInt32();
-                                var c = Color.FromArgb(value, value, value);
-                                bmp.SetPixel(column, row, c);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        float[,] arr = new float[height,width];
-                        float min = float.MaxValue;
-                        float max = float.MinValue;
-                        for (int row = 0; row < bmp.Height; row++)
-                        {
-                            for (int column = 0; column < bmp.Width; column++)
-                            {
-                                float result = bw.ReadSingle();
-                                arr[row, column] = result;
-                                if (result < min) min = result;
-                                if (result > max) max = result;
-                            }
-                        }
-                        for (int row = 0; row < bmp.Height; row++)
-                        {
-                            for (int column = 0; column < bmp.Width; column++)
-                            {
-                                var value = arr[row, column];
-                                int c = (int) ((value - min)/(max - min)*255);
-                                Color color = Color.FromArgb(c, c, c);
-                                bmp.SetPixel(column, row, color);
-                            }
-                        }
-                    }
-                    bmp.Save(pathTo,ImageFormat.Png);
-                }
-            }
+            var score1 = MinutiaeMatcher.Match(minutiae1, minutiae2);
+            var score2 = MinutiaeMatcher.Match(minutiae1, minutiae3);
+            var score3 = MinutiaeMatcher.Match(minutiae1, minutiae4);
         }
 
         private static void FillDirections()
@@ -160,71 +98,24 @@ namespace ComplexFilterQA
                     directions[i, n] = new Point(p.Y, -p.X);
                 }
             }
-
-            //double[,] dx = new double[11,20];
-            //double[,] dy = new double[11,20];
-
-            //for (int x = 0; x < 11; x++)
-            //{
-            //    for (int y = 0; y < 20; y++)
-            //    {
-            //        dx[x, y] = directions[x, y].X;
-            //        dy[x, y] = directions[x, y].Y;
-            //    }
-            //}
-            //SaveArray(dx, "C:\\temp\\dirX_cpu.png");
-            //SaveArray(dy, "C:\\temp\\dirY_cpu.png");
         }
 
-        /*private static void DrawNeatRectangles()
+        private static List<Minutia> ProcessFingerprint(double[,] imgBytes)
         {
-            //this set of images illustrates the quantifization of images to 20 different directions
-            int N = 20;
-            double delta = Math.PI / N;
-            double halfDelta = delta / 2;
-            int cellSize = 50;
-            int cellAmount = 11;
-            int center = cellAmount / 2;
-            for (int i = 0; i < N; i++)
-            {
-                double baselineAngle = delta * i;
-                double lowerBound = baselineAngle - halfDelta;
-                double upperBound = baselineAngle + halfDelta;
+            var lsEnhanced = EstimateLS(imgBytes, sigma1, sigma2);
+            var psEnhanced = EstimatePS(imgBytes, sigma1, sigma2);
+            //ImageHelper.SaveComplexArrayAsHSV(lsEnhanced,"C:\\temp\\lsenh.png");
 
-                var bmp = new Bitmap(cellAmount * cellSize, cellAmount * cellSize);
-                var gfx = Graphics.FromImage(bmp);
+            //ImageHelper.SaveArray(NormalizeArray(psEnhanced.Select2D(x=>x.Magnitude)), "C:\\temp\\psenh.png");
 
-                for (int x = -center; x <= center; x++)
-                {
-                    for (int y = -center; y <= center; y++)
-                    {
-                        Brush b = Brushes.White;
-                        gfx.FillRectangle(b, (center + x) * cellSize, (center + y) * cellSize, cellSize, cellSize);
-                        gfx.DrawRectangle(Pens.Black, (center + x) * cellSize, (center + y) * cellSize, cellSize, cellSize);
-                    }
-                }
-                for (int j = 0; j < cellAmount; j++)
-                {
-                    var p = directions[j, i];
-                    gfx.FillRectangle(Brushes.Red, (center + p.X) * cellSize, (center - p.Y) * cellSize, cellSize, cellSize);
-                    gfx.DrawRectangle(Pens.Black, (center + p.X) * cellSize, (center - p.Y) * cellSize, cellSize, cellSize);
-                }
-                gfx.Save();
-                bmp.Save("C:\\temp\\line" + i + ".png", ImageFormat.Png);
-            }
-        }*/
+            var psi = KernelHelper.Zip2D(psEnhanced,
+                lsEnhanced.Select2D(x=>x.Magnitude), (x, y) => x * (1.0d - y));
 
-        private static List<Minutia> PreprocessFingerprint(string path)
+            return SearchMinutiae(psi, lsEnhanced, psEnhanced);
+        }
+
+        private static double[,] EnhanceImage(double[,] imgBytes)
         {
-            var bmp = new Bitmap(path);
-            double[,] imgBytes = new double[bmp.Width, bmp.Height];
-            for (int x = 0; x < bmp.Width; x++)
-            {
-                for (int y = 0; y < bmp.Height; y++)
-                {
-                    imgBytes[x, y] = bmp.GetPixel(x, y).R;
-                }
-            }
             Stopwatch sw = new Stopwatch();
             sw.Start();
             var g1 = Reduce2(imgBytes, 1.7d);
@@ -239,25 +130,24 @@ namespace ComplexFilterQA
             var l3 = ContrastEnhancement(KernelHelper.Subtract(g3, p3));
             var l2 = ContrastEnhancement(KernelHelper.Subtract(g2, p2));
             var l1 = ContrastEnhancement(KernelHelper.Subtract(g1, p1));
-            SaveArray(l3,"C:\\temp\\l3.png");
-            SaveArray(l1, "C:\\temp\\l1.png");
-            SaveArray(l2, "C:\\temp\\l2.png");
+            //SaveArray(l3, "C:\\temp\\l3.png");
+            //SaveArray(l1, "C:\\temp\\l1.png");
+            //SaveArray(l2, "C:\\temp\\l2.png");
 
             var ls1 = EstimateLS(l1, sigma1, sigma2);
             var ls2 = EstimateLS(l2, sigma1, sigma2);
             var ls3 = EstimateLS(l3, sigma1, sigma2);
 
-            SaveComplexArrayAsHSV(ls1, "C:\\temp\\ls1.png");
-            SaveComplexArrayAsHSV(ls2, "C:\\temp\\ls2.png");
-            SaveComplexArrayAsHSV(ls3, "C:\\temp\\ls3.png");
+            //SaveComplexArrayAsHSV(ls1, "C:\\temp\\ls1.png");
+            //SaveComplexArrayAsHSV(ls2, "C:\\temp\\ls2.png");
+            //SaveComplexArrayAsHSV(ls3, "C:\\temp\\ls3.png");
 
             var ls2Scaled =
                 KernelHelper.MakeComplexFromDouble(
-                    Expand2(KernelHelper.GetRealPart(ls2), K, new Size(l1.GetLength(0), l1.GetLength(1))),
-                    Expand2(KernelHelper.GetImaginaryPart(ls2), K, new Size(l1.GetLength(0), l1.GetLength(1))));
-            var multiplier = KernelHelper.Subtract(KernelHelper.GetPhase(ls1), KernelHelper.GetPhase(ls2Scaled));
+                    Expand2(ls2.Select2D(x=>x.Real), K, new Size(l1.GetLength(0), l1.GetLength(1))),
+                    Expand2(ls2.Select2D(x=>x.Imaginary), K, new Size(l1.GetLength(0), l1.GetLength(1))));
+            var multiplier = KernelHelper.Subtract(ls1.Select2D(x => x.Phase), ls2Scaled.Select2D(x => x.Phase));
 
-            double d = double.NegativeInfinity;
             for (int x = 0; x < ls1.GetLength(0); x++)
             {
                 for (int y = 0; y < ls1.GetLength(1); y++)
@@ -279,83 +169,10 @@ namespace ComplexFilterQA
             ll0 = ContrastEnhancement(ll0);
             sw.Stop();
             var enhanced = RearrangeArray(ll0, 0, 255);
-
-
-            SaveArray(enhanced,"C:\\temp\\104_6_enh.png");
-            var lsEnhanced = EstimateLS(enhanced, sigma1, sigma2);
-            var psEnhanced = EstimatePS(enhanced, 0.9, 2.5);
-            SaveComplexArrayAsHSV(lsEnhanced,"C:\\temp\\lsenh.png");
-            SaveArray(NormalizeArray(KernelHelper.GetMagnitude(psEnhanced)), "C:\\temp\\psenh.png");
-            var psi = KernelHelper.Zip2D(NormalizeArray(KernelHelper.GetMagnitude(psEnhanced)),
-                KernelHelper.GetMagnitude(lsEnhanced), (x, y) => x * (1.0d - y));
-            SaveArray(psi,"C:\\temp\\104_6_psi_cpu.png");
-            //var minutiae = SearchMinutiae(psi, lsEnhanced, psEnhanced).Take(32).ToList();
-            return null;
-            /*SaveArray(KernelHelper.GetMagnitude(psEnhanced), "C:\\temp\\psEnhanced.png");
-            SaveArray(psi, "C:\\temp\\psi.png");
-            SaveComplexArrayAsHSV(lsEnhanced, "C:\\temp\\lsEnhanced.png");
-            SaveComplexArrayAsHSV(ls1, "C:\\temp\\ls1.png");
-            SaveComplexArrayAsHSV(ls2, "C:\\temp\\ls2.png");
-            SaveComplexArrayAsHSV(ls3, "C:\\temp\\ls3.png");**/
+            return enhanced;
         }
 
-        private static void MarkMinutiae(string sourcePath, List<Minutia> minutiae, string path)
-        {
-            var bmp = new Bitmap(sourcePath);
-            var bmp2 = new Bitmap(bmp.Width, bmp.Height);
-            for (int x = 0; x < bmp2.Width; x++)
-            {
-                for (int y = 0; y < bmp2.Height; y++)
-                {
-                    bmp2.SetPixel(x, y, bmp.GetPixel(x, y));
-                }
-            }
-            var gfx = Graphics.FromImage(bmp2);
-
-            foreach (var pt in minutiae)
-            {
-                gfx.DrawEllipse(Pens.Red, pt.X - 2, pt.Y - 2, 5, 5);
-                gfx.FillEllipse(Brushes.Red, pt.X - 2, pt.Y - 2, 5, 5);
-            }
-
-            gfx.Save();
-
-            bmp2.Save(path, ImageFormat.Png);
-
-        }
-
-        private static void MarkMinutiae(string sourcePath, List<Minutia> minutiae, List<Minutia> minutiae2, string path)
-        {
-            var bmp = new Bitmap(sourcePath);
-            var bmp2 = new Bitmap(bmp.Width, bmp.Height);
-            for (int x = 0; x < bmp2.Width; x++)
-            {
-                for (int y = 0; y < bmp2.Height; y++)
-                {
-                    bmp2.SetPixel(x, y, bmp.GetPixel(x, y));
-                }
-            }
-            var gfx = Graphics.FromImage(bmp2);
-
-            foreach (var pt in minutiae)
-            {
-                gfx.DrawEllipse(Pens.Red, pt.X - 2, pt.Y - 2, 5, 5);
-                gfx.FillEllipse(Brushes.Red, pt.X - 2, pt.Y - 2, 5, 5);
-            }
-
-            foreach (var pt in minutiae2)
-            {
-                gfx.DrawEllipse(Pens.Blue, pt.X - 2, pt.Y - 2, 5, 5);
-                gfx.FillEllipse(Brushes.Blue, pt.X - 2, pt.Y - 2, 5, 5);
-            }
-
-            gfx.Save();
-
-            bmp2.Save(path, ImageFormat.Png);
-
-        }
-
-        private static List<Minutia> SearchMinutiae(double[,] psi, Complex[,] lsEnhanced, Complex[,] ps)
+        private static List<Minutia> SearchMinutiae(Complex[,] psi, Complex[,] lsEnhanced, Complex[,] ps)
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -365,54 +182,73 @@ namespace ComplexFilterQA
             {
                 for (int y = 0; y < size.Height; y++)
                 {
-                    if (psi[x, y] < tauPS) psi[x, y] = 0;
+                    if (psi[x, y].Magnitude < tauPS) psi[x, y] = 0;
                 }
             }
 
-            var blockDim = new Size(size.Width / blockSize, size.Height / blockSize);
-            List<Minutia> minutiae = new List<Minutia>();
-            for (int i =2; i < blockDim.Width-2; i++)
-            {
-                for (int j = 2; j < blockDim.Height-2; j++)
+            var maxs = psi.Select2D((x, row, column) =>
                 {
-                    var max = double.NegativeInfinity;
-                    int xMax = 0;
-                    int yMax = 0;
-                    for (int x = 0; x < blockSize; x++)
+                    Point maxP = new Point();
+                    double maxM = 0;
+                    for (int dRow = -NeighborhoodSize/2; dRow <= NeighborhoodSize/2; dRow++)
                     {
-                        for (int y = 0; y < blockSize; y++)
+                        for (int dColumn = -NeighborhoodSize / 2; dColumn <= NeighborhoodSize / 2; dColumn++)
                         {
-                            if (psi[x + i * blockSize, y + j * blockSize] > max)
+                            var correctRow = row + dRow < 0
+                                                 ? 0
+                                                 : (row + dRow >= psi.GetLength(0) ? psi.GetLength(0) - 1 : row + dRow);
+                            var correctColumn = column + dColumn < 0
+                                                 ? 0
+                                                 : (column + dColumn >= psi.GetLength(1) ? psi.GetLength(1) - 1 : column + dColumn);
+                            var value = psi[correctRow, correctColumn];
+                            if (value.Magnitude > maxM)
                             {
-                                max = psi[x + i * blockSize, y + j * blockSize];
-                                xMax = i * blockSize + x;
-                                yMax = j * blockSize + y;
+                                maxM = value.Magnitude;
+                                maxP = new Point(correctRow, correctColumn);
                             }
                         }
                     }
-                    if (max < tauPS) continue;
-                    int count = 0;
-                    double sum = 0;
-                    for (int dx = -ringOuterRadius; dx <= ringOuterRadius; dx++)
+                    return maxP;
+                });
+
+            Dictionary<Point, int> responses = new Dictionary<Point, int>();
+
+            foreach (var point in maxs)
+            {
+                if (!responses.ContainsKey(point)) responses[point] = 0;
+                responses[point] ++;
+            }
+
+            var orderedListOfCandidates =
+                responses.Where(x => x.Value >= 20 && x.Key.X > 0 && x.Key.Y > 0 && x.Key.X < psi.GetLength(0)-1 && x.Key.Y < psi.GetLength(1)-1)
+                         .OrderByDescending(x => x.Value)
+                         .Select(x => x.Key)
+                         .Where(x => psi[x.X, x.Y].Magnitude >= tauPS);
+            List<Minutia> minutiae = new List<Minutia>();
+
+            foreach (var candidate in orderedListOfCandidates)
+            {
+                int count = 0;
+                double sum = 0;
+                for (int dx = -ringOuterRadius; dx <= ringOuterRadius; dx++)
+                {
+                    for (int dy = -ringOuterRadius; dy <= ringOuterRadius; dy++)
                     {
-                        for (int dy = -ringOuterRadius; dy <= ringOuterRadius; dy++)
-                        {
-                            if (Math.Abs(dx) < ringInnerRadius && Math.Abs(dy) < ringInnerRadius) continue;
-                            count++;
-                            int xx = xMax + dx;
-                            if (xx < 0) xx = 0;
-                            if (xx >= size.Width) xx = size.Width - 1;
-                            int yy = yMax + dy;
-                            if (yy < 0) yy = 0;
-                            if (yy >= size.Height) yy = size.Height - 1;
-                            sum += lsEnhanced[xx, yy].Magnitude;
-                        }
+                        if (Math.Abs(dx) < ringInnerRadius && Math.Abs(dy) < ringInnerRadius) continue;
+                        count++;
+                        int xx = candidate.X + dx;
+                        if (xx < 0) xx = 0;
+                        if (xx >= size.Width) xx = size.Width - 1;
+                        int yy = candidate.Y + dy;
+                        if (yy < 0) yy = 0;
+                        if (yy >= size.Height) yy = size.Height - 1;
+                        sum += lsEnhanced[xx, yy].Magnitude;
                     }
-                    if (sum / count > tauLS)
-                    {
-                        if(!minutiae.Any(pt=>(pt.X-xMax)*(pt.X-xMax)+(pt.Y-yMax)*(pt.Y-yMax)<30))
-                            minutiae.Add(new Minutia() { X = xMax, Y = yMax, Angle = ps[xMax,yMax].Phase });
-                    }
+                }
+                if (sum / count > tauLS)
+                {
+                    if (!minutiae.Any(pt => (pt.X - candidate.X) * (pt.X - candidate.X) + (pt.Y - candidate.Y) * (pt.Y - candidate.Y) < 30))
+                        minutiae.Add(new Minutia() { X = candidate.X, Y = candidate.Y, Angle = ps[candidate.X, candidate.Y].Phase });
                 }
             }
 
@@ -508,30 +344,17 @@ namespace ComplexFilterQA
 
 
             var preZ = KernelHelper.MakeComplexFromDouble(resultX, resultY);
-            var z = new Complex[l1.GetLength(0),l1.GetLength(1)];
-            for (int x = 0; x < l1.GetLength(0); x++)
-            {
-                for (int y = 0; y < l1.GetLength(1); y++)
-                {
-                    z[x, y] = preZ[x, y]*preZ[x, y];
-                    
-                }
-            }
+
+            var z = preZ.Select2D(x => x*x);
 
             var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2), (x, y) => 0, 
                 KernelHelper.GetKernelSizeForGaussianSigma(Sigma2));
 
             var I20 = ConvolutionHelper.ComplexConvolve(z, kernel2);
 
-            var I11 = ConvolutionHelper.Convolve(KernelHelper.GetMagnitude(z), KernelHelper.GetRealPart(kernel2));
-            Complex[,] LS = new Complex[l1.GetLength(0),l1.GetLength(1)];
-            for (int x = 0; x < l1.GetLength(0); x++)
-            {
-                for (int y = 0; y < l1.GetLength(1); y++)
-                {
-                    LS[x, y] = I20[x, y]/I11[x, y];
-                }
-            }
+            var I11 = ConvolutionHelper.Convolve(z.Select2D(x => x.Magnitude), kernel2.Select2D(x => x.Real));
+
+            Complex[,] LS = KernelHelper.Zip2D(I20,I11,(x,y)=>x/y);
             
             return LS;
         }
@@ -544,15 +367,8 @@ namespace ComplexFilterQA
             var resultY = ConvolutionHelper.Convolve(l1, kernelY);
 
             var preZ = KernelHelper.MakeComplexFromDouble(resultX, resultY);
-            var z = new Complex[l1.GetLength(0), l1.GetLength(1)];
-            for (int x = 0; x < l1.GetLength(0); x++)
-            {
-                for (int y = 0; y < l1.GetLength(1); y++)
-                {
-                    z[x, y] = preZ[x, y] * preZ[x, y];
 
-                }
-            }
+            var z = preZ.Select2D(x => x * x);
 
             var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2) * x, (x, y) => Gaussian(x, y, Sigma2) * y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma2));
 
@@ -563,19 +379,7 @@ namespace ComplexFilterQA
 
         private static double[,] ContrastEnhancement(double[,] source)
         {
-            var maxX = source.GetLength(0);
-            var maxY = source.GetLength(1);
-            var result = new double[maxX,maxY];
-            for (int x = 0; x < maxX; x++)
-            {
-                for (int y = 0; y < maxY; y++)
-                {
-                    var d = source[x, y];
-                    result[x, y] = Math.Sign(d)*Math.Sqrt(Math.Abs(d));
-                }
-            }
-
-            return result;
+            return source.Select2D(x => Math.Sign(x)*Math.Sqrt(Math.Abs(x)));
         }
 
         private static double[,] Reduce2(double[,] source, double factor)
@@ -600,12 +404,12 @@ namespace ComplexFilterQA
 
         private static void Resize(double[,] source, double[,] result, double cellSize, Func<double, double, double> filterFunction)
         {
-            for (int i = 0; i < result.GetLength(0); i++)
+            for (int row = 0; row < result.GetLength(0); row++)
             {
-                double x = cellSize * i;
-                for (int j = 0; j < result.GetLength(1); j++)
+                for (int column = 0; column < result.GetLength(1); column++)
                 {
-                    double y = cellSize * j;
+                    double x = cellSize * row;
+                    double y = cellSize * column;
 
                     double sum = 0;
                     double filterSum = 0;
@@ -624,105 +428,9 @@ namespace ComplexFilterQA
                         }
                     }
                     sum /= filterSum;
-                    result[i, j] = sum;
+                    result[row, column] = sum;
                 }
             }
-        }
-
-        private static void SaveComplexArrayAsHSV(Complex[,] data, string path)
-        {
-            int X = data.GetLength(0);
-            int Y = data.GetLength(1);
-            var bmp = new Bitmap(X, Y);
-            for (int x = 0; x < X; x++)
-            {
-                for (int y = 0; y < Y; y++)
-                {
-                    var HV = data[x, y];
-                    var V = Math.Round(HV.Magnitude*100);
-                    var H = (int)(HV.Phase*180/Math.PI);
-                    if (H < 0) H += 360;
-                    var hi = H/60;
-                    var a = V*(H%60)/60.0d;
-                    var vInc = (int) ( a*2.55d);
-                    var vDec = (int) ((V - a)*2.55d);
-                    var v = (int)(V*2.55d);
-                    Color c;
-                    switch (hi)
-                    {
-                        case 0:
-                            c = Color.FromArgb(v, vInc, 0);
-                            break;
-                        case 1:
-                            c = Color.FromArgb(vDec, v, 0);
-                            break;
-                        case 2:
-                            c = Color.FromArgb(0, v, vInc);
-                            break;
-                        case 3:
-                            c = Color.FromArgb(0, vDec, v);
-                            break;
-                        case 4:
-                            c = Color.FromArgb(vInc, 0, v);
-                            break;
-                        case 5:
-                            c = Color.FromArgb(v, 0, vDec);
-                            break;
-                        default:
-                            c = Color.Black;
-                            break;
-                    }
-                    bmp.SetPixel( x,  y, c);
-                }
-            }
-            
-            bmp.Save(path, ImageFormat.Png);
-        }
-
-        private static void SaveImageAsBinary(string pathFrom, string pathTo)
-        {
-            var bmp = new Bitmap(pathFrom);
-            using(var fs = new FileStream(pathTo,FileMode.Create,FileAccess.Write))
-            {
-                using(BinaryWriter bw = new BinaryWriter(fs))
-                {
-                    bw.Write(bmp.Width);
-                    bw.Write(bmp.Height);
-                    for (int row = 0; row < bmp.Height; row++)
-                    {
-                        for (int column = 0; column < bmp.Width; column++)
-                        {
-                            var value = (int) bmp.GetPixel(column, row).R;
-                            bw.Write(value);
-                        }
-                    }
-                }
-            }
-            
-        }
-
-        private static void SaveArray(double[,] data, string path)
-        {
-            int X = data.GetLength(0);
-            int Y = data.GetLength(1);
-            var max = double.NegativeInfinity;
-            var min = double.PositiveInfinity;
-            foreach (var num in data)
-            {
-                if (num > max) max = num; 
-                if (num < min) min = num;
-            }
-            var bmp = new Bitmap(X, Y);
-            for(int x=0;x<X;x++)
-            {
-                for (int y = 0; y < Y; y++)
-                {
-                    var gray = (int)((data[x, y] - min)/(max - min)*255);
-                    bmp.SetPixel(x,y,Color.FromArgb(gray,gray,gray));
-                }   
-            }
-
-            bmp.Save(path);
         }
 
         private static double[,] NormalizeArray(double[,] data)
@@ -732,8 +440,6 @@ namespace ComplexFilterQA
 
         private static double[,] RearrangeArray(double[,] data, double min, double max)
         {
-            int X = data.GetLength(0);
-            int Y = data.GetLength(1);
             var dataMax = double.NegativeInfinity;
             var dataMin = double.PositiveInfinity;
             foreach (var num in data)
@@ -741,17 +447,7 @@ namespace ComplexFilterQA
                 if (num > dataMax) dataMax = num;
                 if (num < dataMin) dataMin = num;
             }
-            var result = new double[X, Y];
-            for (int x = 0; x < X; x++)
-            {
-                for (int y = 0; y < Y; y++)
-                {
-                    var gray = ((data[x, y] - dataMin) / (dataMax - dataMin) * (max-min))+min;
-                    result[x, y] = gray;
-                }
-            }
-
-            return result;
+            return data.Select2D((value, row, column) => ((value - dataMin)/(dataMax - dataMin)*(max - min)) + min);
         }
 
     }

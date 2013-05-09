@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -71,26 +70,6 @@ namespace ComplexFilterQA
             return result;
         }
 
-        //internal static List<Minutia> TranslateToSecond(List<Minutia> minutiae1, Minutia referenceMinutia1, Minutia referenceMinutia2, double rotationAngle)
-        //{
-        //    //from m1 to m2. I DEMAND IT
-        //    var m1 = new List<Minutia>();
-
-        //    var cos = Math.Cos(rotationAngle);
-        //    var sin = -Math.Sin(rotationAngle);
-        //    foreach (var m in minutiae1)
-        //    {
-        //        double xDash = m.X - referenceMinutia1.X;
-        //        double yDash = m.Y - referenceMinutia1.Y;
-        //        xDash = cos * xDash - sin * yDash;
-        //        yDash = sin * xDash + cos * yDash;
-
-        //        m1.Add(new Minutia() { X = (int)Math.Round(xDash) + referenceMinutia2.X, Angle = m.Angle, Y = (int)Math.Round(yDash) + referenceMinutia2.Y });
-        //    }
-
-        //    return m1;
-        //}
-
         internal static double TranslateAndMatch(List<Minutia> minutiae1, Minutia referenceMinutia1, List<Minutia> minutiae2, Minutia referenceMinutia2, double rotationAngle)
         {
             //from m1 to m2. I DEMAND IT
@@ -113,92 +92,6 @@ namespace ComplexFilterQA
             return total;
         }
 
-        //internal static List<Point> GetBestFoundMinutiaCorrelation(List<Minutia> minutiae1, List<Minutia> minutiae2)
-        //{
-        //    Stopwatch sw = new Stopwatch();
-        //    sw.Start();
-        //    // calculate square distances
-        //    var ds1 = CalculateDistances(minutiae1);
-        //    var ds2 = CalculateDistances(minutiae2);
-
-        //    var matchedVertices = new Dictionary<Point, List<Point>>();
-
-        //    foreach (var tuple1 in ds1)
-        //    {
-        //        foreach (var tuple2 in ds2)
-        //        {
-        //            if (tuple1.Item2 - DistanceToleranceBox > tuple2.Item2) continue;
-        //            if (tuple1.Item2 + DistanceToleranceBox < tuple2.Item2) break;
-
-        //            var key = new Point(tuple1.Item1.X, tuple2.Item1.X);
-        //            var value = new Point(tuple1.Item1.Y, tuple2.Item1.Y);
-        //            if (!matchedVertices.ContainsKey(key)) matchedVertices[key] = new List<Point>();
-        //            matchedVertices[key].Add(value);
-        //            if (!matchedVertices.ContainsKey(value)) matchedVertices[value] = new List<Point>();
-        //            matchedVertices[value].Add(key);
-
-        //            key = new Point(tuple1.Item1.X, tuple2.Item1.Y);
-        //            value = new Point(tuple1.Item1.Y, tuple2.Item1.X);
-        //            if (!matchedVertices.ContainsKey(key)) matchedVertices[key] = new List<Point>();
-        //            matchedVertices[key].Add(value);
-        //            if (!matchedVertices.ContainsKey(value)) matchedVertices[value] = new List<Point>();
-        //            matchedVertices[value].Add(key);
-        //        }
-        //    }
-
-        //    var maxReliability = 0;
-        //    var pt1 = new Point(0, 0);
-        //    List<Point> correlations = null;
-        //    foreach (var matchedVertex in matchedVertices)
-        //    {
-        //        var vertices = (from point in matchedVertex.Value
-        //                        let intersection = matchedVertices[point].Intersect(matchedVertex.Value)
-        //                        let nonAmbiguous = intersection.GroupBy(x => x.Y).Where(x => x.Count() == 1).SelectMany(x => x.Take(1)).
-        //                        GroupBy(x => x.X).Where(x => x.Count() == 1).SelectMany(x => x.Take(1)).ToList()
-        //                        where nonAmbiguous.Any()
-        //                        orderby nonAmbiguous.Count() descending
-        //                        select new { Point = point, Intersection = nonAmbiguous, Reliability = nonAmbiguous.Count() }).ToList();
-        //        if (vertices.Any())
-        //        {
-        //            var measure = vertices.First().Reliability;
-        //            if (measure > maxReliability)
-        //            {
-        //                maxReliability = measure;
-        //                correlations =
-        //                    new List<Point>(vertices.First().Intersection)
-        //                        {
-        //                            vertices.First().Point,
-        //                        };
-        //                correlations.Insert(0, matchedVertex.Key);
-        //            }
-        //        }
-
-        //    }
-        //    sw.Stop();
-        //    return correlations;
-        //}
-
-        //public static double CalculateRotation(List<Minutia> minutiaeFrom, List<Minutia> minutiaeTo, Point centerPoint, List<Point> correlation)
-        //{
-        //    var centerFrom = minutiaeFrom[centerPoint.X];
-        //    var centerTo = minutiaeTo[centerPoint.Y];
-
-        //    double result = 0;
-
-        //    foreach (var point in correlation)
-        //    {
-        //        var pointFrom = minutiaeFrom[point.X];
-        //        var pointTo = minutiaeTo[point.Y];
-
-        //        var angleFrom = DetermineAngle(centerFrom, pointFrom);
-        //        var angleTo = DetermineAngle(centerTo, pointTo);
-
-        //        result += angleTo - angleFrom;
-        //    }
-
-        //    return result/correlation.Count;
-        //}
-
         private static double DetermineAngle(Minutia begin, Minutia end)
         {
             var dx = end.X - begin.X;
@@ -206,23 +99,6 @@ namespace ComplexFilterQA
             
             return Math.Atan2(dy, dx);
         }
-
-        //point is used for minutiae index
-        //private static List<Tuple<Point,double>> CalculateDistances(List<Minutia> minutiae1)
-        //{
-        //    var result = new List<Tuple<Point, double>>();
-        //    for(int i=0;i<minutiae1.Count;i++)
-        //    {
-        //        var m1 = minutiae1[i];
-        //        for (int j = i+1; j < minutiae1.Count; j++)
-        //        {
-        //            var m2 = minutiae1[j];
-        //            var d = DetermineDistance(m1, m2);
-        //            result.Add(Tuple.Create(new Point(i, j), d));
-        //        }
-        //    }
-        //    return result.OrderBy(x=>x.Item2).ToList();
-        //}
 
         public static double Match(List<Minutia> minutiae1, List<Minutia> minutiae2)
         {
@@ -271,10 +147,7 @@ namespace ComplexFilterQA
                                          if (score > max) max = score;
                                      }
                                  });
-            //var correlation = GetBestFoundMinutiaCorrelation(minutiae1, minutiae2);
-            //var rotation = CalculateRotation(minutiae1, minutiae2, correlation.First(), correlation.Skip(1).ToList());
 
-            //var anotherScore = TranslateAndMatch(minutiae1, minutiae1[correlation.First().X], minutiae2, minutiae2[correlation.First().Y], rotation);
             sw.Stop();
             return max;
         }

@@ -46,6 +46,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConvolutionHelper.cs" />
+    <Compile Include="ImageHelper.cs" />
     <Compile Include="KernelHelper.cs" />
     <Compile Include="MinutiaeMatcher.cs" />
     <Compile Include="Program.cs" />
