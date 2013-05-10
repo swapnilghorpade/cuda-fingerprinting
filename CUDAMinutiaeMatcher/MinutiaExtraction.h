@@ -23,13 +23,8 @@ __global__ void cudaEstimateMeasure(CUDAArray<float> psiReal, CUDAArray<float> p
 		
 		float psMagn = psImValue*psImValue+psRealValue*psRealValue;
 
-		float psiRealValue = 0.0f;
-		float psiImValue = 0.0f;
-		if(psMagn > tauPS*tauPS)
-		{
-			psiRealValue = psRealValue*(1.0f-lsValue);
-			psiImValue = psImValue*(1.0f-lsValue);
-		}
+		float psiRealValue = psRealValue*(1.0f-lsValue);
+		float psiImValue = psImValue*(1.0f-lsValue);
 
 		psiReal.SetAt(row,column,psiRealValue);
 		psiIm.SetAt(row,column,psiImValue);
@@ -44,7 +39,7 @@ __global__ void voteForTheMax(CUDAArray<unsigned int> votes, CUDAArray<float> ps
 	{
 		int maxRow = 0;
 		int maxColumn = 0;
-		float maxM = 0.0f;
+		float maxM = tauPS; // a hacky way to get only values above the treshold
 	
 		for (int dRow = -NeighborhoodSize/2; dRow <= NeighborhoodSize/2; dRow++)
 		{
@@ -67,7 +62,7 @@ __global__ void voteForTheMax(CUDAArray<unsigned int> votes, CUDAArray<float> ps
 			}
 		}
 		//todo: check specifically
-		if(maxRow>0&&maxColumn>0)
+		if(maxRow>0&&maxColumn>0&&maxRow<votes.Height-1&&maxColumn<votes.Width-1)
 			atomicInc(votes.cudaPtr+maxRow*votes.Stride+sizeof(int)*maxColumn,1000);
 	}
 }
@@ -128,14 +123,17 @@ void ExtractMinutiae(int* xs, int* ys, CUDAArray<float> source)
 	cudaError error;
 	CUDAArray<float> psReal;
 	CUDAArray<float> psIm;
+	
 
 	CUDAArray<float> lsReal;
 	CUDAArray<float> lsIm;
 	CUDAArray<float> lsM=CUDAArray<float>(source.Width,source.Height);
 	EstimateLS(&lsReal, &lsIm, source, 0.6f, 3.2f);
-	EstimatePS(&psReal, &psIm, source, 0.6f, 3.2f);
+	
 
+	EstimatePS(&psReal, &psIm, source, 0.6f, 3.2f);
 	GetMagnitude(lsM, lsReal, lsIm);
+	
 
 	CUDAArray<float> psiReal = CUDAArray<float>(lsM.Width, lsM.Height);
 	CUDAArray<float> psiIm = CUDAArray<float>(lsM.Width, lsM.Height);
@@ -143,13 +141,8 @@ void ExtractMinutiae(int* xs, int* ys, CUDAArray<float> source)
 	EstimateMeasure(psiReal, psiIm,lsM, psReal, psIm);
 
 	GetMagnitude(psiM, psiReal, psiIm);
-
+	
 	error = cudaGetLastError();
-
-	lsIm.Dispose();
-	lsReal.Dispose();
-	psIm.Dispose();
-	psReal.Dispose();
 
 	CUDAArray<unsigned int> votes = CUDAArray<unsigned int>(lsM.Width, lsM.Height);
 	CUDAArray<unsigned int> metrics = CUDAArray<unsigned int>(lsM.Width, lsM.Height);
@@ -196,7 +189,11 @@ void ExtractMinutiae(int* xs, int* ys, CUDAArray<float> source)
 	psiReal.Dispose();
 	psiIm.Dispose();
 	votes.Dispose();
-	
+	lsIm.Dispose();
+	lsReal.Dispose();
+	psIm.Dispose();
+	psReal.Dispose();
+
 	float* psimLocal = psiM.GetData();
 	psiM.Dispose();
 	int count = 0;

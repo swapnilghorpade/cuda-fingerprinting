@@ -46,41 +46,44 @@ __global__ void cudaConvolve(CUDAArray<float> target, CUDAArray<float> source, C
 {
 	int row = defaultRow();
 	int column = defaultColumn();
-	int tX = threadIdx.x;
-	int tY = threadIdx.y;
-	__shared__ float filterCache[32*32];
-
-	if(tX<filter.Width&&tY<filter.Height)
+	if(source.Width>column&&source.Height>row)
 	{
-		int indexLocal = tX+tY*filter.Width;
-		filterCache[indexLocal] = filter.At(tY,tX);
-	}
-	__syncthreads();
-
-	int center = filter.Width/2;
-
-	float sum = 0.0f;
-
-	for(int drow=-center;drow<=center;drow++)
-	{
-		for(int dcolumn=-center;dcolumn<=center;dcolumn++)
+		int tX = threadIdx.x;
+		int tY = threadIdx.y;
+		__shared__ float filterCache[32*32];
+		
+		if(tX<filter.Width&&tY<filter.Height)
 		{
-			float filterValue1 = filterCache[filter.Width*(drow+center)+dcolumn+center];
-
-			int valueRow = row+drow;
-			if(valueRow<0)valueRow=0;
-			if(valueRow>=source.Height)valueRow = source.Height-1;
-
-			int valueColumn = column+dcolumn;
-			if(valueColumn<0)valueColumn=0;
-			if(valueColumn>=source.Width)valueColumn = source.Width-1;
-
-			float value = source.At(valueRow,valueColumn);
-			sum+=filterValue1*value;
+			int indexLocal = tX+tY*filter.Width;
+			filterCache[indexLocal] = filter.At(tY,tX);
 		}
-	}
+		__syncthreads();
 
-	target.SetAt(row, column, sum);
+		int center = filter.Width/2;
+
+		float sum = 0.0f;
+
+		for(int drow=-center;drow<=center;drow++)
+		{
+			for(int dcolumn=-center;dcolumn<=center;dcolumn++)
+			{
+				float filterValue1 = filterCache[filter.Width*(drow+center)+dcolumn+center];
+
+				int valueRow = row+drow;
+				if(valueRow<0)valueRow=0;
+				if(valueRow>=source.Height)valueRow = source.Height-1;
+
+				int valueColumn = column+dcolumn;
+				if(valueColumn<0)valueColumn=0;
+				if(valueColumn>=source.Width)valueColumn = source.Width-1;
+
+				float value = source.At(valueRow,valueColumn);
+				sum+=filterValue1*value;
+			}
+		}
+
+		target.SetAt(row, column, sum);
+	}
 }
 
 // CPU FUNCTIONS

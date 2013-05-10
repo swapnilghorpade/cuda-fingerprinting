@@ -19,24 +19,6 @@ __global__ void cudaComplexSquare(CUDAArray<float> real, CUDAArray<float> im)
 	}
 }
 
-__global__ void cudaNormalizePS(CUDAArray<float> real, CUDAArray<float> im, float max)
-{
-	int row = defaultRow();
-	int column = defaultColumn();
-	if(im.Width>column&&im.Height>row)
-	{
-		float realValue = real.At(row,column);
-		float imValue = im.At(row,column);
-		if(realValue*realValue+imValue*imValue<0.01) // tauPS = 0.1;
-		{
-			realValue = 0;
-			imValue = 0;
-		}
-		real.SetAt(row,column,realValue/max);
-		im.SetAt(row,column,imValue/max);
-	}
-}
-
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> real, CUDAArray<float> im)
 {
 	int row = defaultRow();
@@ -123,7 +105,7 @@ void EstimateLS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 
 	Convolve(resultReal, sourceX ,kernel3);
 	Convolve(resultIm, sourceY ,kernel3);
-
+	
     //ComplexConvolve(resultReal, resultIm, sourceX, sourceY, kernel3, kernel4);
 
 	CUDAArray<float> 

@@ -46,21 +46,26 @@ namespace ComplexFilterQA
         private static void Main(string[] args)
         {
             FillDirections();
-            var path1 = "C:\\temp\\enh\\6_7.tif";
-            var path2 = "C:\\temp\\enh\\6_6.tif";
-            var path3 = "C:\\temp\\enh\\104_3.tif";
+            //var path1 = "C:\\temp\\enh\\6_7.tif";
+            //var path2 = "C:\\temp\\enh\\6_6.tif";
+            var path3 = "C:\\temp\\104_6_enh_GPU.png";
             var path4 = "C:\\temp\\enh\\108_8.tif";
 
             //ImageHelper.MarkMinutiae(path, ProcessFingerprint(ImageHelper.LoadImage(path)), "C:\\temp\\6_7_out.png");
-            
-            var minutiae1 = ProcessFingerprint(ImageHelper.LoadImage(path1));
-            var minutiae2 = ProcessFingerprint(ImageHelper.LoadImage(path2));
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\psim_gpu.bin", "C:\\temp\\psim_gpu.png",true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\psr_gpu.bin", "C:\\temp\\psr_gpu.png", true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\lsim_gpu.bin", "C:\\temp\\lsim_gpu.png", true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\lsr_gpu.bin", "C:\\temp\\lsr_gpu.png", true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\psiim_gpu.bin", "C:\\temp\\psiim_gpu.png", true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\psir_gpu.bin", "C:\\temp\\psir_gpu.png", true);
+            //var minutiae1 = ProcessFingerprint(ImageHelper.LoadImage(path1));
+            //var minutiae2 = ProcessFingerprint(ImageHelper.LoadImage(path2));
             var minutiae3 = ProcessFingerprint(ImageHelper.LoadImage(path3));
             var minutiae4 = ProcessFingerprint(ImageHelper.LoadImage(path4));
 
-            var score1 = MinutiaeMatcher.Match(minutiae1, minutiae2);
-            var score2 = MinutiaeMatcher.Match(minutiae1, minutiae3);
-            var score3 = MinutiaeMatcher.Match(minutiae1, minutiae4);
+            //var score1 = MinutiaeMatcher.Match(minutiae1, minutiae2);
+            //var score2 = MinutiaeMatcher.Match(minutiae1, minutiae3);
+            //var score3 = MinutiaeMatcher.Match(minutiae1, minutiae4);
         }
 
         private static void FillDirections()
@@ -110,6 +115,10 @@ namespace ComplexFilterQA
 
             var psi = KernelHelper.Zip2D(psEnhanced,
                 lsEnhanced.Select2D(x=>x.Magnitude), (x, y) => x * (1.0d - y));
+
+            ImageHelper.SaveArray(psi.Select2D(x=>x.Magnitude),"C:\\temp\\psim.png");
+            ImageHelper.SaveArray(psi.Select2D(x => x.Real), "C:\\temp\\psir.png");
+            ImageHelper.SaveArray(psi.Select2D(x => x.Imaginary), "C:\\temp\\psiim.png");
 
             return SearchMinutiae(psi, lsEnhanced, psEnhanced);
         }
@@ -186,6 +195,8 @@ namespace ComplexFilterQA
                 }
             }
 
+            var grid = new int[psi.GetLength(0), psi.GetLength(1)];
+
             var maxs = psi.Select2D((x, row, column) =>
                 {
                     Point maxP = new Point();
@@ -208,6 +219,8 @@ namespace ComplexFilterQA
                             }
                         }
                     }
+
+                    grid[maxP.X, maxP.Y]++;
                     return maxP;
                 });
 
@@ -219,6 +232,8 @@ namespace ComplexFilterQA
                 responses[point] ++;
             }
 
+
+            ImageHelper.SaveArrayAsBinary(grid,"C:\\temp\\grid.bin");
             var orderedListOfCandidates =
                 responses.Where(x => x.Value >= 20 && x.Key.X > 0 && x.Key.Y > 0 && x.Key.X < psi.GetLength(0)-1 && x.Key.Y < psi.GetLength(1)-1)
                          .OrderByDescending(x => x.Value)
@@ -373,7 +388,6 @@ namespace ComplexFilterQA
             var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2) * x, (x, y) => Gaussian(x, y, Sigma2) * y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma2));
 
             var I20 = ConvolutionHelper.ComplexConvolve(z, kernel2);
-
             return I20;
         }
 

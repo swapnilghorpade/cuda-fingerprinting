@@ -84,7 +84,6 @@ int main()
 	el2.Dispose();
 	EnhanceContrast(enhanced);
 	clock_t clk00 = clock();
-	SaveArray(enhanced, "C:\\temp\\104_6_enh.bin");
 	
 	printf("%f",((float)clk00-clk0)/ CLOCKS_PER_SEC);
 	//CUDAArray<float> magnitude = CUDAArray<float>(ls1Real.Width,ls1Real.Height);

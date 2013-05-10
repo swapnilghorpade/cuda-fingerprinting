@@ -173,7 +173,7 @@ namespace ComplexFilterQA
             bmp.Save(path);
         }
 
-        private static void SaveBinaryAsImage(string pathFrom, string pathTo, bool applyNormalization = false)
+        public static void SaveBinaryAsImage(string pathFrom, string pathTo, bool applyNormalization = false)
         {
             using (var fs = new FileStream(pathFrom, FileMode.Open, FileAccess.Read))
             {
@@ -221,6 +221,28 @@ namespace ComplexFilterQA
                         }
                     }
                     bmp.Save(pathTo, ImageFormat.Png);
+                }
+            }
+        }
+
+        public static void SaveArrayAsBinary(int[,] grid, string path)
+        {
+            int X = grid.GetLength(0);
+            int Y = grid.GetLength(1);
+            using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+            {
+                using (BinaryWriter bw = new BinaryWriter(fs))
+                {
+                    bw.Write(X);
+                    bw.Write(Y);
+
+                    for (int y = 0; y < Y; y++)
+                    {
+                        for (int x = 0; x < X; x++)
+                        {
+                            bw.Write(grid[x,y]);
+                        }
+                    }
                 }
             }
         }
