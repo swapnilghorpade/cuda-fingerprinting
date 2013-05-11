@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2010
+# Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FingerprintLib", "FingerprintLib\FingerprintLib.csproj", "{5EEC4BD2-E1B0-4794-948A-45732CD41F99}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDAFingercode", "CUDAFingercode\CUDAFingercode.vcxproj", "{37C1F4E0-0285-4816-97B8-C7140EC0FD88}"
@@ -19,6 +19,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ComplexFilterQA", "ComplexFilterQA\ComplexFilterQA.csproj", "{9139DE55-F3B0-4118-83A6-9604D83DCBC6}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDAMinutiaeMatcher", "CUDAMinutiaeMatcher\CUDAMinutiaeMatcher.vcxproj", "{98E3BD2D-0774-472E-A5F7-4E8EC945D651}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlgorithmVSCOME", "AlgorithmVSCOME\AlgorithmVSCOME.csproj", "{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -128,6 +130,18 @@ Global
 		{98E3BD2D-0774-472E-A5F7-4E8EC945D651}.Release|Win32.ActiveCfg = Release|Win32
 		{98E3BD2D-0774-472E-A5F7-4E8EC945D651}.Release|Win32.Build.0 = Release|Win32
 		{98E3BD2D-0774-472E-A5F7-4E8EC945D651}.Release|x86.ActiveCfg = Release|Win32
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|Win32.ActiveCfg = Release|Any CPU
+		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
