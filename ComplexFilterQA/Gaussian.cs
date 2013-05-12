@@ -15,7 +15,7 @@ namespace ComplexFilterQA
             return result;
         }
 
-        public static double Gaussian(double x, double y, double sigma)
+        public static double Gaussian2D(double x, double y, double sigma)
         {
             var commonDenom = 2.0d * sigma * sigma;
             var denominator = Math.PI * commonDenom;

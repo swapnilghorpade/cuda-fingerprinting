@@ -53,10 +53,6 @@
       <Project>{9139de55-f3b0-4118-83a6-9604d83dcbc6}</Project>
       <Name>ComplexFilterQA</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FingerprintLib\FingerprintLib.csproj">
-      <Project>{5eec4bd2-e1b0-4794-948a-45732cd41f99}</Project>
-      <Name>FingerprintLib</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

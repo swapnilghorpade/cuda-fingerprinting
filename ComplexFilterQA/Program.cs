@@ -92,8 +92,8 @@ namespace ComplexFilterQA
 
         private static List<Minutia> ProcessFingerprint(double[,] imgBytes)
         {
-            var lsEnhanced = EstimateLS(imgBytes, sigma1, sigma2);
-            var psEnhanced = EstimatePS(imgBytes, sigma1, sigma2);
+            var lsEnhanced = Symmetry.EstimateLS(imgBytes, sigma1, sigma2);
+            var psEnhanced = Symmetry.EstimatePS(imgBytes, sigma1, sigma2);
             //ImageHelper.SaveComplexArrayAsHSV(lsEnhanced,"C:\\temp\\lsenh.png");
 
             //ImageHelper.SaveArray(NormalizeArray(psEnhanced.Select2D(x=>x.Magnitude)), "C:\\temp\\psenh.png");
@@ -128,9 +128,9 @@ namespace ComplexFilterQA
             //SaveArray(l1, "C:\\temp\\l1.png");
             //SaveArray(l2, "C:\\temp\\l2.png");
 
-            var ls1 = EstimateLS(l1, sigma1, sigma2);
-            var ls2 = EstimateLS(l2, sigma1, sigma2);
-            var ls3 = EstimateLS(l3, sigma1, sigma2);
+            var ls1 = Symmetry.EstimateLS(l1, sigma1, sigma2);
+            var ls2 = Symmetry.EstimateLS(l2, sigma1, sigma2);
+            var ls3 = Symmetry.EstimateLS(l3, sigma1, sigma2);
 
             //SaveComplexArrayAsHSV(ls1, "C:\\temp\\ls1.png");
             //SaveComplexArrayAsHSV(ls2, "C:\\temp\\ls2.png");
@@ -274,7 +274,7 @@ namespace ComplexFilterQA
             var ksum = 0d;
             for (int i = 0; i < directionSize; i++)
             {
-                ksum += kernel[i] = Gaussian1D(i - directionSize / 2, sigmaDirection);
+                ksum += kernel[i] = Gaussian.Gaussian1D(i - directionSize / 2, sigmaDirection);
             }
 
             for (int i = 0; i < directionSize; i++)
@@ -345,9 +345,9 @@ namespace ComplexFilterQA
 
             var smoothed = ConvolutionHelper.Convolve(source,
                                                       KernelHelper.MakeKernel(
-                                                          (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d), KernelHelper.GetKernelSizeForGaussianSigma(factor / 2d * 0.75d)));
+                                                          (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d), KernelHelper.GetKernelSizeForGaussianSigma(factor / 2d * 0.75d)));
             var result = new double[(int)(source.GetLength(0) / factor), (int)(source.GetLength(1) / factor)];
-            Resize(smoothed, result, factor, (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d));
+            Resize(smoothed, result, factor, (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d));
             return result;
         }
 
@@ -356,7 +356,7 @@ namespace ComplexFilterQA
             double[,] result = requestedSize == default(Size)
                                    ? new double[(int)(source.GetLength(0) * factor), (int)(source.GetLength(1) * factor)]
                                    : new double[requestedSize.Width, requestedSize.Height];
-            Resize(source, result, 1 / factor, (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d));
+            Resize(source, result, 1 / factor, (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d));
             return result;
         }
 

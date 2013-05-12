@@ -13,9 +13,13 @@ namespace SingularPointsExtraction
         {
             //make Gaussian pyramid
             double[,] level0 = img;
-            double[,] level1 = Size.Reduce2(level0, 2d);
-            double[,] level2 = Size.Reduce2(level1, 2d);
-            double[,] level3 = Size.Reduce2(level2, 2d);
+            double[,] level1 = ChangingSize.Reduce2(level0, 2d);
+            double[,] level2 = ChangingSize.Reduce2(level1, 2d);
+            double[,] level3 = ChangingSize.Reduce2(level2, 2d);
+
+            ImageHelper.SaveArray(level1, "D:/1-1.bmp");
+            ImageHelper.SaveArray(level2, "D:/1-2.bmp");
+            ImageHelper.SaveArray(level3, "D:/1-3.bmp");
 
             return null;
         }

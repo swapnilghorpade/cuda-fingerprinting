@@ -1,20 +1,22 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
-using System.Text;
-
+using System.Numerics;
 namespace ComplexFilterQA
 {
-    public class Size
+    public class ChangingSize
     {
         public static double[,] Reduce2(double[,] source, double factor)
         {
 
             var smoothed = ConvolutionHelper.Convolve(source,
                                                       KernelHelper.MakeKernel(
-                                                          (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d), KernelHelper.GetKernelSizeForGaussianSigma(factor / 2d * 0.75d)));
+                                                          (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d), KernelHelper.GetKernelSizeForGaussianSigma(factor / 2d * 0.75d)));
             var result = new double[(int)(source.GetLength(0) / factor), (int)(source.GetLength(1) / factor)];
-            Resize(smoothed, result, factor, (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d));
+            Resize(smoothed, result, factor, (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d));
             return result;
         }
 
@@ -23,7 +25,7 @@ namespace ComplexFilterQA
             double[,] result = requestedSize == default(Size)
                                    ? new double[(int)(source.GetLength(0) * factor), (int)(source.GetLength(1) * factor)]
                                    : new double[requestedSize.Width, requestedSize.Height];
-            Resize(source, result, 1 / factor, (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d));
+            Resize(source, result, 1 / factor, (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d));
             return result;
         }
 
