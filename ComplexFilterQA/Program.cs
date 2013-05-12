@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Numerics;
 
@@ -30,22 +32,75 @@ namespace ComplexFilterQA
         
         private static void Main(string[] args)
         {
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\check.bin","C:\\temp\\check.png",true);
+
+            //for (int i = 1; i <= 110; i++)
+            //{
+            //    for (int j = 1; j <=8; j++)
+            //    {
+            //        try
+            //        {
+            //            ImageHelper.SaveBinaryAsImage(string.Format("C:\\temp\\enh\\{0}_{1}.bin", i, j), string.Format("C:\\temp\\enh_img\\{0}_{1}.png", i, j), true);
+            //        }
+            //        catch (Exception)
+            //        {
+            //            Console.WriteLine("Check {0}_{1}", i, j);
+            //        }
+
+            //    }
+            //}
+
+            //for (int i = 1; i <= 80; i++)
+            //{
+            //    for (int j = 5; j <= 5; j++)
+            //    {
+            //        try
+            //        {
+            //            var mins = MinutiaeMatcher.LoadMinutiae(string.Format("C:\\temp\\min\\{0}_{1}.min", i, j));
+            //            ImageHelper.MarkMinutiae(string.Format("C:\\temp\\enh_img\\{0}_{1}.png", i, j), mins,
+            //                string.Format("C:\\temp\\mark_img\\{0}_{1}.png", i, j));
+            //        }
+            //        catch (Exception)
+            //        {
+            //            Console.WriteLine("Check {0}_{1}", i, j);
+            //        }
+
+            //    }
+            //}
+
+            using(var br = new BinaryReader(new FileStream("C:\\temp\\ZeeBigResult.bin", FileMode.Open, FileAccess.Read)))
+            {
+                int[] same = new int[33];
+                int[] diff = new int[33];
+
+                for(int i=0;i<33;i++)
+                {
+                    same[i] = br.ReadInt32();
+                }
+                for (int i = 0; i < 33; i++)
+                {
+                    diff[i] = br.ReadInt32();
+                }
+                using(var sw = new StreamWriter(new FileStream("C:\\temp\\ZeeBigResult.csv", FileMode.Create, FileAccess.Write)))
+                {
+                    for(int i=0;i<33;i++)
+                    {
+                        sw.WriteLine("{0};{1};{2}",i,same[i],diff[i]);
+                    }
+                }
+            }
+
             FillDirections();
             //var path1 = "C:\\temp\\enh\\6_7.tif";
             //var path2 = "C:\\temp\\enh\\6_6.tif";
-            var path3 = "C:\\temp\\104_6_enh_GPU.png";
+            var path3 = "C:\\temp\\104_6_enh.png";
             var path4 = "C:\\temp\\enh\\108_8.tif";
-
+            
             //ImageHelper.MarkMinutiae(path, ProcessFingerprint(ImageHelper.LoadImage(path)), "C:\\temp\\6_7_out.png");
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\psim_gpu.bin", "C:\\temp\\psim_gpu.png",true);
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\psr_gpu.bin", "C:\\temp\\psr_gpu.png", true);
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\lsim_gpu.bin", "C:\\temp\\lsim_gpu.png", true);
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\lsr_gpu.bin", "C:\\temp\\lsr_gpu.png", true);
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\psiim_gpu.bin", "C:\\temp\\psiim_gpu.png", true);
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\psir_gpu.bin", "C:\\temp\\psir_gpu.png", true);
             //var minutiae1 = ProcessFingerprint(ImageHelper.LoadImage(path1));
             //var minutiae2 = ProcessFingerprint(ImageHelper.LoadImage(path2));
             var minutiae3 = ProcessFingerprint(ImageHelper.LoadImage(path3));
+            ImageHelper.MarkMinutiae(path3,minutiae3,"C:\\temp\\104_6_enh_marked.png");
             var minutiae4 = ProcessFingerprint(ImageHelper.LoadImage(path4));
 
             //var score1 = MinutiaeMatcher.Match(minutiae1, minutiae2);
@@ -99,11 +154,8 @@ namespace ComplexFilterQA
             //ImageHelper.SaveArray(NormalizeArray(psEnhanced.Select2D(x=>x.Magnitude)), "C:\\temp\\psenh.png");
 
             var psi = KernelHelper.Zip2D(psEnhanced,
-                lsEnhanced.Select2D(x=>x.Magnitude), (x, y) => x * (1.0d - y));
-
-            ImageHelper.SaveArray(psi.Select2D(x=>x.Magnitude),"C:\\temp\\psim.png");
-            ImageHelper.SaveArray(psi.Select2D(x => x.Real), "C:\\temp\\psir.png");
-            ImageHelper.SaveArray(psi.Select2D(x => x.Imaginary), "C:\\temp\\psiim.png");
+                lsEnhanced.Select2D(x=>x.Magnitude), (x, y) => 
+                    x * (1.0d - y));
 
             return SearchMinutiae(psi, lsEnhanced, psEnhanced);
         }
@@ -181,31 +233,32 @@ namespace ComplexFilterQA
             }
 
             var grid = new int[psi.GetLength(0), psi.GetLength(1)];
-
+            
             var maxs = psi.Select2D((x, row, column) =>
                 {
                     Point maxP = new Point();
-                    double maxM = 0;
+                    double maxM = tauPS;
                     for (int dRow = -NeighborhoodSize/2; dRow <= NeighborhoodSize/2; dRow++)
                     {
                         for (int dColumn = -NeighborhoodSize / 2; dColumn <= NeighborhoodSize / 2; dColumn++)
                         {
-                            var correctRow = row + dRow < 0
-                                                 ? 0
-                                                 : (row + dRow >= psi.GetLength(0) ? psi.GetLength(0) - 1 : row + dRow);
-                            var correctColumn = column + dColumn < 0
-                                                 ? 0
-                                                 : (column + dColumn >= psi.GetLength(1) ? psi.GetLength(1) - 1 : column + dColumn);
-                            var value = psi[correctRow, correctColumn];
-                            if (value.Magnitude > maxM)
+                            var correctRow = row + dRow;
+                            var correctColumn = column + dColumn;
+                            
+                            if( correctRow > 9 && correctColumn > 9 
+                                && correctColumn < psi.GetLength(1) - 10 && correctRow < psi.GetLength(0) - 10)
                             {
-                                maxM = value.Magnitude;
-                                maxP = new Point(correctRow, correctColumn);
+                                var value = psi[correctRow, correctColumn];
+                                if (value.Magnitude > maxM)
+                                {
+                                    maxM = value.Magnitude;
+                                    maxP = new Point(correctRow, correctColumn);
+                                }
                             }
                         }
                     }
-
-                    grid[maxP.X, maxP.Y]++;
+                    if(!maxP.IsEmpty)
+                        grid[maxP.X, maxP.Y]++;
                     return maxP;
                 });
 
@@ -225,7 +278,7 @@ namespace ComplexFilterQA
                          .Select(x => x.Key)
                          .Where(x => psi[x.X, x.Y].Magnitude >= tauPS);
             List<Minutia> minutiae = new List<Minutia>();
-
+            int cnt = 0;
             foreach (var candidate in orderedListOfCandidates)
             {
                 int count = 0;
@@ -247,12 +300,14 @@ namespace ComplexFilterQA
                 }
                 if (sum / count > tauLS)
                 {
+                    cnt++;
                     if (!minutiae.Any(pt => (pt.X - candidate.X) * (pt.X - candidate.X) + (pt.Y - candidate.Y) * (pt.Y - candidate.Y) < 30))
                         minutiae.Add(new Minutia() { X = candidate.X, Y = candidate.Y, Angle = ps[candidate.X, candidate.Y].Phase });
                 }
             }
 
-            var endList = minutiae.OrderByDescending(x => ps[x.X, x.Y].Magnitude)
+            var endList = minutiae.OrderByDescending(x => 
+                ps[x.X, x.Y].Magnitude)
                 .Take(MaxMinutiaeCount)
                 .ToList();
             sw.Stop();

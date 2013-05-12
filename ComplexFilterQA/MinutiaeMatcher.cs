@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 
 namespace ComplexFilterQA
 {
+    [DebuggerDisplay("X={X}, Y={Y}")]
     public struct Minutia
     {
         public int X;
