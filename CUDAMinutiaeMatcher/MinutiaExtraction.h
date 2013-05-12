@@ -2,11 +2,12 @@
 #include "device_launch_parameters.h"
 #include <math.h>
 #include <stdio.h>
+#include <string.h>
 #include "MinutiaMatching.h"
 
-__device__ const float tauPS = 0.1f;
-__device__ const int NeighborhoodSize = 9;
-__device__ const float tauLS = 0.9f;
+__device__ const float tauPS = 0.2f;
+__device__ const int NeighborhoodSize = 11;
+__device__ const float tauLS = 0.8f;
 
 // GPU FUNCTIONS
 
@@ -31,43 +32,37 @@ __global__ void cudaEstimateMeasure(CUDAArray<float> psiReal, CUDAArray<float> p
 	}
 }
 
-__global__ void voteForTheMax(CUDAArray<unsigned int> votes, CUDAArray<float> psim)
+__global__ void voteForTheMax(CUDAArray<int> votesRows,CUDAArray<int> votesColumns, CUDAArray<float> psim)
 {
 	int row = defaultRow();
 	int column = defaultColumn();
+	float maxM = tauPS; // a hacky way to get only values above the treshold
 	if(psim.Width>column&&psim.Height>row)
 	{
-		int maxRow = 0;
-		int maxColumn = 0;
-		float maxM = tauPS; // a hacky way to get only values above the treshold
-	
 		for (int dRow = -NeighborhoodSize/2; dRow <= NeighborhoodSize/2; dRow++)
 		{
-			for (int dColumn = -NeighborhoodSize / 2; dColumn <= NeighborhoodSize / 2; dColumn++)
+			int correctRow = row + dRow;
+			if(correctRow > 9 && correctRow < psim.Height-10)
 			{
-				int correctRow = row + dRow < 0
-					? 0
-					: (row + dRow >= psim.Height ? psim.Height - 1 : row + dRow);
-				int correctColumn = column + dColumn < 0
-				                                     ? 0
-			                                         : (column + dColumn >= psim.Width ? psim.Width - 1 : column + dColumn);
-				
-				float value = psim.At(correctRow, correctColumn);
-				if (value > maxM)
+				for (int dColumn = -NeighborhoodSize / 2; dColumn <= NeighborhoodSize / 2; dColumn++)
 				{
-					maxM = value;
-					maxRow = correctRow;
-					maxColumn = correctColumn;
+					int correctColumn = column + dColumn;
+					if(correctColumn > 9 && correctColumn < psim.Width-10)
+					{
+						if (psim.At(correctRow, correctColumn) > maxM)
+						{
+							maxM = psim.At(correctRow, correctColumn);
+							votesRows.SetAt(row,column,correctRow);
+							votesColumns.SetAt(row,column,correctColumn);
+						}
+					}
 				}
 			}
 		}
-		//todo: check specifically
-		if(maxRow>0&&maxColumn>0&&maxRow<votes.Height-1&&maxColumn<votes.Width-1)
-			atomicInc(votes.cudaPtr+maxRow*votes.Stride+sizeof(int)*maxColumn,1000);
 	}
 }
 
-__global__ void calculateMinutiaMetrics(CUDAArray<unsigned int> metrics, CUDAArray<unsigned int> votes, CUDAArray<float> lsm)
+__global__ void calculateMinutiaMetrics(CUDAArray<int> metrics, CUDAArray<int> votes, CUDAArray<float> lsm)
 {
 	int row = defaultRow();
 	int column = defaultColumn();
@@ -96,7 +91,7 @@ __global__ void calculateMinutiaMetrics(CUDAArray<unsigned int> metrics, CUDAArr
 
 		if (sum / count > tauLS)
 		{
-			atomicInc(metrics.cudaPtr+row*metrics.Stride+sizeof(unsigned int)*column,1000);
+			metrics.SetAt(row,column,1);
 		}
 	}
 }
@@ -115,25 +110,28 @@ void EstimateMeasure(CUDAArray<float> psiReal, CUDAArray<float> psiIm,
 
 int compare( const void *arg1, const void *arg2 )
 {
-   return *((float*)arg2)-*((float*)arg1);
+   return (*((float*)arg2)-*((float*)arg1))<0?-1:1;
 }
 
-void ExtractMinutiae(int* xs, int* ys, CUDAArray<float> source)
+void ExtractMinutiae(int** xs, int** ys, CUDAArray<float> source)
 {
+	clock_t clk1 = clock();
 	cudaError error;
 	CUDAArray<float> psReal;
 	CUDAArray<float> psIm;
+	CUDAArray<float> psM=CUDAArray<float>(source.Width,source.Height);
 	
-
 	CUDAArray<float> lsReal;
 	CUDAArray<float> lsIm;
 	CUDAArray<float> lsM=CUDAArray<float>(source.Width,source.Height);
-	EstimateLS(&lsReal, &lsIm, source, 0.6f, 3.2f);
+	EstimateLS(&lsReal, &lsIm, source, 0.8f, 4.0);
 	
 
-	EstimatePS(&psReal, &psIm, source, 0.6f, 3.2f);
+	EstimatePS(&psReal, &psIm, source, 0.8f, 4.0f);
 	GetMagnitude(lsM, lsReal, lsIm);
-	
+	GetMagnitude(psM, psReal, psIm);
+	//SaveArray(psM, "C:\\temp\\check.bin");
+	float* psmLocal = psM.GetData();
 
 	CUDAArray<float> psiReal = CUDAArray<float>(lsM.Width, lsM.Height);
 	CUDAArray<float> psiIm = CUDAArray<float>(lsM.Width, lsM.Height);
@@ -144,11 +142,14 @@ void ExtractMinutiae(int* xs, int* ys, CUDAArray<float> source)
 	
 	error = cudaGetLastError();
 
-	CUDAArray<unsigned int> votes = CUDAArray<unsigned int>(lsM.Width, lsM.Height);
-	CUDAArray<unsigned int> metrics = CUDAArray<unsigned int>(lsM.Width, lsM.Height);
-	cudaMemset2D(votes.cudaPtr, votes.Stride, 0, votes.Width*sizeof(unsigned int), votes.Height);
+	CUDAArray<int> votesRows = CUDAArray<int>(lsM.Width, lsM.Height);
+	CUDAArray<int> votesColumns = CUDAArray<int>(lsM.Width, lsM.Height);
+	CUDAArray<int> metrics = CUDAArray<int>(lsM.Width, lsM.Height);
 
-	cudaMemset2D(metrics.cudaPtr, metrics.Stride, 0, metrics.Width*sizeof(unsigned int), metrics.Height);
+	cudaMemset2D(votesRows.cudaPtr, votesRows.Stride, 0, votesRows.Width*sizeof(int), votesRows.Height);
+	cudaMemset2D(votesColumns.cudaPtr, votesColumns.Stride, 0, votesColumns.Width*sizeof(int), votesColumns.Height);
+
+	cudaMemset2D(metrics.cudaPtr, metrics.Stride, 0, metrics.Width*sizeof(int), metrics.Height);
 
 	error = cudaGetLastError();
 
@@ -156,46 +157,53 @@ void ExtractMinutiae(int* xs, int* ys, CUDAArray<float> source)
 	dim3 gridSize = 
 		dim3(ceilMod(psiReal.Width, defaultThreadCount),
 		ceilMod(psiReal.Height, defaultThreadCount));
-	voteForTheMax<<<gridSize, blockSize>>>(votes, psiM);
+	voteForTheMax<<<gridSize, blockSize>>>(votesRows, votesColumns, psiM);
 
 	cudaDeviceSynchronize();
 	error = cudaGetLastError();
-	SaveArray(votes, "C:\\temp\\grid_gpu.bin");
-	unsigned int* metricsLocal = metrics.GetData();
-	//unsigned int* votesLocal = votes.GetData();
-	//for(int i=0;i<votes.Height*votes.Width;i++)
-	//{
-	//	if(votesLocal[i]!=0)
-	//		printf("%d\n",votesLocal[i]);
-	//}
+
+	int* votesLocal = (int*)malloc(sizeof(int)*votesRows.Width*votesRows.Height);
+	memset(votesLocal, 0, sizeof(int)*votesRows.Width*votesRows.Height);
+	int* votesRowsLocal = votesRows.GetData();
+	int* votesColumnsLocal = votesColumns.GetData();
+
+	for(int i=0;i<votesRows.Width*votesRows.Height;i++)
+	{
+		if(votesRowsLocal[i]>0&&votesRowsLocal[i]<votesRows.Height-1&&votesColumnsLocal[i]>0&&votesColumnsLocal[i]<votesRows.Width-1)
+		{
+			votesLocal[votesRows.Width*votesRowsLocal[i]+votesColumnsLocal[i]]++;
+		}
+	}
+
+	free(votesRowsLocal);
+	free(votesColumnsLocal);
+	
+	CUDAArray<int> votes = CUDAArray<int>(votesLocal,votesRows.Width,votesRows.Height);
+
+	clock_t clk2 = clock();
+
 	calculateMinutiaMetrics<<<gridSize, blockSize>>>(metrics, votes, lsM);
 
 	cudaDeviceSynchronize();
 	error = cudaGetLastError();
-	metricsLocal = metrics.GetData();
+	int* metricsLocal = metrics.GetData();
 
-		//unsigned int* votesLocal = votes.GetData();
-	for(int i=0;i<votes.Height*votes.Width;i++)
-	{
-		if(metricsLocal[i]!=0)
-			printf("%d\n",metricsLocal[i]);
-	}
+
 
 	lsM.Dispose();
 	lsReal.Dispose();
 	lsIm.Dispose();
 	psReal.Dispose();
 	psIm.Dispose();
+	psM.Dispose();
 	psiReal.Dispose();
 	psiIm.Dispose();
-	votes.Dispose();
+	psiM.Dispose();
+	votesRows.Dispose();
+	votesColumns.Dispose();
 	lsIm.Dispose();
 	lsReal.Dispose();
-	psIm.Dispose();
-	psReal.Dispose();
 
-	float* psimLocal = psiM.GetData();
-	psiM.Dispose();
 	int count = 0;
 
 	for(int row=1;row<metrics.Height-1;row++)
@@ -229,9 +237,9 @@ void ExtractMinutiae(int* xs, int* ys, CUDAArray<float> source)
 
 				if(valid)
 				{
-					minutiaeCache[cacheCount+1] = column;
-					minutiaeCache[cacheCount+2] = row;
-					((float*)minutiaeCache)[cacheCount++] = psimLocal[row*metrics.Width+column];
+					minutiaeCache[3*cacheCount+1] = column;
+					minutiaeCache[3*cacheCount+2] = row;
+					((float*)minutiaeCache)[3*cacheCount++] = psmLocal[row*metrics.Width+column];
 				}
 			}
 		}
@@ -239,17 +247,19 @@ void ExtractMinutiae(int* xs, int* ys, CUDAArray<float> source)
 
 	qsort(minutiaeCache, cacheCount, sizeof(float)+sizeof(int)*2,compare);
 
-	xs = (int*)malloc(sizeof(int)*32);
-	ys = (int*)malloc(sizeof(int)*32);
+	*xs = (int*)malloc(sizeof(int)*32);
+	*ys = (int*)malloc(sizeof(int)*32);
 
 	for(int i=0;i<32;i++)
 	{
-		xs[i] = minutiaeCache[3*i+1];
-		ys[i] = minutiaeCache[3*i+2];
+		(*xs)[i] = minutiaeCache[3*i+1];
+		(*ys)[i] = minutiaeCache[3*i+2];
 	}
 
 	metrics.Dispose();
+	votes.Dispose();
 	free(metricsLocal);
-	free(psimLocal);
+	free(psmLocal);
 	free(minutiaeCache);
+	free(votesLocal);
 }

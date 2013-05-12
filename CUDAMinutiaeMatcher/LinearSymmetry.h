@@ -161,18 +161,6 @@ void EstimatePS(CUDAArray<float>* real, CUDAArray<float>* im, CUDAArray<float> s
 
     ComplexConvolve(resultReal, resultIm, sourceX, sourceY, kernel3, kernel4);
 
-	
-	//CUDAArray<float> 
-	//	magnitude = CUDAArray<float>(source.Width, source.Height);
-
-	//cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, resultReal, resultIm);
-	//float* data = magnitude.GetData();
-	//float max=0;
-	//for(int i=0;i<magnitude.Width*magnitude.Height;i++)
-	//{
-	//	if(data[i]>max)max=data[i];
-	//}
-
 	//cudaNormalizePS<<<gridSize,blockSize>>>(resultReal, resultIm, max);
 	cudaError_t error;
 	error = cudaDeviceSynchronize();

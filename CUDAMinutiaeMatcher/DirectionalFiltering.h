@@ -7,7 +7,9 @@
 const float SigmaDirection = 2.0f;
 
 const int KernelSize = 13; //recalculate by 2*(int)ceil(SigmaDirection*3.0f)+1;
+__device__ const int CudaKernelSize = 13;
 const int HalfSize = KernelSize/2; //recalculate by 2*(int)ceil(SigmaDirection*3.0f)+1;
+__device__ const int CudaHalfSize = CudaKernelSize/2;
 
 const int DirectionsNumber = 20;
 
@@ -25,16 +27,16 @@ __global__ void cudaDirectionalFiltering(CUDAArray<float> result, CUDAArray<floa
 	// step 1: copy locally all necessary values for annulus calculation
 	__shared__ float imageCache[32*32];
 	__shared__ float magnitudeCache[32*32];
-	__shared__ float kernel[KernelSize];
+	__shared__ float kernel[CudaKernelSize];
 
-	int realThreadX = threadIdx.x-HalfSize;
-	int realThreadY = threadIdx.y-HalfSize;
+	int realThreadX = threadIdx.x-CudaHalfSize;
+	int realThreadY = threadIdx.y-CudaHalfSize;
 
-	int realBlockSize = blockDim.x-HalfSize*2; // block without apron
+	int realBlockSize = blockDim.x-CudaHalfSize*2; // block without apron
 
 	int rowToCopy = blockIdx.y*realBlockSize + realThreadY; 
 	int columnToCopy = blockIdx.x*realBlockSize + realThreadX;
-	if(threadIdx.y==0&&threadIdx.x<KernelSize)
+	if(threadIdx.y==0&&threadIdx.x<CudaKernelSize)
 	{
 		kernel[threadIdx.x] = constDirectionsKernel[threadIdx.x];
 	}
@@ -87,13 +89,18 @@ __global__ void cudaDirectionalFiltering(CUDAArray<float> result, CUDAArray<floa
 				
 					int direction = (int)round(phase / (CUDART_PI_F / 20));
 				
-					float avg = 0.0f;
-				
-					for (int i = 0; i < KernelSize; i++)
+					if(direction>19)
 					{
-						int x = constDirectionsX[i + KernelSize*direction];
-						int y = constDirectionsY[i + KernelSize*direction];
+						direction = 19;
+					}
+
+					float avg = 0.0f; 
 					
+					for (int i = 0; i < CudaKernelSize; i++)
+					{
+						int x = constDirectionsX[i + CudaKernelSize*direction];
+						int y = constDirectionsY[i + CudaKernelSize*direction];
+
 						avg += kernel[i] * imageCache[32*( -y+threadIdx.y)+x+threadIdx.x];
 					}
 					result.SetAt(rowToCopy, columnToCopy, avg);
@@ -205,7 +212,7 @@ void DirectionFiltering(CUDAArray<float> l, CUDAArray<float> lsReal, CUDAArray<f
 	CUDAArray<float> magnitude = CUDAArray<float>(l.Width, l.Height);
 
 	cudaGetMagnitude<<<gridSize, blockSize>>>(magnitude, lsReal, lsImaginary);
-
+	
 	error = cudaDeviceSynchronize();
 
 	CUDAArray<float> phase = CUDAArray<float>(l.Width, l.Height);
@@ -213,7 +220,7 @@ void DirectionFiltering(CUDAArray<float> l, CUDAArray<float> lsReal, CUDAArray<f
 	cudaGetPhase<<<gridSize, blockSize>>>(phase, lsReal, lsImaginary);
 
 	error = cudaDeviceSynchronize();
-
+	
 	gridSize = 
 		dim3(ceilMod(l.Width, (defaultThreadCount-HalfSize*2)),
 		ceilMod(l.Height, (defaultThreadCount-HalfSize*2)));
@@ -221,7 +228,7 @@ void DirectionFiltering(CUDAArray<float> l, CUDAArray<float> lsReal, CUDAArray<f
 	cudaDirectionalFiltering<<<gridSize, blockSize>>>(l, magnitude, phase, tau1, tau2);
 	
 	error = cudaDeviceSynchronize();
-
+	
 	magnitude.Dispose();
 	phase.Dispose();
 

@@ -2,11 +2,24 @@
 #include "CUDAArray.h"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#include <float.h>
 #include <stdlib.h>
 
 static int defaultThreadCount = 32;
 
 // GPU FUNCTIONS
+__global__ void cudaFixValues(CUDAArray<float> source, float dataMin, float dataMax)
+{
+	int row = defaultRow();
+	int column = defaultColumn();
+	if(source.Width>column&&source.Height>row)
+	{
+		float oldValue = source.At(row,column);
+		float newValue = 255.0f*(oldValue - dataMin)/(dataMax - dataMin);
+		source.SetAt(row,column,newValue);
+	}
+}
+
 __global__ void cudaEnhanceContrast(CUDAArray<float> source)
 {
 	int row = defaultRow();
@@ -87,6 +100,28 @@ __global__ void cudaConvolve(CUDAArray<float> target, CUDAArray<float> source, C
 }
 
 // CPU FUNCTIONS
+
+void FixValues(CUDAArray<float> source)
+{
+
+	 float dataMax = -FLT_MAX;
+     float dataMin = FLT_MAX;
+	 float* data = source.GetData();
+	 for(int i=0;i<source.Width*source.Height;i++)
+	 {
+		 if(data[i]>dataMax)dataMax = data[i];
+		 if(data[i]<dataMin)dataMin = data[i];
+	 }
+
+	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	dim3 gridSize = 
+		dim3(ceilMod(source.Width,defaultThreadCount),
+		ceilMod(source.Height,defaultThreadCount));
+
+	cudaFixValues<<<gridSize,blockSize>>>(source, dataMin, dataMax);
+
+	cudaError_t error = cudaDeviceSynchronize();
+}
 
 void EnhanceContrast(CUDAArray<float> source)
 {

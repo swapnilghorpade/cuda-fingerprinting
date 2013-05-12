@@ -26,7 +26,7 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X2, CUDAArra
 	__shared__ float angle2[32][32];
 
 	__shared__ unsigned int taskCount;
-	__shared__ int tasks[5000];
+	__shared__ int tasks[5500];
 	__shared__ int totalMax;
 	//each shared row corresponds to the fprint centered at its index's minutia
 	int dx = X2.At(blockIdx.x,threadIdx.x);
@@ -55,8 +55,12 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X2, CUDAArra
 				&&abs(constAngle1[threadIdx.x][i] - angle2[threadIdx.y][j]) < CUDART_PIO4_F/2)
 			{
 				unsigned int localIndex = atomicInc(&taskCount ,100500);
-				int value = (threadIdx.x<<24)|(i<<16)|(threadIdx.y<<8)|j;
-				tasks[localIndex] = value;
+				if(localIndex<5000)
+				{
+					int value = (threadIdx.x<<24)|(i<<16)|(threadIdx.y<<8)|j;
+					tasks[localIndex] = value;
+				}
+
 			}
 		}
 	}
@@ -64,13 +68,13 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X2, CUDAArra
 	__syncthreads();
 
 	int maxCount =0;
-
-	int limit = taskCount / 1024 + 1;
+	int localTaskCount = (taskCount>5000?5000:taskCount);
+	int limit = localTaskCount / 1024 + 1;
 	int k = -1;
 	for(int i=0; i<limit; i++)
 	{
 		int index = i*1024+threadIdx.x*32+threadIdx.y;
-		if(index < taskCount)
+		if(index < localTaskCount)
 		{
 			int task = tasks[index];
 			int m1From = task>>24;
@@ -119,7 +123,7 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X2, CUDAArra
 	if(threadIdx.x==0&&threadIdx.y==0)
 	{
 		int absolutemax = 0;
-		for(int i=0;i<taskCount;i++)
+		for(int i=0;i<localTaskCount;i++)
 		{
 			if(tasks[i]>absolutemax)
 			{
@@ -133,7 +137,7 @@ __global__ void MatchMinutiae(CUDAArray<int> result, CUDAArray<int> X2, CUDAArra
 
 // CPU FUNCTIONS
 
-void MatchFingers(int* x1, int* y1, CUDAArray<int> x2, CUDAArray<int> y2)
+CUDAArray<int> MatchFingers(int* x1, int* y1, CUDAArray<int> x2, CUDAArray<int> y2)
 {
 	// prepare zee target fingerprint
 	cudaError_t error;
@@ -162,7 +166,7 @@ void MatchFingers(int* x1, int* y1, CUDAArray<int> x2, CUDAArray<int> y2)
 	error = cudaMemcpyToSymbol(constLength1, localLength1, sizeof(float)*32*32);
 	error = cudaMemcpyToSymbol(constAngle1, localAngle1, sizeof(float)*32*32);
 
-	int n = 1000;
+	int n = x2.Height;
 	CUDAArray<int> result = CUDAArray<int>(n,1);
 
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
@@ -173,8 +177,11 @@ void MatchFingers(int* x1, int* y1, CUDAArray<int> x2, CUDAArray<int> y2)
 
 	error = cudaDeviceSynchronize();
 	cudaError_t error2 = cudaGetLastError();
-	int* res = result.GetData();
-	int m =0;
-	for(int i=0;i<n;i++)if(res[i]>m)m=res[i];
-	result.Dispose();
+
+	free(localAngle1);
+	free(localLength1);
+	free(localX1);
+	free(localY1);
+
+	return result;
 }

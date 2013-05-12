@@ -74,7 +74,7 @@ CUDAArray<float> Reduce(CUDAArray<float> source, float factor)
 	float sigma = factor/2.0f*0.75f;
 
 	CUDAArray<float> smoothed = CUDAArray<float>(source.Width, source.Height);
-
+	
 	CUDAArray<float> kernel = MakeDifferentialGaussianKernel(0, 0, 1, sigma);
 
 	Convolve(smoothed, source, kernel);
