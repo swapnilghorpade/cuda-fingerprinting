@@ -46,11 +46,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ConvolutionHelper.cs" />
+    <Compile Include="Gaussian.cs" />
     <Compile Include="ImageHelper.cs" />
     <Compile Include="KernelHelper.cs" />
     <Compile Include="MinutiaeMatcher.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Size.cs" />
+    <Compile Include="Symmetry.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

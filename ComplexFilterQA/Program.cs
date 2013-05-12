@@ -27,22 +27,7 @@ namespace ComplexFilterQA
 
         private static Point[,] directions = new Point[directionSize, 20];
 
-        private static double Gaussian1D(double x, double sigma)
-        {
-            var commonDenom = 2.0d * sigma * sigma;
-            var denominator = sigma * Math.Sqrt(Math.PI * 2);
-            var result = Math.Exp(-(x * x) / commonDenom) / denominator;
-            return result;
-        }
-
-        private static double Gaussian(double x, double y, double sigma)
-        {
-            var commonDenom = 2.0d*sigma*sigma;
-            var denominator = Math.PI*commonDenom;
-            var result = Math.Exp(-(x*x + y*y)/commonDenom)/denominator;
-            return result;
-        }
-
+        
         private static void Main(string[] args)
         {
             FillDirections();
@@ -348,62 +333,21 @@ namespace ComplexFilterQA
                     }
                 }
             }
-        }
-
-        private static Complex[,] EstimateLS(double[,] l1, double Sigma1, double Sigma2)
-        {
-            var kernelX = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1)*x,KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
-            var resultX = ConvolutionHelper.Convolve(l1, kernelX);
-            var kernelY = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) * -y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
-            var resultY = ConvolutionHelper.Convolve(l1, kernelY);
-
-
-            var preZ = KernelHelper.MakeComplexFromDouble(resultX, resultY);
-
-            var z = preZ.Select2D(x => x*x);
-
-            var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2), (x, y) => 0, 
-                KernelHelper.GetKernelSizeForGaussianSigma(Sigma2));
-
-            var I20 = ConvolutionHelper.ComplexConvolve(z, kernel2);
-
-            var I11 = ConvolutionHelper.Convolve(z.Select2D(x => x.Magnitude), kernel2.Select2D(x => x.Real));
-
-            Complex[,] LS = KernelHelper.Zip2D(I20,I11,(x,y)=>x/y);
-            
-            return LS;
-        }
-
-        private static Complex[,] EstimatePS(double[,] l1, double Sigma1, double Sigma2)
-        {
-            var kernelX = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) * x, KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
-            var resultX = ConvolutionHelper.Convolve(l1, kernelX);
-            var kernelY = KernelHelper.MakeKernel((x, y) => Gaussian(x, y, Sigma1) * -y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
-            var resultY = ConvolutionHelper.Convolve(l1, kernelY);
-
-            var preZ = KernelHelper.MakeComplexFromDouble(resultX, resultY);
-
-            var z = preZ.Select2D(x => x * x);
-
-            var kernel2 = KernelHelper.MakeComplexKernel((x, y) => Gaussian(x, y, Sigma2) * x, (x, y) => Gaussian(x, y, Sigma2) * y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma2));
-
-            var I20 = ConvolutionHelper.ComplexConvolve(z, kernel2);
-            return I20;
-        }
+        }       
 
         private static double[,] ContrastEnhancement(double[,] source)
         {
             return source.Select2D(x => Math.Sign(x)*Math.Sqrt(Math.Abs(x)));
         }
 
-        private static double[,] Reduce2(double[,] source, double factor)
+        public static double[,] Reduce2(double[,] source, double factor)
         {
 
             var smoothed = ConvolutionHelper.Convolve(source,
                                                       KernelHelper.MakeKernel(
-                                                          (x, y) => Gaussian(x, y, factor / 2d * 0.75d), KernelHelper.GetKernelSizeForGaussianSigma(factor / 2d * 0.75d)));
+                                                          (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d), KernelHelper.GetKernelSizeForGaussianSigma(factor / 2d * 0.75d)));
             var result = new double[(int)(source.GetLength(0) / factor), (int)(source.GetLength(1) / factor)];
-            Resize(smoothed, result, factor, (x, y) => Gaussian(x, y, factor/2d*0.75d));
+            Resize(smoothed, result, factor, (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d));
             return result;
         }
 
@@ -412,7 +356,7 @@ namespace ComplexFilterQA
             double[,] result = requestedSize == default(Size)
                                    ? new double[(int)(source.GetLength(0) * factor), (int)(source.GetLength(1) * factor)]
                                    : new double[requestedSize.Width, requestedSize.Height];
-            Resize(source, result, 1/factor, (x, y) => Gaussian(x, y, factor / 2d * 0.75d));
+            Resize(source, result, 1 / factor, (x, y) => Gaussian.Gaussian(x, y, factor / 2d * 0.75d));
             return result;
         }
 
