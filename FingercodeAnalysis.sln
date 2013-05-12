@@ -22,6 +22,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDAMinutiaeMatcher", "CUDA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AlgorithmVSCOME", "AlgorithmVSCOME\AlgorithmVSCOME.csproj", "{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SingularPointsExtraction", "SingularPointsExtraction\SingularPointsExtraction.csproj", "{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -142,6 +144,18 @@ Global
 		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|Win32.ActiveCfg = Release|Any CPU
 		{5ABE7D91-51F9-46B8-ADA5-5CDFF6B0781E}.Release|x86.ActiveCfg = Release|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Release|Win32.ActiveCfg = Release|Any CPU
+		{A4F068DE-AACD-4FBC-8C5D-8F1EF8A1591B}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
