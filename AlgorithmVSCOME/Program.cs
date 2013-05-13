@@ -26,8 +26,8 @@ namespace AlgorithmVSCOME
             Complex[,] complexOrientationField = CalculateComplexOrientationField(orientationField);            
             Complex[,] filter = Filter.GetFilter(imgBytes);
 
-            VSCOME vscome = new VSCOME(orientationField, 
-                ConvolutionHelper.ComplexConvolve(complexOrientationField, filter));
+            VSCOME vscome = new VSCOME(orientationField,
+                ComplexArrayToDoubleArray(ConvolutionHelper.ComplexConvolve(complexOrientationField, filter)));
 
             double[,] vscomeValue = vscome.CalculateVscomeValue();
             int x = 0;
@@ -86,6 +86,24 @@ namespace AlgorithmVSCOME
                 for (int j = 0; j < jLength; j++)
                 {
                     result[i, j] = (int)arr[i, j];
+                }
+            }
+
+            return result;
+        }
+
+
+        private static double[,] ComplexArrayToDoubleArray(Complex[,] arr)
+        {
+            int iLength = arr.GetLength(0);
+            int jLength = arr.GetLength(1);
+            double[,] result = new double[iLength, jLength];
+
+            for (int i = 0; i < iLength; i++)
+            {
+                for (int j = 0; j < jLength; j++)
+                {
+                    result[i, j] = Complex.Abs(arr[i, j]);
                 }
             }
 

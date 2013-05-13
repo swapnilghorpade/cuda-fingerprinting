@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using System.Numerics;
 using ComplexFilterQA;
 
 namespace AlgorithmVSCOME
@@ -11,7 +10,7 @@ namespace AlgorithmVSCOME
     internal class VSCOME
     {
         private double[,] orientationField;
-        private Complex[,] filteredField;
+        private double[,] filteredField;
 
         public VSCOME(double[,] orientationField, Complex[,] filteredField)
         {
@@ -29,12 +28,7 @@ namespace AlgorithmVSCOME
             {
                 for (int v = 0; v < orientationField.GetLength(1); v++)
                 {
-                    // Comblex[,] filteredField
-                    // but
-                    // Symmetry.CalculateSymmetry(..., double[,] filteredField) 
-
-                    //symmetryValue = Symmetry.CalculateSymmetry(u, v, orientationField.GetLength(0) * orientationField.GetLength(1), filteredField);
-                    symmetryValue = Symmetry.CalculateSymmetry(u, v, orientationField.GetLength(0) * orientationField.GetLength(1), new double[1, 1]);
+                    symmetryValue = Symmetry.CalculateSymmetry(u, v, orientationField.GetLength(0) * orientationField.GetLength(1), filteredField);
                     vorivValue = VORIV.CalculateVoriv(u, v, orientationField);
                     vscome[u, v] = (vorivValue + symmetryValue) / 2;
                 }

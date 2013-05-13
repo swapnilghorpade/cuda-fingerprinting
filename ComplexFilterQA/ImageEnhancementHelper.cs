@@ -29,14 +29,14 @@ namespace ComplexFilterQA
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            var g1 = Reduce2(imgBytes, 1.7d);
-            var g2 = Reduce2(g1, 1.21d);
-            var g3 = Reduce2(g2, K);
-            var g4 = Reduce2(g3, K);
+            var g1 = ChangingSize.Reduce2(imgBytes, 1.7d);
+            var g2 = ChangingSize.Reduce2(g1, 1.21d);
+            var g3 = ChangingSize.Reduce2(g2, K);
+            var g4 = ChangingSize.Reduce2(g3, K);
 
-            var p3 = Expand2(g4, K, new Size(g3.GetLength(0), g3.GetLength(1)));
-            var p2 = Expand2(g3, K, new Size(g2.GetLength(0), g2.GetLength(1)));
-            var p1 = Expand2(g2, 1.21d, new Size(g1.GetLength(0), g1.GetLength(1)));
+            var p3 = ChangingSize.Expand2(g4, K, new Size(g3.GetLength(0), g3.GetLength(1)));
+            var p2 = ChangingSize.Expand2(g3, K, new Size(g2.GetLength(0), g2.GetLength(1)));
+            var p1 = ChangingSize.Expand2(g2, 1.21d, new Size(g1.GetLength(0), g1.GetLength(1)));
 
             var l3 = ContrastEnhancement(KernelHelper.Subtract(g3, p3));
             var l2 = ContrastEnhancement(KernelHelper.Subtract(g2, p2));
@@ -55,8 +55,8 @@ namespace ComplexFilterQA
 
             var ls2Scaled =
                 KernelHelper.MakeComplexFromDouble(
-                    Expand2(ls2.Select2D(x => x.Real), K, new Size(l1.GetLength(0), l1.GetLength(1))),
-                    Expand2(ls2.Select2D(x => x.Imaginary), K, new Size(l1.GetLength(0), l1.GetLength(1))));
+                    ChangingSize.Expand2(ls2.Select2D(x => x.Real), K, new Size(l1.GetLength(0), l1.GetLength(1))),
+                    ChangingSize.Expand2(ls2.Select2D(x => x.Imaginary), K, new Size(l1.GetLength(0), l1.GetLength(1))));
             var multiplier = KernelHelper.Subtract(ls1.Select2D(x => x.Phase), ls2Scaled.Select2D(x => x.Phase));
 
             for (int x = 0; x < ls1.GetLength(0); x++)
@@ -71,11 +71,11 @@ namespace ComplexFilterQA
             DirectionFiltering(l2, ls2, tau1, tau2);
             DirectionFiltering(l3, ls3, tau1, tau2);
 
-            var ll2 = Expand2(l3, K, new Size(l2.GetLength(0), l2.GetLength(1)));
+            var ll2 = ChangingSize.Expand2(l3, K, new Size(l2.GetLength(0), l2.GetLength(1)));
             l2 = KernelHelper.Add(ll2, l2);
-            var ll1 = Expand2(l2, 1.21d, new Size(l1.GetLength(0), l1.GetLength(1)));
+            var ll1 = ChangingSize.Expand2(l2, 1.21d, new Size(l1.GetLength(0), l1.GetLength(1)));
             l1 = KernelHelper.Add(ll1, l1);
-            var ll0 = Expand2(l1, 1.7d, new Size(imgBytes.GetLength(0), imgBytes.GetLength(1)));
+            var ll0 = ChangingSize.Expand2(l1, 1.7d, new Size(imgBytes.GetLength(0), imgBytes.GetLength(1)));
 
             ll0 = ContrastEnhancement(ll0);
             sw.Stop();
@@ -164,26 +164,6 @@ namespace ComplexFilterQA
             return source.Select2D(x => Math.Sign(x) * Math.Sqrt(Math.Abs(x)));
         }
 
-        public static double[,] Reduce2(double[,] source, double factor)
-        {
-
-            var smoothed = ConvolutionHelper.Convolve(source,
-                                                      KernelHelper.MakeKernel(
-                                                          (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d), KernelHelper.GetKernelSizeForGaussianSigma(factor / 2d * 0.75d)));
-            var result = new double[(int)(source.GetLength(0) / factor), (int)(source.GetLength(1) / factor)];
-            Resize(smoothed, result, factor, (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d));
-            return result;
-        }
-
-        private static double[,] Expand2(double[,] source, double factor, Size requestedSize = default(Size))
-        {
-            double[,] result = requestedSize == default(Size)
-                                   ? new double[(int)(source.GetLength(0) * factor), (int)(source.GetLength(1) * factor)]
-                                   : new double[requestedSize.Width, requestedSize.Height];
-            Resize(source, result, 1 / factor, (x, y) => Gaussian.Gaussian2D(x, y, factor / 2d * 0.75d));
-            return result;
-        }
-
         public static double[,] RearrangeArray(double[,] data, double min, double max)
         {
             var dataMax = double.NegativeInfinity;
@@ -194,37 +174,6 @@ namespace ComplexFilterQA
                 if (num < dataMin) dataMin = num;
             }
             return data.Select2D((value, row, column) => ((value - dataMin) / (dataMax - dataMin) * (max - min)) + min);
-        }
-
-        private static void Resize(double[,] source, double[,] result, double cellSize, Func<double, double, double> filterFunction)
-        {
-            for (int row = 0; row < result.GetLength(0); row++)
-            {
-                for (int column = 0; column < result.GetLength(1); column++)
-                {
-                    double x = cellSize * row;
-                    double y = cellSize * column;
-
-                    double sum = 0;
-                    double filterSum = 0;
-
-                    for (int xm = (int)x - 5; xm <= (int)x + 5; xm++)
-                    {
-                        if (xm < 0) continue;
-                        if (xm >= source.GetLength(0)) break;
-                        for (int ym = (int)y - 5; ym <= (int)y + 5; ym++)
-                        {
-                            if (ym < 0) continue;
-                            if (ym >= source.GetLength(1)) break;
-                            var filterValue = filterFunction(x - xm, y - ym);
-                            filterSum += filterValue;
-                            sum += source[xm, ym] * filterValue;
-                        }
-                    }
-                    sum /= filterSum;
-                    result[row, column] = sum;
-                }
-            }
         }
     }
 }
