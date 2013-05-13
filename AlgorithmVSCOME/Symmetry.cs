@@ -3,21 +3,23 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 
 namespace AlgorithmVSCOME
 {
     internal static class Symmetry
     {
-        internal static double CalculateSymmetry(double u, double v, int m)
+        internal static double CalculateSymmetry(int u, int v, int m, double[,] filteredField)
         {
-            XY_Function function = new XY_Function(u, v);
+            if (XY_Function.CalculateFunction(u, v, filteredField))
+            {
+                double result = XY_Function.X_Function * XY_Function.X_Function +
+                                XY_Function.Y_Function * XY_Function.Y_Function;
 
-            function.CalculateFunction();
+                return Math.Sqrt(result) / m;
+            }
 
-            double result = function.X_Function * function.X_Function +
-                            function.Y_Function * function.Y_Function;
-
-            return Math.Sqrt(result) / m;
+            throw new ArgumentException("CalculateSymmetry");
         }
     }
 }

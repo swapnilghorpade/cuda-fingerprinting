@@ -2,7 +2,7 @@
 
 namespace ComplexFilterQA
 {
-    static class ConvolutionHelper
+    public static class ConvolutionHelper
     {
         public static double[,] Convolve(double[,] data, double[,] kernel)
         {

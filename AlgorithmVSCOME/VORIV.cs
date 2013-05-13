@@ -8,7 +8,7 @@ namespace AlgorithmVSCOME
 {
     internal static class VORIV
     {
-        internal static double CalculateVoriv(double u, double v)
+        internal static double CalculateVoriv(int u, int v, double[,] orientationField)
         {
             int halfK = (int)(Constants.K / 2);
             double sum = 0;
@@ -18,8 +18,7 @@ namespace AlgorithmVSCOME
             {
                 for (int i = 0; i <= Constants.N - 1; i++)
                 {
-                    sum += FunctionF(Tetta.GetTetta(u - i, v + k)
-                        - Tetta.GetTetta(u - i - 1, v + k));
+                    sum += FunctionF(orientationField[u - i, v + k] - orientationField[u - i - 1, v + k]);
                 }
 
                 result += sum;

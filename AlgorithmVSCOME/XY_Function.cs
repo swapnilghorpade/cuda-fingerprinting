@@ -6,43 +6,36 @@ using System.Threading.Tasks;
 
 namespace AlgorithmVSCOME
 {
-    internal class XY_Function
+    internal static class XY_Function
     {
-        private double u, v, sum_X, result_X, sum_Y, result_Y = 0;
-        private int upperBound, lowerBound = 0;
-        private XY_WithLine withLine = new XY_WithLine();
+        private static double result_X, result_Y = 0;
 
-        public double X_Function
+        public static double X_Function
         {
             get { return result_X; }
         }
 
-        public double Y_Function
+        public static double Y_Function
         {
             get { return result_Y; }
         }
 
-        public XY_Function(double u, double v)
+        internal static bool CalculateFunction(int u, int v, double[,] orientationField)
         {
-            this.u = u;
-            this.v = v;
-
-            upperBound = (int)(Constants.W / 2);
-            lowerBound = -1 * upperBound;
-        }
-
-        internal void CalculateFunction()
-        {
+            int upperBound = (int)(Constants.W / 2);
+            int lowerBound = -1 * upperBound;
             double gaussian, xWithLine, yWithLine, arg, sin, cos = 0;
+            double sum_X = 0;
+            double sum_Y = 0;
 
             for (int x = lowerBound; x <= upperBound; x++)
             {
                 for (int y = lowerBound; y <= upperBound; y++)
                 {
                     gaussian = Gaussian.CalculateGaussian(x, y);
-                    xWithLine = withLine.GetX_WithLine(x, y);
-                    yWithLine = withLine.GetY_WithLine(x, y);
-                    arg = 2 * Tetta.GetTetta(u + y, v + x);
+                    xWithLine = XY_WithLine.GetX_WithLine(x, y);
+                    yWithLine = XY_WithLine.GetY_WithLine(x, y);
+                    arg = 2 * orientationField[u + y, v + x];
                     sin = Math.Sin(arg);
                     cos = Math.Cos(arg);
 
@@ -55,6 +48,8 @@ namespace AlgorithmVSCOME
                 sum_X = 0;
                 sum_Y = 0;
             }
+
+            return true;
         }
     }
 }

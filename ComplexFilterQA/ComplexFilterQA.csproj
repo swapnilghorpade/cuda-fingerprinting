@@ -47,6 +47,7 @@
   <ItemGroup>
     <Compile Include="ConvolutionHelper.cs" />
     <Compile Include="Gaussian.cs" />
+    <Compile Include="ImageEnhancementHelper.cs" />
     <Compile Include="ImageHelper.cs" />
     <Compile Include="KernelHelper.cs" />
     <Compile Include="MinutiaeMatcher.cs" />

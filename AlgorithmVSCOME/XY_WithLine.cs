@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace AlgorithmVSCOME
 {
-    internal class XY_WithLine
+    internal static class XY_WithLine
     {
-        public double GetX_WithLine(double x, double y)
+        public static double GetX_WithLine(double x, double y)
         {
             if (x >= 0 || y >= 0)
             {
@@ -21,7 +21,7 @@ namespace AlgorithmVSCOME
             return result / denominator;
         }
 
-        public double GetY_WithLine(double x, double y)
+        public static double GetY_WithLine(double x, double y)
         {
             if (x >= 0 || y >= 0)
             {
@@ -34,7 +34,7 @@ namespace AlgorithmVSCOME
             return result / denominator;
         }
 
-        private double GetDenominator(double x, double y)
+        private static double GetDenominator(double x, double y)
         {
             return Math.Sqrt(x * x + y * y);
         }

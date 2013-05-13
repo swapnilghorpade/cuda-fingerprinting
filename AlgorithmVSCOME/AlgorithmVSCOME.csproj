@@ -34,6 +34,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Numerics" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -42,11 +43,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
+    <Compile Include="Filter.cs" />
     <Compile Include="Gaussian.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Symmetry.cs" />
-    <Compile Include="Tetta.cs" />
     <Compile Include="VORIV.cs" />
     <Compile Include="VSCOME.cs" />
     <Compile Include="XY_Function.cs" />
