@@ -22,5 +22,10 @@ namespace ComplexFilterQA
             var result = Math.Exp(-(x * x + y * y) / commonDenom) / denominator;
             return result;
         }
+        public static double Gaussian2D(double x, double y, double sigmaX, double sigmaY)
+        {
+            var result = Math.Exp(-1 * (x * x / (2 * sigmaX * sigmaX) + y * y / (2 * sigmaY * sigmaY)));
+            return result;
+        }
     }
 }
