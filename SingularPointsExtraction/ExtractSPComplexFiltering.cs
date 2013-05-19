@@ -24,41 +24,66 @@ namespace SingularPointsExtraction
 
             //Calculate response of parabolic symmetry filter
 
-            double[,] forDelta3 = level3.Select2D((value, row, column) => (level3[row, level3.GetLength(1) - column - 1]));
-  
-            Complex[,] response3 = Symmetry.EstimatePS(level3, 1.6d, 3.2d);                      
-            Complex[,] responseForDelta3 = Symmetry.EstimatePS(forDelta3, 0.6d, 3.2d);
-            for (int i = 0; i < response3.GetLength(0); i++)
-            {
-                for (int j = 0; j < response3.GetLength(1); j++)
-                {
-                    double newMagnitude = response3[i, j].Magnitude * (1d - responseForDelta3[i, j].Magnitude);
-                    response3[i, j] = Complex.FromPolarCoordinates(newMagnitude, response3[i,j].Phase);                    
-                }                
-            }
-
-            double[,] bbb = response3.Select2D((value, row, column) => (response3[row, column].Magnitude));
-            ImageHelper.SaveArray(bbb, "D:/1-4.bmp");
+           
+           
 
             //Compute a modified complex filter response(for level 3)
-            Complex[,] z = GetZ(level3, 1.6d);
+            
+            return null;
+        }
+
+        /// <summary>
+        ///Calculate response of parabolic symmetry filter
+        /// </summary>
+        /// <param name="img"></param>
+        /// <param name="sigma1">for direction field</param>
+        /// <param name="sigma2">for direction field</param>
+        /// <param name="isLevel3">is level 3 of gaussian pyramid</param>
+        /// <returns></returns>
+        static private Tuple<int, int> CalculateFilterResponse(double[,] img, double sigma1, double sigma2, bool isLevel3)
+        {
+            double[,] forDelta3 = img.Select2D((value, row, column) => (img[row, img.GetLength(1) - column - 1]));
+
+            Complex[,] response = Symmetry.EstimatePS(img, sigma1, sigma2);
+            Complex[,] responseForDelta = Symmetry.EstimatePS(forDelta3, sigma1, sigma2);
+            for (int i = 0; i < response.GetLength(0); i++)
+            {
+                for (int j = 0; j < response.GetLength(1); j++)
+                {
+                    double newMagnitude = response[i, j].Magnitude * (1d - responseForDelta[i, j].Magnitude);
+                    response[i, j] = Complex.FromPolarCoordinates(newMagnitude, response[i, j].Phase);
+                }
+            }
+
+            if (isLevel3)
+            {
+                response = CalculateModifiedFilterResponse(img, response, sigma1);                
+            }
+            //тут будет поиск абсолютного максимума
+            return new Tuple<int, int>(0, 0);
+        }
+
+        static private Complex[,] CalculateModifiedFilterResponse(double[,] img, Complex[,]response, double sigma1)
+        {
+            Complex[,] z = GetZ(img, sigma1);
             double[,] magnitudeZ = z.Select2D((value,x,y)=>(z[x,y].Magnitude));
 
             ImageHelper.SaveArray(magnitudeZ, "D:/1-3.bmp");
             double[,] gaussians = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D(x, y, 1.5d), KernelHelper.GetKernelSizeForGaussianSigma(1.5d));
             double[,] resultOfconvolve = ConvolutionHelper.Convolve(magnitudeZ, gaussians);
-            Complex[,] zc = response3.Select2D((value,x,y)=>(response3[x,y]*resultOfconvolve[x,y]));
+            Complex[,] zc = response.Select2D((value,x,y)=>(response[x,y]*resultOfconvolve[x,y]));
 
-            double[,] bigGaussian = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D((float)x, (float)y, 11.7, 7), response3.GetLength(0), response3.GetLength(1));
-            Complex[,] gc = response3.Select2D((value, x, y) => (response3[x, y] * bigGaussian[x, y]));
+            double[,] bigGaussian = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D((float)x, (float)y, 11.7, 7), response.GetLength(0), response.GetLength(1));
+            Complex[,] gc = response.Select2D((value, x, y) => (response[x, y] * bigGaussian[x, y]));
 
-            Complex[,] modifiedResponse3 = gc.Select2D((value, x, y) => 0.5*(gc[x, y] + zc[x, y]));
+            Complex[,] modifiedResponse = gc.Select2D((value, x, y) => 0.5*(gc[x, y] + zc[x, y]));
 
             
-            double[,] aaa = modifiedResponse3.Select2D((value, row, column) => (modifiedResponse3[row,column].Magnitude));
+            double[,] aaa = modifiedResponse.Select2D((value, row, column) => (modifiedResponse[row,column].Magnitude));
             ImageHelper.SaveArray(aaa, "D:/1-5.bmp");
+
+            return modifiedResponse;
             
-            return null;
         }
 
         //part of Symetry.EstimatePS
