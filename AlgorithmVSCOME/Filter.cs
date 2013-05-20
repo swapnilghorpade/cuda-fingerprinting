@@ -11,8 +11,8 @@ namespace AlgorithmVSCOME
     {
         public static Complex[,] GetFilter(double[,] arr)
         {
-            int xLength = arr.GetLength(0);
-            int yLength = arr.GetLength(1);
+            int xLength = arr.GetLength(0) - 2 * arr.GetLength(0) / 2 == 0 ? arr.GetLength(0) + 1 : arr.GetLength(0);
+            int yLength = arr.GetLength(1) - 2 * arr.GetLength(1) / 2 == 0 ? arr.GetLength(1) + 1 : arr.GetLength(1);
             int upperBoundX = (int)(xLength / 2);
             int lowerBoundX = -1 * upperBoundX;
             int upperBoundY = (int)(yLength / 2);

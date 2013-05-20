@@ -7,7 +7,7 @@ using System.Linq;
 using System.Numerics;
 namespace ComplexFilterQA
 {
-    public class ChangingSize
+    public class ImageSizeHelper
     {
         public static double[,] Reduce2(double[,] source, double factor)
         {

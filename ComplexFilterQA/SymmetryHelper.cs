@@ -6,7 +6,7 @@ using System.Numerics;
 
 namespace ComplexFilterQA
 {
-    public class Symmetry
+    public class SymmetryHelper
     {
         public static Complex[,] EstimateLS(double[,] l1, double Sigma1, double Sigma2)
         {

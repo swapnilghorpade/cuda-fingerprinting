@@ -18,7 +18,10 @@ namespace AlgorithmVSCOME
             {
                 for (int i = 0; i <= Constants.N - 1; i++)
                 {
-                    sum += FunctionF(orientationField[u - i, v + k] - orientationField[u - i - 1, v + k]);
+                    if (v + k >= 0 && u - i - 1 >= 0 && u - i < orientationField.GetLength(0) && v + k < orientationField.GetLength(1))
+                    {
+                        sum += FunctionF(orientationField[u - i, v + k] - orientationField[u - i - 1, v + k]);
+                    }
                 }
 
                 result += sum;

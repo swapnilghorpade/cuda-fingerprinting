@@ -28,12 +28,17 @@ namespace AlgorithmVSCOME
             double sum_X = 0;
             double sum_Y = 0;
 
-            for (int x = lowerBound; x <= upperBound; x++)
+            for (int x = lowerBound; x < upperBound; x++)
             {
-                for (int y = lowerBound; y <= upperBound; y++)
+                for (int y = lowerBound; y < upperBound; y++)
                 {
+                    if (u + y < 0 || v + x < 0 || u + y >= orientationField.GetLength(0) || v + x >= orientationField.GetLength(1)) 
+                    {
+                        continue;
+                    } 
+
                     gaussian = Gaussian.CalculateGaussian(x, y);
-                    xWithLine = XY_WithLine.GetX_WithLine(x, y);
+                    xWithLine = XY_WithLine.GetX_WithLine(x, y); 
                     yWithLine = XY_WithLine.GetY_WithLine(x, y);
                     arg = 2 * orientationField[u + y, v + x];
                     sin = Math.Sin(arg);

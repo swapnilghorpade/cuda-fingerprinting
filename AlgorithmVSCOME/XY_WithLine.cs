@@ -10,9 +10,9 @@ namespace AlgorithmVSCOME
     {
         public static double GetX_WithLine(double x, double y)
         {
-            if (y < 0 || (y==0 && x==0))
+            if (y < 0 || (y == 0 && x == 0))
             {
-                throw new ArgumentNullException("y < 0");
+                return 0;
             }
 
             double result = 2 * x * y;
@@ -25,10 +25,10 @@ namespace AlgorithmVSCOME
         {
             if (y < 0 || (y == 0 && x == 0))
             {
-                throw new ArgumentNullException("y < 0");
+                return 0;
             }
 
-            double result = x*x - y*y;
+            double result = x * x - y * y;
             double denominator = GetDenominator(x, y);
 
             return result / denominator;
