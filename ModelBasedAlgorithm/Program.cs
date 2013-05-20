@@ -8,19 +8,26 @@ using FingerprintLib;
 
 namespace ModelBasedAlgorithm
 {
+    internal struct Point
+    {
+        public int X;
+        public int Y;
+    }
+
     class Program
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Write path, please.");
-
-            string path = Console.ReadLine();
+            string path = "C:\\Users\\Tanya\\Documents\\tests_data\\101_1.tif";
 
             double[,] imgBytes = ImageHelper.LoadImage(path);
             imgBytes = ImageEnhancementHelper.EnhanceImage(imgBytes);
 
-            var singularPoints = ModelBasedAlgorithm.FindSingularPoints(imgBytes,
-                PoincareIndexMethod.FindSingularPoins(imgBytes));
+            // size ~ 2.3
+            double[,] orientationField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(imgBytes);
+
+            List<Point> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
+            singularPoints = ModelBasedAlgorithm.FindSingularPoints(orientationField, singularPoints);
         }
     }
 }

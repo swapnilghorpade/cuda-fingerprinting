@@ -24,6 +24,8 @@ namespace AlgorithmVSCOME
         {
             int upperBound = (int)(Constants.W / 2);
             int lowerBound = -1 * upperBound;
+            int maxValueX = orientationField.GetLength(0);
+            int maxValueY = orientationField.GetLength(1);
             double gaussian, xWithLine, yWithLine, arg, sin, cos = 0;
             double sum_X = 0;
             double sum_Y = 0;
@@ -32,7 +34,7 @@ namespace AlgorithmVSCOME
             {
                 for (int y = lowerBound; y < upperBound; y++)
                 {
-                    if (u + y < 0 || v + x < 0 || u + y >= orientationField.GetLength(0) || v + x >= orientationField.GetLength(1)) 
+                    if (u + y < 0 || v + x < 0 || u + y >= maxValueX || v + x >= maxValueY) 
                     {
                         continue;
                     } 

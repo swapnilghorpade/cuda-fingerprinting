@@ -20,24 +20,23 @@ namespace AlgorithmVSCOME
             double[,] imgBytes = ImageHelper.LoadImage(path);
             imgBytes = ImageEnhancementHelper.EnhanceImage(imgBytes);
 
-            double[,] orientationField = OrientationFieldGenerator.GenerateOrientationField(imgBytes.Select2D((value, x, y) => ((int)imgBytes[x, y])));
-            Complex[,] complexOrientationField = orientationField.Select2D((value, x, y) => 
-                (new Complex(Math.Cos(2 * orientationField[x, y]), Math.Sin(2 * orientationField[x, y]))));
+            double[,] orientationField = OrientationFieldGenerator.GenerateOrientationField(imgBytes.Select2D(x => (int)x));
+            Complex[,] complexOrientationField = orientationField.Select2D(x => (new Complex(Math.Cos(2 * x), Math.Sin(2 * x))));
 
             Complex[,] filter = Filter.GetFilter(orientationField);
 
             Complex[,] complexFilteredField = ConvolutionHelper.ComplexConvolve(complexOrientationField, filter);
-            double[,] filteredField = complexFilteredField.Select2D((value, x, y) => (complexFilteredField[x, y].Magnitude));
+            double[,] filteredField = complexFilteredField.Select2D(x => x.Magnitude);
 
-           // ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\orientationField.jpg");
-           // ImageHelper.SaveArray(filteredField, "C:\\Users\\Tanya\\Documents\\Results\\filteredField.jpg"); 
+            // ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\orientationField.jpg");
+            // ImageHelper.SaveArray(filteredField, "C:\\Users\\Tanya\\Documents\\Results\\filteredField.jpg"); 
 
             VSCOME vscome = new VSCOME(orientationField, filteredField);
 
-            
+
             double[,] vscomeValue = vscome.CalculateVscomeValue();
 
-           // ImageHelper.SaveArray(vscomeValue, "C:\\Users\\Tanya\\Documents\\Results\\vscomeValue.jpg"); 
+            // ImageHelper.SaveArray(vscomeValue, "C:\\Users\\Tanya\\Documents\\Results\\vscomeValue.jpg"); 
 
             int xCoordinate = 0;
             int yCoordinate = 0;

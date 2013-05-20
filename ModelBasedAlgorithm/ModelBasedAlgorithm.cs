@@ -9,11 +9,17 @@ namespace ModelBasedAlgorithm
 {
     internal class ModelBasedAlgorithm
     {
-        internal static  Dictionary<int, int> FindSingularPoints(double[,] bytes, Dictionary<int, int> singularPointsPI)
+        internal static List<Point> FindSingularPoints(double[,] orientationField, List<Point> singularPointsPI)
         {
-            ///
+            for (int x = 0; x < orientationField.GetLength(0); x++)
+            {
+                for (int y = 0; y < orientationField.GetLength(1); y++)
+                {
 
-            return new Dictionary<int, int>();
+                }
+            }
+
+            return new List<Point>();
         }
     }
 }

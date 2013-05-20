@@ -9,18 +9,17 @@ namespace ModelBasedAlgorithm
 {
     internal static class PoincareIndexMethod
     {
-        public static Dictionary<int, int> FindSingularPoins(double[,] bytes)
+        public static List<Point> FindSingularPoins(double[,] orientationField)
         {
-            Dictionary<int, int> points = new Dictionary<int, int>();
-            KeyValuePair<int, int> newPoint = new KeyValuePair<int, int>();
+            List<Point> result = new List<Point>();
 
-            for (int i = 0; i < bytes.GetLength(0); i++)
+            for (int i = 0; i < orientationField.GetLength(0); i++)
             {
-                for (int j = 0; j < bytes.GetLength(1); j++)
+                for (int j = 0; j < orientationField.GetLength(1); j++)
                 {
-                    if (IsSingularPoint(bytes[i,j]))
+                    if (IsSingularPoint(orientationField, i, j))
                     {
-                        points.Add(i,j);
+                        points.Add(new Point() { X = i, Y = j });
                     }
                 }
             }
@@ -28,11 +27,9 @@ namespace ModelBasedAlgorithm
             return points;
         }
 
-        private static bool IsSingularPoint(double point)
+        private static bool IsSingularPoint(double[,] orientationField, int xPoint, int yPoint)
         {
-            double result;
-
-            ///
+            ////
 
             return false;
         }

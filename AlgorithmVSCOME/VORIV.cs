@@ -11,6 +11,8 @@ namespace AlgorithmVSCOME
         internal static double CalculateVoriv(int u, int v, double[,] orientationField)
         {
             int halfK = (int)(Constants.K / 2);
+            int maxValueX = orientationField.GetLength(0);
+            int maxValueY = orientationField.GetLength(1);
             double sum = 0;
             double result = 0;
 
@@ -18,10 +20,12 @@ namespace AlgorithmVSCOME
             {
                 for (int i = 0; i <= Constants.N - 1; i++)
                 {
-                    if (v + k >= 0 && u - i - 1 >= 0 && u - i < orientationField.GetLength(0) && v + k < orientationField.GetLength(1))
+                    if (v + k < 0 || u - i - 1 < 0 || u - i >= maxValueX || v + k >= maxValueY)
                     {
-                        sum += FunctionF(orientationField[u - i, v + k] - orientationField[u - i - 1, v + k]);
+                        continue;
                     }
+
+                    sum += FunctionF(orientationField[u - i, v + k] - orientationField[u - i - 1, v + k]);
                 }
 
                 result += sum;
