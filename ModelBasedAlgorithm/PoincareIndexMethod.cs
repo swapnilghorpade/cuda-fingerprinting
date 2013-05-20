@@ -20,11 +20,7 @@ namespace ModelBasedAlgorithm
                 {
                     if (IsSingularPoint(bytes[i,j]))
                     {
-                        newPoint = new KeyValuePair<int, int>();
-                        newPoint.Key = i;
-                        newPoint.Value = j;
-
-                        points.Add(newPoint);
+                        points.Add(i,j);
                     }
                 }
             }

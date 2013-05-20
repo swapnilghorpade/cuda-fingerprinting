@@ -5,6 +5,7 @@ using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
 using System.Text;
+using ComplexFilterQA;
 
 namespace FingerprintLib
 {
@@ -13,6 +14,7 @@ namespace FingerprintLib
     /// </summary>
     public class OrientationFieldGenerator
     {
+
         /// <summary>
         /// Размер блока поля направлений
         /// </summary>
@@ -149,7 +151,8 @@ namespace FingerprintLib
                                 result[x, y] = 3*Math.PI/2;
                             result[x, y] = result[x, y]/2 + Math.PI/2;
                             if (result[x, y] > Math.PI) result[x, y] -= Math.PI;
-                            if (double.IsNaN(xx) || double.IsNaN(yy)) result[x, y] = double.NaN;
+                            if (double.IsNaN(xx) || double.IsNaN(yy)) 
+                                result[x, y] = double.NaN;
                         }
                         
                     }

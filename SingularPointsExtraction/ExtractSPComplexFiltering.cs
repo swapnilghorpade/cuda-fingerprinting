@@ -14,9 +14,9 @@ namespace SingularPointsExtraction
         {
             //make Gaussian pyramid
             double[,] level0 = img;
-            double[,] level1 = ChangingSize.Reduce2(level0, 2d);
-            double[,] level2 = ChangingSize.Reduce2(level1, 2d);
-            double[,] level3 = ChangingSize.Reduce2(level2, 2d);
+            double[,] level1 = ImageSizeHelper.Reduce2(level0, 2d);
+            double[,] level2 = ImageSizeHelper.Reduce2(level1, 2d);
+            double[,] level3 = ImageSizeHelper.Reduce2(level2, 2d);
 
             //ImageHelper.SaveArray(level1, "D:/1-1.bmp");
             //ImageHelper.SaveArray(level2, "D:/1-2.bmp");
@@ -44,8 +44,8 @@ namespace SingularPointsExtraction
         {
             double[,] forDelta3 = img.Select2D((value, row, column) => (img[row, img.GetLength(1) - column - 1]));
 
-            Complex[,] response = Symmetry.EstimatePS(img, sigma1, sigma2);
-            Complex[,] responseForDelta = Symmetry.EstimatePS(forDelta3, sigma1, sigma2);
+            Complex[,] response = SymmetryHelper.EstimatePS(img, sigma1, sigma2);
+            Complex[,] responseForDelta = SymmetryHelper.EstimatePS(forDelta3, sigma1, sigma2);
             for (int i = 0; i < response.GetLength(0); i++)
             {
                 for (int j = 0; j < response.GetLength(1); j++)
@@ -73,7 +73,7 @@ namespace SingularPointsExtraction
             double[,] resultOfconvolve = ConvolutionHelper.Convolve(magnitudeZ, gaussians);
             Complex[,] zc = response.Select2D((value,x,y)=>(response[x,y]*resultOfconvolve[x,y]));
 
-            double[,] bigGaussian = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D((float)x, (float)y, 11.7, 7), response.GetLength(0), response.GetLength(1));
+            double[,] bigGaussian = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D((float)x, (float)y, 11.7, 7), 20);
             Complex[,] gc = response.Select2D((value, x, y) => (response[x, y] * bigGaussian[x, y]));
 
             Complex[,] modifiedResponse = gc.Select2D((value, x, y) => 0.5*(gc[x, y] + zc[x, y]));

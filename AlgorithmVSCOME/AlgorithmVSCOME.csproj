@@ -65,6 +65,10 @@
       <Project>{5eec4bd2-e1b0-4794-948a-45732cd41f99}</Project>
       <Name>FingerprintLib</Name>
     </ProjectReference>
+    <ProjectReference Include="..\FingerprintPhD.Common\FingerprintPhD.Common.csproj">
+      <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
+      <Name>FingerprintPhD.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

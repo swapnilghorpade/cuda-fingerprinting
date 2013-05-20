@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Drawing;
-using System.Drawing.Imaging;
-using System.IO;
 using System.Numerics;
 using System.Diagnostics;
-using System.Data.SqlTypes;
-using System.Linq;
 
 namespace ComplexFilterQA
 {
@@ -29,14 +24,14 @@ namespace ComplexFilterQA
         {
             Stopwatch sw = new Stopwatch();
             sw.Start();
-            var g1 = ChangingSize.Reduce2(imgBytes, 1.7d);
-            var g2 = ChangingSize.Reduce2(g1, 1.21d);
-            var g3 = ChangingSize.Reduce2(g2, K);
-            var g4 = ChangingSize.Reduce2(g3, K);
+            var g1 = ImageSizeHelper.Reduce2(imgBytes, 1.7d);
+            var g2 = ImageSizeHelper.Reduce2(g1, 1.21d);
+            var g3 = ImageSizeHelper.Reduce2(g2, K);
+            var g4 = ImageSizeHelper.Reduce2(g3, K);
 
-            var p3 = ChangingSize.Expand2(g4, K, new Size(g3.GetLength(0), g3.GetLength(1)));
-            var p2 = ChangingSize.Expand2(g3, K, new Size(g2.GetLength(0), g2.GetLength(1)));
-            var p1 = ChangingSize.Expand2(g2, 1.21d, new Size(g1.GetLength(0), g1.GetLength(1)));
+            var p3 = ImageSizeHelper.Expand2(g4, K, new Size(g3.GetLength(0), g3.GetLength(1)));
+            var p2 = ImageSizeHelper.Expand2(g3, K, new Size(g2.GetLength(0), g2.GetLength(1)));
+            var p1 = ImageSizeHelper.Expand2(g2, 1.21d, new Size(g1.GetLength(0), g1.GetLength(1)));
 
             var l3 = ContrastEnhancement(KernelHelper.Subtract(g3, p3));
             var l2 = ContrastEnhancement(KernelHelper.Subtract(g2, p2));
@@ -45,9 +40,9 @@ namespace ComplexFilterQA
             //SaveArray(l1, "C:\\temp\\l1.png");
             //SaveArray(l2, "C:\\temp\\l2.png");
 
-            var ls1 = Symmetry.EstimateLS(l1, sigma1, sigma2);
-            var ls2 = Symmetry.EstimateLS(l2, sigma1, sigma2);
-            var ls3 = Symmetry.EstimateLS(l3, sigma1, sigma2);
+            var ls1 = SymmetryHelper.EstimateLS(l1, sigma1, sigma2);
+            var ls2 = SymmetryHelper.EstimateLS(l2, sigma1, sigma2);
+            var ls3 = SymmetryHelper.EstimateLS(l3, sigma1, sigma2);
 
             //SaveComplexArrayAsHSV(ls1, "C:\\temp\\ls1.png");
             //SaveComplexArrayAsHSV(ls2, "C:\\temp\\ls2.png");
@@ -55,8 +50,8 @@ namespace ComplexFilterQA
 
             var ls2Scaled =
                 KernelHelper.MakeComplexFromDouble(
-                    ChangingSize.Expand2(ls2.Select2D(x => x.Real), K, new Size(l1.GetLength(0), l1.GetLength(1))),
-                    ChangingSize.Expand2(ls2.Select2D(x => x.Imaginary), K, new Size(l1.GetLength(0), l1.GetLength(1))));
+                    ImageSizeHelper.Expand2(ls2.Select2D(x => x.Real), K, new Size(l1.GetLength(0), l1.GetLength(1))),
+                    ImageSizeHelper.Expand2(ls2.Select2D(x => x.Imaginary), K, new Size(l1.GetLength(0), l1.GetLength(1))));
             var multiplier = KernelHelper.Subtract(ls1.Select2D(x => x.Phase), ls2Scaled.Select2D(x => x.Phase));
 
             for (int x = 0; x < ls1.GetLength(0); x++)
@@ -71,11 +66,11 @@ namespace ComplexFilterQA
             DirectionFiltering(l2, ls2, tau1, tau2);
             DirectionFiltering(l3, ls3, tau1, tau2);
 
-            var ll2 = ChangingSize.Expand2(l3, K, new Size(l2.GetLength(0), l2.GetLength(1)));
+            var ll2 = ImageSizeHelper.Expand2(l3, K, new Size(l2.GetLength(0), l2.GetLength(1)));
             l2 = KernelHelper.Add(ll2, l2);
-            var ll1 = ChangingSize.Expand2(l2, 1.21d, new Size(l1.GetLength(0), l1.GetLength(1)));
+            var ll1 = ImageSizeHelper.Expand2(l2, 1.21d, new Size(l1.GetLength(0), l1.GetLength(1)));
             l1 = KernelHelper.Add(ll1, l1);
-            var ll0 = ChangingSize.Expand2(l1, 1.7d, new Size(imgBytes.GetLength(0), imgBytes.GetLength(1)));
+            var ll0 = ImageSizeHelper.Expand2(l1, 1.7d, new Size(imgBytes.GetLength(0), imgBytes.GetLength(1)));
 
             ll0 = ContrastEnhancement(ll0);
             sw.Stop();

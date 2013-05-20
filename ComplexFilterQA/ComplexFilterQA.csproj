@@ -45,16 +45,18 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ConvolutionHelper.cs" />
-    <Compile Include="Gaussian.cs" />
     <Compile Include="ImageEnhancementHelper.cs" />
-    <Compile Include="ImageHelper.cs" />
-    <Compile Include="KernelHelper.cs" />
     <Compile Include="MinutiaeMatcher.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Size.cs" />
-    <Compile Include="Symmetry.cs" />
+    <Compile Include="ImageSizeHelper.cs" />
+    <Compile Include="SymmetryHelper.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\FingerprintPhD.Common\FingerprintPhD.Common.csproj">
+      <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
+      <Name>FingerprintPhD.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

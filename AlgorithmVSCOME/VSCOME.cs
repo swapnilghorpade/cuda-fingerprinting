@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ComplexFilterQA;
+﻿using System.Numerics;
 
 namespace AlgorithmVSCOME
 {
@@ -12,7 +7,7 @@ namespace AlgorithmVSCOME
         private double[,] orientationField;
         private double[,] filteredField;
 
-        public VSCOME(double[,] orientationField, Complex[,] filteredField)
+        public VSCOME(double[,] orientationField, double[,] filteredField)
         {
             this.orientationField = orientationField;
             this.filteredField = filteredField;

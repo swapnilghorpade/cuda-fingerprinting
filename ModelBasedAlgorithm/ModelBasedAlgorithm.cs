@@ -7,9 +7,9 @@ using ComplexFilterQA;
 
 namespace ModelBasedAlgorithm
 {
-    internal static class ModelBasedAlgorithm
+    internal class ModelBasedAlgorithm
     {
-        internal Dictionary<int, int> FindSingularPoints(double[,] bytes, Dictionary<int, int> singularPointsPI)
+        internal static  Dictionary<int, int> FindSingularPoints(double[,] bytes, Dictionary<int, int> singularPointsPI)
         {
             ///
 

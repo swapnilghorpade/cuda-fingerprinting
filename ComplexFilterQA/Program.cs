@@ -6,6 +6,8 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Numerics;
+using System.Collections;
+using FingerprintPhD.Common;
 
 namespace ComplexFilterQA
 {
@@ -147,8 +149,8 @@ namespace ComplexFilterQA
 
         private static List<Minutia> ProcessFingerprint(double[,] imgBytes)
         {
-            var lsEnhanced = Symmetry.EstimateLS(imgBytes, sigma1, sigma2);
-            var psEnhanced = Symmetry.EstimatePS(imgBytes, sigma1, sigma2);
+            var lsEnhanced = SymmetryHelper.EstimateLS(imgBytes, sigma1, sigma2);
+            var psEnhanced = SymmetryHelper.EstimatePS(imgBytes, sigma1, sigma2);
             //ImageHelper.SaveComplexArrayAsHSV(lsEnhanced,"C:\\temp\\lsenh.png");
 
             //ImageHelper.SaveArray(NormalizeArray(psEnhanced.Select2D(x=>x.Magnitude)), "C:\\temp\\psenh.png");
