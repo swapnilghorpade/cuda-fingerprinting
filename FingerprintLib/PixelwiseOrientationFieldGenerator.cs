@@ -3,7 +3,7 @@ using ComplexFilterQA;
 
 namespace FingerprintLib
 {
-    class PixelwiseOrientationFieldGenerator
+    public class PixelwiseOrientationFieldGenerator
     {
 
         public static double[,] GenerateOrientationField(int[,] bytes)
