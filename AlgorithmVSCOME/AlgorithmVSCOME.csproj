@@ -66,7 +66,7 @@
       <Name>FingerprintLib</Name>
     </ProjectReference>
     <ProjectReference Include="..\FingerprintPhD.Common\FingerprintPhD.Common.csproj">
-      <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
+      <Project>{6fd094cc-0f63-47bd-a377-f054ae615517}</Project>
       <Name>FingerprintPhD.Common</Name>
     </ProjectReference>
   </ItemGroup>

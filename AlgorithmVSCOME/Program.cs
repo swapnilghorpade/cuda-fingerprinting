@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Numerics;
 using ComplexFilterQA;
+using FingerprintPhD;
 using FingerprintLib;
 
 namespace AlgorithmVSCOME
@@ -14,17 +15,16 @@ namespace AlgorithmVSCOME
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Write path, please.");
-
-            string path = Console.ReadLine();
+            string path = "C:\\Users\\Tanya\\Documents\\tests_data\\101_1.tif";
 
             double[,] imgBytes = ImageHelper.LoadImage(path);
             imgBytes = ImageEnhancementHelper.EnhanceImage(imgBytes);
 
             double[,] orientationField = OrientationFieldGenerator.GenerateOrientationField(
                                                             DoubleArrayToIntArray(imgBytes));
-            Complex[,] complexOrientationField = CalculateComplexOrientationField(orientationField);            
+            Complex[,] complexOrientationField = CalculateComplexOrientationField(orientationField);
             Complex[,] filter = Filter.GetFilter(imgBytes);
+           // Complex[,] filter = Filter.GetFilter(orientationField);
 
             VSCOME vscome = new VSCOME(orientationField,
                 ComplexArrayToDoubleArray(ConvolutionHelper.ComplexConvolve(complexOrientationField, filter)));

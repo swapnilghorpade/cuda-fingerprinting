@@ -10,9 +10,9 @@ namespace AlgorithmVSCOME
     {
         public static double GetX_WithLine(double x, double y)
         {
-            if (x >= 0 || y >= 0)
+            if (y < 0 || (y==0 && x==0))
             {
-                throw new ArgumentNullException("x, y");
+                throw new ArgumentNullException("y < 0");
             }
 
             double result = 2 * x * y;
@@ -23,9 +23,9 @@ namespace AlgorithmVSCOME
 
         public static double GetY_WithLine(double x, double y)
         {
-            if (x >= 0 || y >= 0)
+            if (y < 0 || (y == 0 && x == 0))
             {
-                throw new ArgumentNullException("x, y");
+                throw new ArgumentNullException("y < 0");
             }
 
             double result = x*x - y*y;

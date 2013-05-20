@@ -21,9 +21,9 @@ namespace AlgorithmVSCOME
             Complex[,] filter = new Complex[xLength, yLength];
             double x_, y_ = 0;
 
-            for (int x = lowerBoundX; x <= upperBoundX; x++)
+            for (int x = lowerBoundX; x < upperBoundX; x++)
             {
-                for (int y = lowerBoundY; y <= upperBoundY; y++)
+                for (int y = lowerBoundY; y < upperBoundY; y++)
                 {
                     if (y < 0)
                     {
