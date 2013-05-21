@@ -23,11 +23,11 @@ namespace SingularPointsExtraction
             double[,] jy = GenerateYGradients(squaredDirectionField, 1d);
             ImageHelper.SaveArray(jy, "D:/poinc2y.bmp");
             //почему-то получаются одинаковыми?
-            double[,] jxdy = GenerateYGradients(jx, 1);
+            double[,] jxdy = GenerateYGradients(jx, 0.8);
             ImageHelper.SaveArray(jxdy, "D:/poinc3xy.bmp");
-            double[,] jydx = GenerateXGradients(jy, 1);
+            double[,] jydx = GenerateXGradients(jy, 0.8);
             ImageHelper.SaveArray(jydx, "D:/poinc3yx.bmp");
-            //а тут соответственно нули
+            //а тут соответственно нули             
             double[,] result = jydx.Select2D((a,x,y)=>(jydx[x,y] - jxdy[x,y]));
             double max = KernelHelper.Max2d(result.Select2D((x)=>Math.Abs(x)));
             ImageHelper.SaveArray(result, "D:/poinc.bmp");

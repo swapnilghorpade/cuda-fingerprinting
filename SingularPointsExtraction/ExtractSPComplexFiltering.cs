@@ -24,41 +24,46 @@ namespace SingularPointsExtraction
             ImageHelper.SaveArray(level2, "D:/level2.bmp");
             ImageHelper.SaveArray(level3, "D:/level3.bmp");
 
+            //for (int i = 0; i < gaussianPyramid.Count; i++)
+            //{
+            //    Tuple<int,int> currentPoint = CalculateFilterResponse(gaussianPyramid[i],0.6,1.5, i==0);
 
-            //Calculate response of parabolic symmetry filter
-
-
-
-            CalculateFilterResponse(level2, 0.6, 1.5, true);
-            //Compute a modified complex filter response(for level 3)
+            //    if(i!=(gaussianPyramid.Count-1))
+            //    {
+            //        double[,] windowForSearch = new double[13,13];
+            //        windowForSearch = windowForSearch.Select2D((a, x, y) => gaussianPyramid[i+1][]
+            //            {
+            //                if(x<=currentPoint.Item1+6 &&
+            //                    x>=currentPoint.Item1-6 &&
+            //                    y<=currentPoint.Item2+6 &&
+            //                    y>=currentPoint.Item2-6 )
+            //                {
+            //                    return gaussianPyramid[i+1][x,y];
+            //                }
+            //            });
+            //    }
+            //}
+            CalculateFilterResponse(level2, 0.6, 1.5, true);            
 
             return null;
         }
 
-        /// <summary>
-        ///Calculate response of parabolic symmetry filter
-        /// </summary>
-        /// <param name="img"></param>
-        /// <param name="sigma1">for direction field</param>
-        /// <param name="sigma2">for direction field</param>
-        /// <param name="isLevel3">is level 3 of gaussian pyramid</param>
-        /// <returns></returns>
         static private Tuple<int, int> CalculateFilterResponse(double[,] img, double sigma1, double sigma2, bool isLevel3)
         {
-            //double[,] forDelta3 = img.Select2D((value, row, column) => (img[row, img.GetLength(1) - column - 1]));
+            double[,] forDelta3 = img.Select2D((value, row, column) => (img[row, img.GetLength(1) - column - 1]));
 
             Complex[,] response = SymmetryHelper.EstimatePS(img, sigma1, sigma2);
-            //Complex[,] responseForDelta = SymmetryHelper.EstimatePS(forDelta3, sigma1, sigma2);
-            //for (int i = 0; i < response.GetLength(0); i++)
-            //{
-            //    for (int j = 0; j < response.GetLength(1); j++)
-            //    {
-            //        double newMagnitude = response[i, j].Magnitude * (1d - responseForDelta[i, j].Magnitude);
-            //        response[i, j] = Complex.FromPolarCoordinates(newMagnitude, response[i, j].Phase);
-            //    }
-            //}
+            Complex[,] responseForDelta = SymmetryHelper.EstimatePS(forDelta3, sigma1, sigma2);
+            for (int i = 0; i < response.GetLength(0); i++)
+            {
+                for (int j = 0; j < response.GetLength(1); j++)
+                {
+                    double newMagnitude = response[i, j].Magnitude * (1d - responseForDelta[i, j].Magnitude);
+                    response[i, j] = Complex.FromPolarCoordinates(newMagnitude, response[i, j].Phase);
+                }
+            }
             double[,] aaa = response.Select2D((value, row, column) => (response[row, column].Magnitude));
-            ImageHelper.SaveArray(aaa, "D:/1-5.bmp");
+           // ImageHelper.SaveArray(aaa, "D:/1-5.bmp");
 
             if (isLevel3)
             {
@@ -70,23 +75,23 @@ namespace SingularPointsExtraction
 
         static private Complex[,] CalculateModifiedFilterResponse(double[,] img, Complex[,] response, double sigma1)
         {
-            Complex[,] z = GetZ(img, sigma1);
+            Complex[,] z = SymmetryHelper.GetSquaredDerectionField(img, sigma1);
             double[,] magnitudeZ = z.Select2D((value, x, y) => (z[x, y].Magnitude));
 
-            ImageHelper.SaveArray(magnitudeZ, "D:/1-3.bmp");
+            //ImageHelper.SaveArray(magnitudeZ, "D:/1-3.bmp");
             double[,] gaussians = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D(x, y, 1.5d), KernelHelper.GetKernelSizeForGaussianSigma(1.5d));
             double[,] resultOfconvolve = ConvolutionHelper.Convolve(magnitudeZ, gaussians);
             Complex[,] zc = response.Select2D((value, x, y) => (response[x, y] * resultOfconvolve[x, y]));
 
-            double[,] bigGaussian = MakeGaussian((x, y) => Gaussian.Gaussian2D((float)x, (float)y, 8, 5), img.GetLength
-            (0), img.GetLength(1));
+            double[,] bigGaussian = MakeGaussian((x, y) => 
+                Gaussian.Gaussian2D((float)x, (float)y, 8, 5), img.GetLength(0), img.GetLength(1));
             Complex[,] gc = response.Select2D((value, x, y) => (response[x, y] * bigGaussian[x, y]));
 
             Complex[,] modifiedResponse = gc.Select2D((value, x, y) => 0.5 * (gc[x, y] + zc[x, y]));
 
 
-            double[,] aaa = modifiedResponse.Select2D((value, row, column) => (modifiedResponse[row, column].Magnitude));
-            ImageHelper.SaveArray(aaa, "D:/1-6.bmp");
+            //double[,] aaa = modifiedResponse.Select2D((value, row, column) => (modifiedResponse[row, column].Magnitude));
+            //ImageHelper.SaveArray(aaa, "D:/1-6.bmp");
 
             return modifiedResponse;
 
@@ -110,19 +115,6 @@ namespace SingularPointsExtraction
             return kernel;
         }
         
-        //part of Symetry.EstimatePS
-        //z - (direction field)^2
-        static private Complex[,] GetZ(double[,] l1, double Sigma1)
-        {
-            var kernelX = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D(x, y, Sigma1) * x, KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
-            var resultX = ConvolutionHelper.Convolve(l1, kernelX);
-            var kernelY = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D(x, y, Sigma1) * -y, KernelHelper.GetKernelSizeForGaussianSigma(Sigma1));
-            var resultY = ConvolutionHelper.Convolve(l1, kernelY);
-
-            var preZ = KernelHelper.MakeComplexFromDouble(resultX, resultY);
-
-            var z = preZ.Select2D(x => x * x);
-            return z;
         }
     }
-}
+
