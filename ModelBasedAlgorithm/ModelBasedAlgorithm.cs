@@ -24,9 +24,7 @@ namespace ModelBasedAlgorithm
                 }
             }
 
-            // сравниваем значения вероятностей с порогом
-
-            return new List<Tuple<int, int>>();
+            return  houghTransform.FilterThreshold();
         }
 
         private static double GetBackgroundOrientation(double[,] block)
