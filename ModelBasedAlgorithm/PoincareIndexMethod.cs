@@ -19,12 +19,12 @@ namespace ModelBasedAlgorithm
                 {
                     if (IsSingularPoint(orientationField, i, j))
                     {
-                        points.Add(new Point() { X = i, Y = j });
+                        result.Add(new Point() { X = i, Y = j });
                     }
                 }
             }
 
-            return points;
+            return result;
         }
 
         private static bool IsSingularPoint(double[,] orientationField, int xPoint, int yPoint)

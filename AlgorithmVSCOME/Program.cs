@@ -8,6 +8,7 @@ using System.Numerics;
 using ComplexFilterQA;
 using FingerprintPhD;
 using FingerprintLib;
+using FingerprintPhD.Common;
 
 namespace AlgorithmVSCOME
 {
@@ -15,7 +16,7 @@ namespace AlgorithmVSCOME
     {
         static void Main(string[] args)
         {
-            string path = "C:\\Users\\Tanya\\Documents\\tests_data\\101_1.tif";
+            string path = "C:\\Users\\Tanya\\Documents\\tests_data\\101_s.tif";
 
             double[,] imgBytes = ImageHelper.LoadImage(path);
             imgBytes = ImageEnhancementHelper.EnhanceImage(imgBytes);
@@ -28,39 +29,20 @@ namespace AlgorithmVSCOME
             Complex[,] complexFilteredField = ConvolutionHelper.ComplexConvolve(complexOrientationField, filter);
             double[,] filteredField = complexFilteredField.Select2D(x => x.Magnitude);
 
-            // ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\orientationField.jpg");
-            // ImageHelper.SaveArray(filteredField, "C:\\Users\\Tanya\\Documents\\Results\\filteredField.jpg"); 
+            ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\orientationField.jpg");
+            ImageHelper.SaveArray(filteredField, "C:\\Users\\Tanya\\Documents\\Results\\filteredField.jpg");
 
             VSCOME vscome = new VSCOME(orientationField, filteredField);
 
 
             double[,] vscomeValue = vscome.CalculateVscomeValue();
 
-            // ImageHelper.SaveArray(vscomeValue, "C:\\Users\\Tanya\\Documents\\Results\\vscomeValue.jpg"); 
+            ImageHelper.SaveArray(vscomeValue, "C:\\Users\\Tanya\\Documents\\Results\\vscomeValue_1.jpg");
 
-            int xCoordinate = 0;
-            int yCoordinate = 0;
-            double max = Max2d(vscomeValue, ref xCoordinate, ref yCoordinate);
+            Tuple<int, int> corePoint = KernelHelper.Max2dPosition(vscomeValue);
 
-            Console.WriteLine("Reference point ({0},{1})", xCoordinate, yCoordinate);
-        }
-
-        private static double Max2d(double[,] arr, ref int xPosition, ref int yPosition)
-        {
-            double max = double.NegativeInfinity;
-            for (int x = 0; x < arr.GetLength(0); x++)
-            {
-                for (int y = 0; y < arr.GetLength(1); y++)
-                {
-                    if (arr[x, y] > max)
-                    {
-                        max = arr[x, y];
-                        xPosition = x;
-                        yPosition = y;
-                    }
-                }
-            }
-            return max;
+            Console.WriteLine("Reference point ({0},{1})", corePoint.Item1, corePoint.Item2);
+            Console.ReadLine();
         }
     }
 }

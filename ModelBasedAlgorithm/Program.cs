@@ -8,12 +8,6 @@ using FingerprintLib;
 
 namespace ModelBasedAlgorithm
 {
-    internal struct Point
-    {
-        public int X;
-        public int Y;
-    }
-
     class Program
     {
         static void Main(string[] args)
@@ -26,7 +20,10 @@ namespace ModelBasedAlgorithm
             // size ~ 2.3
             double[,] orientationField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(imgBytes);
 
-            List<Point> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
+            // List<Point> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
+            List<Tuple<int, int>> singularPoints = new List<Tuple<int, int>>();
+            singularPoints.Add(new Tuple<int,int>(40, 40));
+
             singularPoints = ModelBasedAlgorithm.FindSingularPoints(orientationField, singularPoints);
         }
     }

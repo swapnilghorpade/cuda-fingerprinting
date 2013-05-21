@@ -41,6 +41,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Constants.cs" />
+    <Compile Include="HoughTransform.cs" />
     <Compile Include="ModelBasedAlgorithm.cs" />
     <Compile Include="PoincareIndexMethod.cs" />
     <Compile Include="Program.cs" />
