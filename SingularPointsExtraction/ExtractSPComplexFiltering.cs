@@ -19,41 +19,38 @@ namespace SingularPointsExtraction
             double[,] level1 = ImageSizeHelper.Reduce2(level0, 2d);
             double[,] level2 = ImageSizeHelper.Reduce2(level1, 2d);
             double[,] level3 = ImageSizeHelper.Reduce2(level2, 2d);
-            List<double[,]> gaussianPyramid = new List<double[,]> { level3, level2, level1, level0 };
-            //ImageHelper.SaveArray(level1, "D:/1-1.bmp");
+            ImageHelper.SaveArray(level1, "D:/level1.bmp");
             ImageHelper.SaveArray(level2, "D:/level2.bmp");
             ImageHelper.SaveArray(level3, "D:/level3.bmp");
 
-            //for (int i = 0; i < gaussianPyramid.Count; i++)
-            //{
-            //    Tuple<int,int> currentPoint = CalculateFilterResponse(gaussianPyramid[i],0.6,1.5, i==0);
+            //Tuple<int,int> point3 = CalculateFilterResponse(level3, 0.6, 1.5, true);
 
-            //    if(i!=(gaussianPyramid.Count-1))
-            //    {
-            //        double[,] windowForSearch = new double[13,13];
-            //        windowForSearch = windowForSearch.Select2D((a, x, y) => gaussianPyramid[i+1][]
-            //            {
-            //                if(x<=currentPoint.Item1+6 &&
-            //                    x>=currentPoint.Item1-6 &&
-            //                    y<=currentPoint.Item2+6 &&
-            //                    y>=currentPoint.Item2-6 )
-            //                {
-            //                    return gaussianPyramid[i+1][x,y];
-            //                }
-            //            });
-            //    }
-            //}
-            CalculateFilterResponse(level2, 0.6, 1.5, true);            
+            //double[,] windowFor2 = GetWindowForSearch(13, level2, point3);
+            //Tuple<int, int> point2 = CalculateFilterResponse(windowFor2, 0.6, 1.5, false);
 
-            return null;
+
+            //double[,] windowFor1 = GetWindowForSearch(13, level1, point2);
+            //Tuple<int, int> point1 = CalculateFilterResponse(windowFor1, 0.6, 1.5, false);
+
+
+            //double[,] windowFor0= GetWindowForSearch(13, level0, point1);
+            //Tuple<int, int> point0 = CalculateFilterResponse(windowFor0, 0.6, 1.5, false);
+
+            Tuple<int,int> point0 = CalculateFilterResponse(level2, 0.6, 1.5, true);
+
+            return point0;
         }
 
         static private Tuple<int, int> CalculateFilterResponse(double[,] img, double sigma1, double sigma2, bool isLevel3)
         {
-            double[,] forDelta3 = img.Select2D((value, row, column) => (img[row, img.GetLength(1) - column - 1]));
-
             Complex[,] response = SymmetryHelper.EstimatePS(img, sigma1, sigma2);
-            Complex[,] responseForDelta = SymmetryHelper.EstimatePS(forDelta3, sigma1, sigma2);
+            double[,] aaa1 = response.Select2D((value, row, column) => (response[row, column].Magnitude));
+            ImageHelper.SaveArray(aaa1, "D:/response.bmp");
+
+            Complex[,] responseForDelta = SymmetryHelper.EsimateH2(img, sigma1, sigma2);
+            double[,] aaa2 = responseForDelta.Select2D((value, row, column) => (responseForDelta[row, column].Magnitude));
+            ImageHelper.SaveArray(aaa1, "D:/responseForDelta.bmp");
+
             for (int i = 0; i < response.GetLength(0); i++)
             {
                 for (int j = 0; j < response.GetLength(1); j++)
@@ -63,7 +60,7 @@ namespace SingularPointsExtraction
                 }
             }
             double[,] aaa = response.Select2D((value, row, column) => (response[row, column].Magnitude));
-           // ImageHelper.SaveArray(aaa, "D:/1-5.bmp");
+            ImageHelper.SaveArray(aaa, "D:/resp12.bmp");
 
             if (isLevel3)
             {
@@ -78,20 +75,20 @@ namespace SingularPointsExtraction
             Complex[,] z = SymmetryHelper.GetSquaredDerectionField(img, sigma1);
             double[,] magnitudeZ = z.Select2D((value, x, y) => (z[x, y].Magnitude));
 
-            //ImageHelper.SaveArray(magnitudeZ, "D:/1-3.bmp");
+            ImageHelper.SaveArray(magnitudeZ, "D:/magnitudeZ.bmp");
             double[,] gaussians = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D(x, y, 1.5d), KernelHelper.GetKernelSizeForGaussianSigma(1.5d));
             double[,] resultOfconvolve = ConvolutionHelper.Convolve(magnitudeZ, gaussians);
             Complex[,] zc = response.Select2D((value, x, y) => (response[x, y] * resultOfconvolve[x, y]));
 
-            double[,] bigGaussian = MakeGaussian((x, y) => 
+            double[,] bigGaussian = MakeGaussian((x, y) =>
                 Gaussian.Gaussian2D((float)x, (float)y, 8, 5), img.GetLength(0), img.GetLength(1));
             Complex[,] gc = response.Select2D((value, x, y) => (response[x, y] * bigGaussian[x, y]));
 
             Complex[,] modifiedResponse = gc.Select2D((value, x, y) => 0.5 * (gc[x, y] + zc[x, y]));
 
 
-            //double[,] aaa = modifiedResponse.Select2D((value, row, column) => (modifiedResponse[row, column].Magnitude));
-            //ImageHelper.SaveArray(aaa, "D:/1-6.bmp");
+            double[,] aaa = modifiedResponse.Select2D((value, row, column) => (modifiedResponse[row, column].Magnitude));
+            ImageHelper.SaveArray(aaa, "D:/resp12M.bmp");
 
             return modifiedResponse;
 
@@ -114,7 +111,21 @@ namespace SingularPointsExtraction
             }
             return kernel;
         }
-        
+
+        private static double[,] GetWindowForSearch(int size, double[,] img, Tuple<int,int> point)
+        {
+
+            int a = (point.Item1 <= size / 2)? (size/2) : point.Item1;
+            int b = (point.Item2 <= size / 2) ? (size / 2) : point.Item2;
+            a = (point.Item1 >= img.GetLength(0) - (size/2)-1)? img.GetLength(0) - (size/2)-1 : a;
+            b = (point.Item2 >= img.GetLength(1) - (size/2)-1)? img.GetLength(1) - (size/2)-1 : b;
+            a = a - size / 2;
+            b = b - size / 2;
+            double[,] result = new double[size,size];
+            result = result.Select2D((c,x,y)=>(img[a+x,b+y]));
+            return result;
         }
+
     }
+}
 
