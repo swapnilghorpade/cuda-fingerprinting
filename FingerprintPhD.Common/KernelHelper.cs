@@ -34,7 +34,9 @@ namespace ComplexFilterQA
         public static Tuple<int, int> Max2dPosition(double[,] arr)
         {
             double max = double.NegativeInfinity;
-            Tuple<int, int> point = new Tuple<int, int>();
+            int x=0;
+            int y=0;
+            
 
             for (int i = 0; i < arr.GetLength(0); i++)
             {
@@ -42,13 +44,13 @@ namespace ComplexFilterQA
                 {
                     if (arr[i, j] > max)
                     {
-                        point.Item1 = i;
-                        point.Item2 = j;
+                        x = i;
+                        y = j;
                     }
                 }
             }
 
-            return point;
+            return new Tuple<int,int>(x,y);
         }
 
         public static double[,] MakeKernel(Func<int, int, double> function, int size)
@@ -100,7 +102,7 @@ namespace ComplexFilterQA
                 for (int y = 0; y < maxY; y++)
                 {
                     result[x, y] = source[x, y] - value[x, y];
-                }
+                 }
             }
             return result;
         }

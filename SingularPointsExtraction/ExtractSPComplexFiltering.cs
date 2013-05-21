@@ -66,6 +66,7 @@ namespace SingularPointsExtraction
             {
                 response = CalculateModifiedFilterResponse(img, response, sigma1);
             }
+            
             //тут будет поиск абсолютного максимума
             return new Tuple<int, int>(0, 0);
         }
