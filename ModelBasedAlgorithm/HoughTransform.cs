@@ -10,7 +10,7 @@ namespace ModelBasedAlgorithm
     {
         public int X;
         public int Y;
-        public int P;
+        public double P;
         public double Tetta;
         public int Vote;
     }
@@ -25,7 +25,7 @@ namespace ModelBasedAlgorithm
         private double backgroundOrientation = 0;
         private Tuple<int, int> point;
 
-        public HoughTransform(List<Point> singularPointsPI)
+        public HoughTransform(List<Tuple<int, int>> singularPointsPI)
         {
             this.singularPointsPI = singularPointsPI;
         }
@@ -47,16 +47,23 @@ namespace ModelBasedAlgorithm
                 {
                     for (int paramIndex = 0; paramIndex < parameterSpase.Count; paramIndex++)
                     {
-                        if (WhetherToVote(i, j, featureSpace[i, j], parameterSpase[paramIndex])
+                        if (WhetherToVote(i, j, featureSpace[i, j], parameterSpase[paramIndex]))
                         {
-                            parameterSpase[paramIndex].Vote++;
+                            parameterSpase[paramIndex] = new ParameterStruct()
+                            {
+                                X = parameterSpase[paramIndex].X,
+                                Y = parameterSpase[paramIndex].Y,
+                                P = parameterSpase[paramIndex].P,
+                                Tetta = parameterSpase[paramIndex].Tetta,
+                                Vote = parameterSpase[paramIndex].Vote + 1
+                            };
                         }
                     }
                 }
             }
         }
 
-        private bool WhetherToVote(int x, int y, int value, ParameterStruct core)
+        private bool WhetherToVote(int x, int y, double value, ParameterStruct core)
         {
             return Math.Tan(2 * (value - backgroundOrientation)) * (x - core.X) == y - core.Y;
         }
@@ -71,9 +78,15 @@ namespace ModelBasedAlgorithm
 
         private ParameterStruct CalculateParameter(Tuple<int, int> singularPoint)
         {
+            //
             double k = Math.Tan(2 * (featureSpace[singularPoint.Item1, singularPoint.Item2] - backgroundOrientation));
             double tetta = Math.PI / 2 + Math.Atan(k);
-            int p = (singularPoint.Y - k) / Math.Sqrt(k * k + 1);
+            double p = (singularPoint.Item2 - k) / Math.Sqrt(k * k + 1);
+
+            if (p < 0)
+            {
+                p = -1 * p;
+            }
 
             return new ParameterStruct() { X = singularPoint.Item1, Y = singularPoint.Item2, P = p, Tetta = tetta, Vote = 0 };
         }
@@ -87,7 +100,7 @@ namespace ModelBasedAlgorithm
 
             foreach (ParameterStruct param in parameterSpase)
             {
-                result.Add(new Tuple(param.X, param.Y));
+                result.Add(new Tuple<int, int>(param.X, param.Y));
             }
 
             return result;

@@ -46,7 +46,7 @@ namespace ModelBasedAlgorithm
 
         private static double[,] GetFeatureSpace(double[,] orientationField, Tuple<int, int> point)
         {
-            double[,] result = new double[Constants.W, Constants.W]();
+            double[,] result = new double[Constants.W, Constants.W];
 
             int upperBound = (int)(Constants.W / 2);
             int lowerBound = -1 * upperBound;

@@ -17,13 +17,11 @@ namespace ModelBasedAlgorithm
             double[,] imgBytes = ImageHelper.LoadImage(path);
             imgBytes = ImageEnhancementHelper.EnhanceImage(imgBytes);
 
-            // size ~ 2.3
             double[,] orientationField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(imgBytes);
 
-            // List<Point> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
-            List<Tuple<int, int>> singularPoints = new List<Tuple<int, int>>();
-            singularPoints.Add(new Tuple<int,int>(40, 40));
+            ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
 
+            List<Tuple<int, int>> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
             singularPoints = ModelBasedAlgorithm.FindSingularPoints(orientationField, singularPoints);
         }
     }
