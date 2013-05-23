@@ -9,28 +9,55 @@ namespace ModelBasedAlgorithm
 {
     internal class ModelBasedAlgorithm
     {
-        internal static List<Tuple<int, int>> FindSingularPoints(double[,] orientationField, List<Tuple<int, int>> singularPointsPI)
+        private double[,] orientationField;
+        private int upperBound = 0;
+        private int lowerBound = 0;
+
+        public ModelBasedAlgorithm(double[,] orientationField)
         {
+            this.orientationField = orientationField;
+            upperBound = (int)(Constants.WNum * Constants.WSize / 2);
+            lowerBound = -1 * upperBound;
+        }
+
+        internal List<Tuple<int, int>> FindSingularPoints(List<Tuple<int, int>> singularPointsPI)
+        {
+            HoughTransform houghTransform = new HoughTransform(singularPointsPI, orientationField);
             List<double[,]> blocks = new List<double[,]>();
-            HoughTransform houghTransform = new HoughTransform(singularPointsPI);
+            double[,] featureSpace;
+            double backgroundOrientation;
 
             foreach (Tuple<int, int> point in singularPointsPI)
             {
-                blocks = GetBlocks(orientationField, point);
+                if (!IsValidPointPosition(point))
+                {
+                    continue;
+                }
+
+                blocks = GetBlocks(point);
+                featureSpace = GetFeatureSpace(point);
 
                 foreach (double[,] block in blocks)
                 {
-                    houghTransform.Transform(point, GetFeatureSpace(orientationField, point), GetBackgroundOrientation(block));
+                    backgroundOrientation = GetBackgroundOrientation(block);
+                    houghTransform.Transform(point, featureSpace, backgroundOrientation);
                 }
             }
 
-            return  houghTransform.FilterThreshold();
+            return houghTransform.FilterThreshold();
         }
 
-        private static double GetBackgroundOrientation(double[,] block)
+        private bool IsValidPointPosition(Tuple<int, int> point)
         {
-            int xLength =  block.GetLength(0);
-            int yLength =  block.GetLength(1);
+            return point.Item1 + lowerBound >= 0 && point.Item2 + lowerBound >= 0
+              && point.Item1 + upperBound < orientationField.GetLength(0)
+              && point.Item2 + upperBound < orientationField.GetLength(1);
+        }
+
+        private double GetBackgroundOrientation(double[,] block)
+        {
+            int xLength = block.GetLength(0);
+            int yLength = block.GetLength(1);
             double value = 0;
 
             for (int i = 0; i < xLength; i++)
@@ -44,7 +71,7 @@ namespace ModelBasedAlgorithm
             return value / (xLength * yLength);
         }
 
-        private static double[,] GetFeatureSpace(double[,] orientationField, Tuple<int, int> point)
+        private double[,] GetFeatureSpace(Tuple<int, int> point)
         {
             double[,] result = new double[Constants.W, Constants.W];
 
@@ -62,7 +89,7 @@ namespace ModelBasedAlgorithm
             return result;
         }
 
-        private static List<double[,]> GetBlocks(double[,] orientationField, Tuple<int, int> point)
+        private List<double[,]> GetBlocks(Tuple<int, int> point)
         {
             List<double[,]> result = new List<double[,]>();
             int upperBound = (int)(Constants.WNum * Constants.WSize / 2);
@@ -77,14 +104,6 @@ namespace ModelBasedAlgorithm
             {
                 for (int y = lowerBound; y < upperBound; y++)
                 {
-                    if (point.Item1 + x < 0 || point.Item2 + y < 0
-                        || point.Item1 + x >= orientationField.GetLength(0)
-                        || point.Item2 + y >= orientationField.GetLength(1))
-                    {
-                        Console.WriteLine("Block out bounds.");
-                        continue;
-                    }
-
                     int numberOfBlock = Constants.WNum * (int)((y - lowerBound) / Constants.WSize)
                                                        + (int)((x - lowerBound) / Constants.WSize);
                     int xBlock = (x - lowerBound) - Constants.WSize * ((x - lowerBound) / Constants.WSize);

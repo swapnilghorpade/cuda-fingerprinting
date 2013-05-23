@@ -22,7 +22,9 @@ namespace ModelBasedAlgorithm
             ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
 
             List<Tuple<int, int>> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
-            singularPoints = ModelBasedAlgorithm.FindSingularPoints(orientationField, singularPoints);
+            ModelBasedAlgorithm modelBasedAlgorithm = new ModelBasedAlgorithm(orientationField);
+
+            singularPoints = modelBasedAlgorithm.FindSingularPoints(singularPoints);
         }
     }
 }

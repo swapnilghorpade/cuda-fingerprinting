@@ -21,13 +21,15 @@ namespace ModelBasedAlgorithm
     {
         private List<Tuple<int, int>> singularPointsPI = new List<Tuple<int, int>>();
         private List<ParameterStruct> parameterSpase = new List<ParameterStruct>();
+        private double[,] orientationField;
         private double[,] featureSpace;
         private double backgroundOrientation = 0;
         private Tuple<int, int> point;
 
-        public HoughTransform(List<Tuple<int, int>> singularPointsPI)
+        public HoughTransform(List<Tuple<int, int>> singularPointsPI, double[,] orientationField)
         {
             this.singularPointsPI = singularPointsPI;
+            this.orientationField = orientationField;
         }
 
         public void Transform(Tuple<int, int> point, double[,] featureSpace, double backgroundOrientation)
@@ -65,12 +67,14 @@ namespace ModelBasedAlgorithm
 
         private bool WhetherToVote(int x, int y, double value, ParameterStruct core)
         {
+            // ничего не подходит.. 
             return Math.Tan(2 * (value - backgroundOrientation)) * (x - core.X) == y - core.Y;
         }
 
         private void Initialize()
         {
-            foreach (Tuple<int, int> singularPoint in singularPointsPI)
+            foreach (Tuple<int, int> singularPoint in singularPointsPI)		y - core.Y	-333	int
+
             {
                 parameterSpase.Add(CalculateParameter(singularPoint));
             }
@@ -78,8 +82,7 @@ namespace ModelBasedAlgorithm
 
         private ParameterStruct CalculateParameter(Tuple<int, int> singularPoint)
         {
-            //
-            double k = Math.Tan(2 * (featureSpace[singularPoint.Item1, singularPoint.Item2] - backgroundOrientation));
+            double k = Math.Tan(2 * (orientationField[singularPoint.Item1, singularPoint.Item2] - backgroundOrientation));
             double tetta = Math.PI / 2 + Math.Atan(k);
             double p = (singularPoint.Item2 - k) / Math.Sqrt(k * k + 1);
 
