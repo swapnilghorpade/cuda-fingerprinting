@@ -14,24 +14,29 @@ namespace SingularPointsExtraction
         static public Tuple<int, int> ExtractSP(double[,] img)
         {
             double[,] directionField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(img);
-            ImageHelper.SaveArray(directionField, "D:/poinc0.bmp");
+            ImageHelper.SaveArray(directionField, "D:/img/poinc0.bmp");
             double[,] squaredDirectionField = directionField.Select2D((x)=>(x*x));
-            ImageHelper.SaveArray(squaredDirectionField, "D:/poinc1.bmp");
+            ImageHelper.SaveArray(squaredDirectionField, "D:/img/poinc1.bmp");
 
             double[,] jx = GenerateXGradients(squaredDirectionField, 1d);
-            ImageHelper.SaveArray(jx, "D:/poinc2x.bmp");
+            ImageHelper.SaveArray(jx, "D:/img/poinc2x.bmp");
             double[,] jy = GenerateYGradients(squaredDirectionField, 1d);
-            ImageHelper.SaveArray(jy, "D:/poinc2y.bmp");
+            ImageHelper.SaveArray(jy, "D:/img/poinc2y.bmp");
+
             //почему-то получаются одинаковыми?
             double[,] jxdy = GenerateYGradients(jx, 0.8);
-            ImageHelper.SaveArray(jxdy, "D:/poinc3xy.bmp");
+            ImageHelper.SaveArray(jxdy, "D:/img/poinc3xy.bmp");
             double[,] jydx = GenerateXGradients(jy, 0.8);
-            ImageHelper.SaveArray(jydx, "D:/poinc3yx.bmp");
+            ImageHelper.SaveArray(jydx, "D:/img/poinc3yx.bmp");
             //а тут соответственно нули             
             double[,] result = jydx.Select2D((a,x,y)=>(jydx[x,y] - jxdy[x,y]));
+
             double max = KernelHelper.Max2d(result.Select2D((x)=>Math.Abs(x)));
-            ImageHelper.SaveArray(result, "D:/poinc.bmp");
-            return null;
+            ImageHelper.SaveArray(result, "D:/img/poinc.bmp");
+
+            Tuple<int, int> pointMax = KernelHelper.Max2dPosition(result);
+
+            return pointMax;
         }
         static private double[,] GenerateXGradients(double[,] source, double sigma)
         {

@@ -21,15 +21,19 @@ namespace SingularPointsExtraction
             double[,] level2 = ImageSizeHelper.Reduce2(level1, 2d);
             double[,] level3 = ImageSizeHelper.Reduce2(level2, 2d);
 
-            ImageHelper.SaveArray(level1, "D:/level1.bmp");
-            ImageHelper.SaveArray(level2, "D:/level2.bmp");
-            ImageHelper.SaveArray(level3, "D:/level3.bmp");
+            ImageHelper.SaveArray(level1, "D:/img/level1.bmp");
+            ImageHelper.SaveArray(level2, "D:/img/level2.bmp");
+            ImageHelper.SaveArray(level3, "D:/img/level3.bmp");
 
             double[,] response3 = CalculateFilterResponse(level3, 0.6, 1.5, true);
-            double[,] response2 = CalculateFilterResponse(level2, 0.6, 1.5, false);
+            double[,] response2 = CalculateFilterResponse(level2, 0.6, 1.5, true);
             double[,] response1 = CalculateFilterResponse(level1, 0.6, 1.5, false);
             double[,] response0 = CalculateFilterResponse(level0, 0.6, 1.5, false);
 
+            ImageHelper.SaveArray(response3, "D:/img/response3.bmp");
+            ImageHelper.SaveArray(response2, "D:/img/response2.bmp");
+            ImageHelper.SaveArray(response1, "D:/img/response1.bmp");
+            ImageHelper.SaveArray(response0, "D:/img/response0.bmp");
             //Tuple<int, int> point3 = FindPoint(response3);
             //Tuple<int, int> point2 = FindSecondPoint(response2, point3);
 
@@ -74,11 +78,11 @@ namespace SingularPointsExtraction
         {
             Complex[,] response = SymmetryHelper.EstimatePS(img, sigma1, sigma2);
             double[,] aaa1 = response.Select2D((value, row, column) => (response[row, column].Magnitude));
-            ImageHelper.SaveArray(aaa1, "D:/response.bmp");
+            ImageHelper.SaveArray(aaa1, "D:/img/response.bmp");
 
             Complex[,] responseForDelta = SymmetryHelper.EsimateH2(img, sigma1, sigma2);
             double[,] aaa2 = responseForDelta.Select2D((value, row, column) => (responseForDelta[row, column].Magnitude));
-            ImageHelper.SaveArray(aaa1, "D:/responseForDelta.bmp");
+            ImageHelper.SaveArray(aaa1, "D:/img/responseForDelta.bmp");
 
             for (int i = 0; i < response.GetLength(0); i++)
             {
@@ -89,7 +93,7 @@ namespace SingularPointsExtraction
                 }
             }
             double[,] aaa = response.Select2D((value, row, column) => (response[row, column].Magnitude));
-            ImageHelper.SaveArray(aaa, "D:/resp12.bmp");
+            ImageHelper.SaveArray(aaa, "D:/img/resp12.bmp");
 
             if (isLevel3)
             {
@@ -106,7 +110,7 @@ namespace SingularPointsExtraction
             Complex[,] z = SymmetryHelper.GetSquaredDerectionField(img, sigma1);
             double[,] magnitudeZ = z.Select2D((value, x, y) => (z[x, y].Magnitude));
 
-            ImageHelper.SaveArray(magnitudeZ, "D:/magnitudeZ.bmp");
+            ImageHelper.SaveArray(magnitudeZ, "D:/img/magnitudeZ.bmp");
             double[,] gaussians = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D(x, y, 1.5d), KernelHelper.GetKernelSizeForGaussianSigma(1.5d));
             double[,] resultOfconvolve = ConvolutionHelper.Convolve(magnitudeZ, gaussians);
             Complex[,] zc = response.Select2D((value, x, y) => (response[x, y] * resultOfconvolve[x, y]));
@@ -119,7 +123,7 @@ namespace SingularPointsExtraction
 
 
             double[,] aaa = modifiedResponse.Select2D((value, row, column) => (modifiedResponse[row, column].Magnitude));
-            ImageHelper.SaveArray(aaa, "D:/resp12M.bmp");
+            ImageHelper.SaveArray(aaa, "D:/img/resp12M.bmp");
 
             
             return modifiedResponse;
