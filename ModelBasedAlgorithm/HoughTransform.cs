@@ -22,9 +22,10 @@ namespace ModelBasedAlgorithm
         private List<Tuple<int, int>> singularPointsPI = new List<Tuple<int, int>>();
         private List<ParameterStruct> parameterSpase = new List<ParameterStruct>();
         private double[,] orientationField;
-        private double[,] featureSpace;
+        private FeatureSpaceStruct featureSpace;
         private double backgroundOrientation = 0;
         private Tuple<int, int> point;
+        public int max = 0;
 
         public HoughTransform(List<Tuple<int, int>> singularPointsPI, double[,] orientationField)
         {
@@ -32,7 +33,7 @@ namespace ModelBasedAlgorithm
             this.orientationField = orientationField;
         }
 
-        public void Transform(Tuple<int, int> point, double[,] featureSpace, double backgroundOrientation)
+        public void Transform(Tuple<int, int> point, FeatureSpaceStruct featureSpace, double backgroundOrientation)
         {
             this.point = point;
             this.featureSpace = featureSpace;
@@ -40,8 +41,8 @@ namespace ModelBasedAlgorithm
 
             Initialize();
 
-            int xLength = featureSpace.GetLength(0);
-            int yLength = featureSpace.GetLength(1);
+            int xLength = featureSpace.FeatureSpace.GetLength(0);
+            int yLength = featureSpace.FeatureSpace.GetLength(1);
 
             for (int i = 0; i < xLength; i++)
             {
@@ -49,7 +50,7 @@ namespace ModelBasedAlgorithm
                 {
                     for (int paramIndex = 0; paramIndex < parameterSpase.Count; paramIndex++)
                     {
-                        if (WhetherToVote(i, j, featureSpace[i, j], parameterSpase[paramIndex]))
+                        if (WhetherToVote(i, j, featureSpace, parameterSpase[paramIndex]))
                         {
                             parameterSpase[paramIndex] = new ParameterStruct()
                             {
@@ -65,16 +66,15 @@ namespace ModelBasedAlgorithm
             }
         }
 
-        private bool WhetherToVote(int x, int y, double value, ParameterStruct core)
+        private bool WhetherToVote(int x, int y, FeatureSpaceStruct featureSpace, ParameterStruct core)
         {
-            // ничего не подходит.. 
-            return Math.Tan(2 * (value - backgroundOrientation)) * (x - core.X) == y - core.Y;
+            return Math.Tan(2 * (featureSpace.FeatureSpace[x, y] - backgroundOrientation)) * (x + featureSpace.ShiftX - core.X) 
+                == y + featureSpace.ShiftY - core.Y;
         }
 
         private void Initialize()
         {
-            foreach (Tuple<int, int> singularPoint in singularPointsPI)		y - core.Y	-333	int
-
+            foreach (Tuple<int, int> singularPoint in singularPointsPI)		
             {
                 parameterSpase.Add(CalculateParameter(singularPoint));
             }
@@ -82,6 +82,7 @@ namespace ModelBasedAlgorithm
 
         private ParameterStruct CalculateParameter(Tuple<int, int> singularPoint)
         {
+            //
             double k = Math.Tan(2 * (orientationField[singularPoint.Item1, singularPoint.Item2] - backgroundOrientation));
             double tetta = Math.PI / 2 + Math.Atan(k);
             double p = (singularPoint.Item2 - k) / Math.Sqrt(k * k + 1);
@@ -99,12 +100,19 @@ namespace ModelBasedAlgorithm
             int threshold = (int)(Constants.W * Constants.W / 2);
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
 
-            parameterSpase = parameterSpase.FindAll(parameter => parameter.Vote > threshold);
+           // parameterSpase = parameterSpase.FindAll(parameter => parameter.Vote > threshold);
 
             foreach (ParameterStruct param in parameterSpase)
             {
+                if (max < param.Vote)
+                {
+                    max = param.Vote;
+                }
+
                 result.Add(new Tuple<int, int>(param.X, param.Y));
             }
+
+            // max = 18
 
             return result;
         }

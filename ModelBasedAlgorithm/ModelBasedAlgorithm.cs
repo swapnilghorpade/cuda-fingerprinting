@@ -7,6 +7,13 @@ using ComplexFilterQA;
 
 namespace ModelBasedAlgorithm
 {
+    internal struct FeatureSpaceStruct
+    {
+        public double[,] FeatureSpace;
+        public int ShiftX;
+        public int ShiftY;
+    }
+
     internal class ModelBasedAlgorithm
     {
         private double[,] orientationField;
@@ -24,7 +31,7 @@ namespace ModelBasedAlgorithm
         {
             HoughTransform houghTransform = new HoughTransform(singularPointsPI, orientationField);
             List<double[,]> blocks = new List<double[,]>();
-            double[,] featureSpace;
+            FeatureSpaceStruct featureSpace;
             double backgroundOrientation;
 
             foreach (Tuple<int, int> point in singularPointsPI)
@@ -71,9 +78,9 @@ namespace ModelBasedAlgorithm
             return value / (xLength * yLength);
         }
 
-        private double[,] GetFeatureSpace(Tuple<int, int> point)
+        private FeatureSpaceStruct GetFeatureSpace(Tuple<int, int> point)
         {
-            double[,] result = new double[Constants.W, Constants.W];
+            double[,] featureSpace = new double[Constants.W, Constants.W];
 
             int upperBound = (int)(Constants.W / 2);
             int lowerBound = -1 * upperBound;
@@ -82,11 +89,11 @@ namespace ModelBasedAlgorithm
             {
                 for (int y = lowerBound; y < upperBound; y++)
                 {
-                    result[x - lowerBound, y - lowerBound] = orientationField[point.Item1 + x, point.Item2 + y];
+                    featureSpace[x - lowerBound, y - lowerBound] = orientationField[point.Item1 + x, point.Item2 + y];
                 }
             }
 
-            return result;
+            return new FeatureSpaceStruct() { FeatureSpace = featureSpace, ShiftX = point.Item1 + lowerBound, ShiftY = point.Item2 + lowerBound };
         }
 
         private List<double[,]> GetBlocks(Tuple<int, int> point)
