@@ -13,8 +13,8 @@ namespace SingularPointsExtraction
         {
             string path = "D:/1.tif";
             double[,] img = ImageHelper.LoadImage(path);
-            SPByComplexFiltering.ExtractSP(img);
-            //SPByPoincareIndex.ExtractSP(img);
+            //SPByComplexFiltering.ExtractSP(img);
+           SPByPoincareIndex.ExtractSP(img);
         }
     }
 }

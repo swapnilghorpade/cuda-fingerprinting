@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Drawing;
+//using System.Drawing.Imaging;
 using System.Numerics;
 using ComplexFilterQA;
 
@@ -15,33 +17,60 @@ namespace SingularPointsExtraction
             //make Gaussian pyramid
 
             double[,] level0 = img;
-
             double[,] level1 = ImageSizeHelper.Reduce2(level0, 2d);
             double[,] level2 = ImageSizeHelper.Reduce2(level1, 2d);
             double[,] level3 = ImageSizeHelper.Reduce2(level2, 2d);
+
             ImageHelper.SaveArray(level1, "D:/level1.bmp");
             ImageHelper.SaveArray(level2, "D:/level2.bmp");
             ImageHelper.SaveArray(level3, "D:/level3.bmp");
 
-            //Tuple<int,int> point3 = CalculateFilterResponse(level3, 0.6, 1.5, true);
+            double[,] response3 = CalculateFilterResponse(level3, 0.6, 1.5, true);
+            double[,] response2 = CalculateFilterResponse(level2, 0.6, 1.5, false);
+            double[,] response1 = CalculateFilterResponse(level1, 0.6, 1.5, false);
+            double[,] response0 = CalculateFilterResponse(level0, 0.6, 1.5, false);
 
-            //double[,] windowFor2 = GetWindowForSearch(13, level2, point3);
-            //Tuple<int, int> point2 = CalculateFilterResponse(windowFor2, 0.6, 1.5, false);
+            //Tuple<int, int> point3 = FindPoint(response3);
+            //Tuple<int, int> point2 = FindSecondPoint(response2, point3);
 
-
-            //double[,] windowFor1 = GetWindowForSearch(13, level1, point2);
-            //Tuple<int, int> point1 = CalculateFilterResponse(windowFor1, 0.6, 1.5, false);
-
-
-            //double[,] windowFor0= GetWindowForSearch(13, level0, point1);
-            //Tuple<int, int> point0 = CalculateFilterResponse(windowFor0, 0.6, 1.5, false);
-
-            Tuple<int,int> point0 = CalculateFilterResponse(level2, 0.6, 1.5, true);
+            Tuple<int, int> point2 = FindPoint(response2);
+            Tuple<int, int> point1 = FindSecondPoint(response1, point2);
+            Tuple<int, int> point0 = FindSecondPoint(response0, point1);
 
             return point0;
         }
 
-        static private Tuple<int, int> CalculateFilterResponse(double[,] img, double sigma1, double sigma2, bool isLevel3)
+        private static Tuple<int, int> FindPoint(double[,] response)
+        {
+            double[,] responseWithoutBound = new double[response.GetLength(0) - 10, response.GetLength(0) - 10];
+            responseWithoutBound = responseWithoutBound.Select2D((a, x, y) => (response[x + 5, y + 5]));
+
+            Tuple<int, int> point = KernelHelper.Max2dPosition(responseWithoutBound);
+
+            return new Tuple<int, int>(point.Item1 + 5, point.Item2 + 5);
+        }
+
+        private static Tuple<int, int> FindSecondPoint(double[,] response, Tuple<int, int> prevPoint)
+        {
+            Tuple<int, int> centerOfWindow = new Tuple<int, int>(prevPoint.Item1 * 2, prevPoint.Item2 * 2);
+
+            int a = (centerOfWindow.Item1 <= 10) ? (centerOfWindow.Item1 + 1) : centerOfWindow.Item1;
+            int b = (centerOfWindow.Item2 <= 10) ? (centerOfWindow.Item2 + 1) : centerOfWindow.Item2;
+            a = (centerOfWindow.Item1 >= response.GetLength(0) - 11) ? centerOfWindow.Item1 - 1 : a;
+            b = (centerOfWindow.Item2 >= response.GetLength(1) - 11) ? centerOfWindow.Item2 - 1 : b;
+
+            centerOfWindow = new Tuple<int, int>(a, b);
+
+            double[,] window = GetWindowForSearch(13, response, centerOfWindow);
+
+            Tuple<int, int> newPoint = KernelHelper.Max2dPosition(window);
+
+            newPoint = new Tuple<int, int>(newPoint.Item1 + centerOfWindow.Item1 - 6, newPoint.Item2 + centerOfWindow.Item2 - 6);
+
+            return newPoint;            
+        }
+
+        static private double[,] CalculateFilterResponse(double[,] img, double sigma1, double sigma2, bool isLevel3)
         {
             Complex[,] response = SymmetryHelper.EstimatePS(img, sigma1, sigma2);
             double[,] aaa1 = response.Select2D((value, row, column) => (response[row, column].Magnitude));
@@ -66,9 +95,10 @@ namespace SingularPointsExtraction
             {
                 response = CalculateModifiedFilterResponse(img, response, sigma1);
             }
-            
-            //тут будет поиск абсолютного максимума
-            return new Tuple<int, int>(0, 0);
+
+            double[,] magnitudeOfResponse = response.Select2D((x)=>x.Magnitude);
+
+            return magnitudeOfResponse;
         }
 
         static private Complex[,] CalculateModifiedFilterResponse(double[,] img, Complex[,] response, double sigma1)
@@ -91,6 +121,7 @@ namespace SingularPointsExtraction
             double[,] aaa = modifiedResponse.Select2D((value, row, column) => (modifiedResponse[row, column].Magnitude));
             ImageHelper.SaveArray(aaa, "D:/resp12M.bmp");
 
+            
             return modifiedResponse;
 
         }
