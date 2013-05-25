@@ -41,7 +41,7 @@ namespace ModelBasedAlgorithm
                     continue;
                 }
 
-                blocks = GetBlocks(point);
+               blocks = GetBlocks(point);
                 featureSpace = GetFeatureSpace(point);
 
                 foreach (double[,] block in blocks)

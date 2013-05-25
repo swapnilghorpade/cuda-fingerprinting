@@ -17,37 +17,25 @@ namespace ModelBasedAlgorithm
             double[,] imgBytes = ImageHelper.LoadImage(path);
             imgBytes = ImageEnhancementHelper.EnhanceImage(imgBytes);
 
-            double[,] orientationField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(imgBytes);
-            double[,] orientationField111 = GenerateOrientationField(imgBytes);
+            // double[,] pixelwiseOrientationField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(imgBytes);
+            double[,] orientationField = GenerateOrientationField(imgBytes, 15);
 
+            //ImageHelper.SaveArray(pixelwiseOrientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
             ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
-            ImageHelper.SaveArray(orientationField111, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField111.jpg");
 
             List<Tuple<int, int>> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
             ModelBasedAlgorithm modelBasedAlgorithm = new ModelBasedAlgorithm(orientationField);
-
             singularPoints = modelBasedAlgorithm.FindSingularPoints(singularPoints);
-
-            /* double[,] result = new double[,];
-
-             foreach(Tuple<int, int> point in singularPoints)
-             {
-                 result[point.Item1, point.Item2] = 200;
-             }
-
-             ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
-             */
         }
 
-        private static double[,] GenerateOrientationField(double[,] bytes)
+        private static double[,] GenerateOrientationField(double[,] bytes, int n)
         {
             double size = 1;
-
             double avSigma = 5;
+            double value = 1 / ((double)n * n);
+            var array = new double[n, n];
 
-            int n = 15;
-
-            var array = GetArray(n);
+            array = array.Select2D(x => value); // GetArray(n);
 
             var kernelAv = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D(x, y, avSigma),
                                                    KernelHelper.GetKernelSizeForGaussianSigma(avSigma));
@@ -68,10 +56,6 @@ namespace ModelBasedAlgorithm
 
             var Gyy = dy.Select2D(x => x * x);
 
-            // Gxx = ConvolutionHelper.Convolve(Gxx, kernelAv);
-            // Gxy = ConvolutionHelper.Convolve(Gxy, kernelAv);
-            // Gyy = ConvolutionHelper.Convolve(Gyy, kernelAv);
-
             Gxx = ConvolutionHelper.Convolve(Gxx, array);
             Gxy = ConvolutionHelper.Convolve(Gxy, array);
             Gyy = ConvolutionHelper.Convolve(Gyy, array);
@@ -80,22 +64,6 @@ namespace ModelBasedAlgorithm
             angles = angles.Select2D(angle => angle <= 0 ? angle + Math.PI / 2 : angle - Math.PI / 2);
             //ImageHelper.SaveArray(angles, "C:\\temp\\angles.png");
             return angles;
-        }
-
-        private static double[,] GetArray(int n)
-        {
-            double[,] result = new double[n, n];
-            double value = 1 / (n * n);
-
-            for (int i = 0; i < n; i++)
-            {
-                for (int j = 0; j < n; j++)
-                {
-                    result[i, j] = value;
-                }
-            }
-
-            return result;
         }
     }
 }

@@ -9,6 +9,8 @@ namespace ModelBasedAlgorithm
 {
     internal static class PoincareIndexMethod
     {
+        // Поиск особых точек методом Пуанкаре
+
         public static List<Tuple<int, int>> FindSingularPoins(double[,] orientationField)
         {
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
@@ -27,6 +29,8 @@ namespace ModelBasedAlgorithm
             return result;
         }
 
+        // Проверка является ли точка особой
+
         private static bool IsSingularPoint(double[,] orientationField, int xPoint, int yPoint)
         {
             if (xPoint - Constants.AreaPI < 0 || xPoint + Constants.AreaPI >= orientationField.GetLength(0)
@@ -40,7 +44,7 @@ namespace ModelBasedAlgorithm
             int y = yPoint - Constants.AreaPI;
             Tuple<int, int> currentPoint;
             Tuple<int, int> nextPoint = new Tuple<int, int>(x, y);
-            double sum = 0;
+            double pi = 0;
             int closedCurveSquare = (Constants.AreaPI * 2) * 4;
 
             for (int k = 0; k < closedCurveSquare - 1; k++)
@@ -75,13 +79,14 @@ namespace ModelBasedAlgorithm
                     nextPoint = points[0];
                 }
 
-                sum += FunctionF(orientationField[nextPoint.Item1, nextPoint.Item2] 
+                // Считается сумма разностей соседних направлений
+                pi += FunctionF(orientationField[nextPoint.Item1, nextPoint.Item2] 
                                 - orientationField[currentPoint.Item1, currentPoint.Item2]);
             }
 
-            sum = sum / Math.PI;
+            pi = pi / Math.PI;
 
-            return (int)sum != 0;
+            return (int)pi != 0;
         }
 
         private static double FunctionF(double arg)

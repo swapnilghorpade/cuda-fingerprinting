@@ -6,21 +6,10 @@ using System.Threading.Tasks;
 
 namespace ModelBasedAlgorithm
 {
-    internal struct ParameterStruct
-    {
-        public int X;
-        public int Y;
-        public double P;
-        public double Tetta;
-        public int Vote;
-    }
-
-    // find core point... yet...
-
     internal class HoughTransform
     {
         private List<Tuple<int, int>> singularPointsPI = new List<Tuple<int, int>>();
-        private List<ParameterStruct> parameterSpase = new List<ParameterStruct>();
+        private List<Рarameter> parameterSpase = new List<Рarameter>();
         private double[,] orientationField;
         private FeatureSpaceStruct featureSpace;
         private double backgroundOrientation = 0;
@@ -33,46 +22,48 @@ namespace ModelBasedAlgorithm
             this.orientationField = orientationField;
         }
 
+        // Преобразование Хафа.
+        // Есть поле пространство признаков (featureSpace) (поле направлений около особой точки)
+        // и есть пространство параметров (parameterSpase) (пространство координат особых точек).
+        // Направление фона (backgroundOrientation) определяется по одному из блоков около особой точки.
+        //
         public void Transform(Tuple<int, int> point, FeatureSpaceStruct featureSpace, double backgroundOrientation)
         {
             this.point = point;
             this.featureSpace = featureSpace;
             this.backgroundOrientation = backgroundOrientation;
 
-            Initialize();
+            InitializeParameterSpase();
 
             int xLength = featureSpace.FeatureSpace.GetLength(0);
             int yLength = featureSpace.FeatureSpace.GetLength(1);
 
+            // Процедура голосования
             for (int i = 0; i < xLength; i++)
             {
                 for (int j = 0; j < yLength; j++)
                 {
                     for (int paramIndex = 0; paramIndex < parameterSpase.Count; paramIndex++)
                     {
+                        // определяем будет ли точка из пространства признаков голосовать 
+                        // за особую точку (точка пространства параметров)
                         if (WhetherToVote(i, j, featureSpace, parameterSpase[paramIndex]))
                         {
-                            parameterSpase[paramIndex] = new ParameterStruct()
-                            {
-                                X = parameterSpase[paramIndex].X,
-                                Y = parameterSpase[paramIndex].Y,
-                                P = parameterSpase[paramIndex].P,
-                                Tetta = parameterSpase[paramIndex].Tetta,
-                                Vote = parameterSpase[paramIndex].Vote + 1
-                            };
+                            parameterSpase[paramIndex].IncreaseVote();
                         }
                     }
                 }
             }
         }
 
-        private bool WhetherToVote(int x, int y, FeatureSpaceStruct featureSpace, ParameterStruct core)
+        // Решение о голосовании принимается, если выполняется уравнение
+        private bool WhetherToVote(int x, int y, FeatureSpaceStruct featureSpace, Рarameter core)
         {
             return Math.Tan(2 * (featureSpace.FeatureSpace[x, y] - backgroundOrientation)) * (x + featureSpace.ShiftX - core.X) 
                 == y + featureSpace.ShiftY - core.Y;
         }
 
-        private void Initialize()
+        private void InitializeParameterSpase()
         {
             foreach (Tuple<int, int> singularPoint in singularPointsPI)		
             {
@@ -80,9 +71,8 @@ namespace ModelBasedAlgorithm
             }
         }
 
-        private ParameterStruct CalculateParameter(Tuple<int, int> singularPoint)
+        private Рarameter CalculateParameter(Tuple<int, int> singularPoint)
         {
-            //
             double k = Math.Tan(2 * (orientationField[singularPoint.Item1, singularPoint.Item2] - backgroundOrientation));
             double tetta = Math.PI / 2 + Math.Atan(k);
             double p = (singularPoint.Item2 - k) / Math.Sqrt(k * k + 1);
@@ -92,17 +82,19 @@ namespace ModelBasedAlgorithm
                 p = -1 * p;
             }
 
-            return new ParameterStruct() { X = singularPoint.Item1, Y = singularPoint.Item2, P = p, Tetta = tetta, Vote = 0 };
+            return new Рarameter(singularPoint.Item1, singularPoint.Item2, p, tetta);
         }
 
+        // Отсекаем ложные особые точки.
         internal List<Tuple<int, int>> FilterThreshold()
         {
             int threshold = (int)(Constants.W * Constants.W / 2);
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
 
+            // Отбрасываем точки с количеством голосов меньше половины голосующих
            // parameterSpase = parameterSpase.FindAll(parameter => parameter.Vote > threshold);
 
-            foreach (ParameterStruct param in parameterSpase)
+            foreach (Рarameter param in parameterSpase)
             {
                 if (max < param.Vote)
                 {
@@ -111,8 +103,6 @@ namespace ModelBasedAlgorithm
 
                 result.Add(new Tuple<int, int>(param.X, param.Y));
             }
-
-            // max = 18
 
             return result;
         }
