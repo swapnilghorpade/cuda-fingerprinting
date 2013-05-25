@@ -34,7 +34,6 @@ namespace AlgorithmVSCOME
 
             VSCOME vscome = new VSCOME(orientationField, filteredField);
 
-
             double[,] vscomeValue = vscome.CalculateVscomeValue();
 
             ImageHelper.SaveArray(vscomeValue, "C:\\Users\\Tanya\\Documents\\Results\\vscomeValue_1.jpg");

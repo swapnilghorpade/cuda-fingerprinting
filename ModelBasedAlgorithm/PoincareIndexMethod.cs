@@ -41,8 +41,9 @@ namespace ModelBasedAlgorithm
             Tuple<int, int> currentPoint;
             Tuple<int, int> nextPoint = new Tuple<int, int>(x, y);
             double sum = 0;
+            int closedCurveSquare = (Constants.AreaPI * 2) * 4;
 
-            for (int k = 0; k < 8; k++)
+            for (int k = 0; k < closedCurveSquare - 1; k++)
             {
                points.Add(nextPoint);
 
