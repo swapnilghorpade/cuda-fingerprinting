@@ -29,6 +29,7 @@ namespace ModelBasedAlgorithm
 
         internal List<Tuple<int, int>> FindSingularPoints(List<Tuple<int, int>> singularPointsPI)
         {
+            List<Tuple<int, int>> result = new List<Tuple<int, int>>();
             HoughTransform houghTransform = new HoughTransform(singularPointsPI, orientationField);
             List<double[,]> blocks = new List<double[,]>();
             FeatureSpaceStruct featureSpace;
@@ -41,7 +42,7 @@ namespace ModelBasedAlgorithm
                     continue;
                 }
 
-               blocks = GetBlocks(point);
+                blocks = GetBlocks(point);
                 featureSpace = GetFeatureSpace(point);
 
                 foreach (double[,] block in blocks)

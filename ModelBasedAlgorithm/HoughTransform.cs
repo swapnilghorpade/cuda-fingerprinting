@@ -9,7 +9,8 @@ namespace ModelBasedAlgorithm
     internal class HoughTransform
     {
         private List<Tuple<int, int>> singularPointsPI = new List<Tuple<int, int>>();
-        private List<Рarameter> parameterSpase = new List<Рarameter>();
+        private List<List<Рarameter>> parameterSpaces = new List<List<Рarameter>>();
+        private List<Рarameter> parameterSpace = new List<Рarameter>();
         private double[,] orientationField;
         private FeatureSpaceStruct featureSpace;
         private double backgroundOrientation = 0;
@@ -22,6 +23,8 @@ namespace ModelBasedAlgorithm
             this.orientationField = orientationField;
         }
 
+        // Тут что-то не так
+        //
         // Преобразование Хафа.
         // Есть поле пространство признаков (featureSpace) (поле направлений около особой точки)
         // и есть пространство параметров (parameterSpase) (пространство координат особых точек).
@@ -33,7 +36,7 @@ namespace ModelBasedAlgorithm
             this.featureSpace = featureSpace;
             this.backgroundOrientation = backgroundOrientation;
 
-            InitializeParameterSpase();
+            InitializeParameterSpace();
 
             int xLength = featureSpace.FeatureSpace.GetLength(0);
             int yLength = featureSpace.FeatureSpace.GetLength(1);
@@ -43,31 +46,33 @@ namespace ModelBasedAlgorithm
             {
                 for (int j = 0; j < yLength; j++)
                 {
-                    for (int paramIndex = 0; paramIndex < parameterSpase.Count; paramIndex++)
+                    for (int paramIndex = 0; paramIndex < parameterSpace.Count; paramIndex++)
                     {
-                        // определяем будет ли точка из пространства признаков голосовать 
-                        // за особую точку (точка пространства параметров)
-                        if (WhetherToVote(i, j, featureSpace, parameterSpase[paramIndex]))
+                        if (WhetherToVote(i, j, featureSpace, parameterSpace[paramIndex]))
                         {
-                            parameterSpase[paramIndex].IncreaseVote();
+                            parameterSpace[paramIndex].IncreaseVote();
                         }
                     }
                 }
             }
+
+            parameterSpaces.Add(parameterSpace);
         }
 
         // Решение о голосовании принимается, если выполняется уравнение
         private bool WhetherToVote(int x, int y, FeatureSpaceStruct featureSpace, Рarameter core)
         {
-            return Math.Tan(2 * (featureSpace.FeatureSpace[x, y] - backgroundOrientation)) * (x + featureSpace.ShiftX - core.X) 
+            return Math.Tan(2 * (featureSpace.FeatureSpace[x, y] - backgroundOrientation)) * (x + featureSpace.ShiftX - core.X)
                 == y + featureSpace.ShiftY - core.Y;
         }
 
-        private void InitializeParameterSpase()
+        private void InitializeParameterSpace()
         {
-            foreach (Tuple<int, int> singularPoint in singularPointsPI)		
+            parameterSpace = new List<Рarameter>();
+
+            foreach (Tuple<int, int> singularPoint in singularPointsPI)
             {
-                parameterSpase.Add(CalculateParameter(singularPoint));
+                parameterSpace.Add(CalculateParameter(singularPoint));
             }
         }
 
@@ -92,9 +97,9 @@ namespace ModelBasedAlgorithm
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
 
             // Отбрасываем точки с количеством голосов меньше половины голосующих
-           // parameterSpase = parameterSpase.FindAll(parameter => parameter.Vote > threshold);
+            // parameterSpase = parameterSpase.FindAll(parameter => parameter.Vote > threshold);
 
-            foreach (Рarameter param in parameterSpase)
+            foreach (Рarameter param in parameterSpace)
             {
                 if (max < param.Vote)
                 {
