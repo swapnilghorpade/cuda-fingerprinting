@@ -68,6 +68,7 @@ namespace ComplexFilterQA
 
         public static double[,] LoadImage(string path)
         {
+
             var bmp = new Bitmap(path);
             double[,] imgBytes = new double[bmp.Width, bmp.Height];
             for (int x = 0; x < bmp.Width; x++)
@@ -246,6 +247,28 @@ namespace ComplexFilterQA
                     }
                 }
             }
+        }
+
+        public static Tuple<int, int> FindRedPoint(string path)
+        {
+            var bmp = new Bitmap(path);
+            int x = 0;
+            int y = 0;            
+            for (int i = 0; i < bmp.Width; i++)
+            {
+                for (int j = 0; j < bmp.Height; j++)
+                {
+                    Color color = bmp.GetPixel(i,j);
+                    if (color.R != color.G || color.R != color.B)
+                    {
+                        x = i;
+                        y = j;
+                    }
+                }                
+            }
+
+
+            return new Tuple<int,int>(x,y);
         }
     }
 }
