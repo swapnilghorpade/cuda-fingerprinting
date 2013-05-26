@@ -16,18 +16,17 @@ namespace ModelBasedAlgorithm
             string[] pathes = Directory.GetFiles("C:\\Users\\Tanya\\Documents\\tests_data\\db");
             StreamWriter writer = new StreamWriter("C:\\Users\\Tanya\\Documents\\Results\\ModelBasedAlgorithmResult.txt", true);
 
-            for (int i = 0; i < 10 /*pathes.GetLength(0)*/; i++)
+            for (int i = 0; i < 1 /*pathes.GetLength(0)*/; i++)
             {
                 Tuple<int, int> redPoint = ImageHelper.FindRedPoint(pathes[i]);
                 double[,] imgBytes = ImageEnhancementHelper.EnhanceImage(ImageHelper.LoadImage(pathes[i]));
                 double[,] orientationField = GenerateOrientationField(imgBytes);
                 List<Tuple<int, int>> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
                 ModelBasedAlgorithm modelBasedAlgorithm = new ModelBasedAlgorithm(orientationField);
-                singularPoints = modelBasedAlgorithm.FindSingularPoints(singularPoints);
+                //singularPoints = modelBasedAlgorithm.FindSingularPoints(singularPoints);
 
-                //Tuple<int, int> corePoint = 
-               // KernelHelper.Max2dPosition(vscomeValue);
-               // writer.WriteLine(GetDistance(redPoint, corePoint));
+                Tuple<int, int> corePoint = modelBasedAlgorithm.FindSingularPoints(singularPoints);
+                writer.WriteLine(GetDistance(redPoint, corePoint));
 
                 //ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
             }

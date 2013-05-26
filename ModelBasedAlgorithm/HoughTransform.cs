@@ -11,31 +11,35 @@ namespace ModelBasedAlgorithm
         private List<Tuple<int, int>> singularPointsPI = new List<Tuple<int, int>>();
         private double[,] orientationField;
         private List<int> votes = new List<int>();
+        private Tuple<int, int> point;
 
         public HoughTransform(List<Tuple<int, int>> singularPointsPI, double[,] orientationField)
         {
             this.singularPointsPI = singularPointsPI;
             this.orientationField = orientationField;
+            int initialValue = 0;
 
             foreach (Tuple<int, int> singularPoint in singularPointsPI)
             {
-                votes.Add(0);
+                votes.Add(initialValue);
             }
         }
 
-        public void Transform(Tuple<int, int> point, PointsOfInterestStruct pointsOfInterest, double backgroundOrientation)
+        public void Transform(Tuple<int, int> point, double backgroundOrientation)
         {
-            int xLength = pointsOfInterest.Points.GetLength(0);
-            int yLength = pointsOfInterest.Points.GetLength(1);
+            this.point = point;
+
+            int xLength = orientationField.GetLength(0);
+            int yLength = orientationField.GetLength(1);
             double coefficient = 0;
 
             for (int i = 0; i < xLength; i++)
             {
                 for (int j = 0; j < yLength; j++)
                 {
-                    coefficient = Math.Tan(2 * (pointsOfInterest.Points[i, j] - backgroundOrientation));
+                    coefficient = Math.Tan(2 * (orientationField[i, j] - backgroundOrientation));
 
-                    if (coefficient * (i + pointsOfInterest.ShiftX - point.Item1) == j + pointsOfInterest.ShiftY - point.Item2)
+                    if (WhetherToVote(i, j, coefficient))
                     {
                         votes[singularPointsPI.IndexOf(point)]++;
                     }
@@ -43,13 +47,32 @@ namespace ModelBasedAlgorithm
             }
         }
 
-        internal List<Tuple<int, int>> FilterThreshold()
+        private bool WhetherToVote(int i, int j, double coefficient)
+        {
+            int upperBound = (int)(Constants.W / 2);
+            int lowerBound = -1 * upperBound;
+
+            for (int xPointError = lowerBound; xPointError < upperBound; xPointError++)
+            {
+                for (int yPointError = lowerBound; yPointError < upperBound; yPointError++)
+                {
+                    if (coefficient * (i - point.Item1 - xPointError) == (j - point.Item2 - yPointError))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        public Tuple<int, int> FilterThreshold()
         {
             int threshold = (int)((Constants.W * Constants.W) / 2);
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
             int max = 0;
 
-            //votes = votes.FindAll(vote => vote > threshold);
+            votes = votes.FindAll(vote => vote > threshold);
 
             for (int i = 0; i < votes.Count; i++)
             {
@@ -58,13 +81,15 @@ namespace ModelBasedAlgorithm
                     max = votes[i];
                 }
 
-                if (votes[i] > 0)
+             /*   if (votes[i] > 0)
                 {
                     result.Add(singularPointsPI[i]);
                 }
+              */
             }
 
-            return result;
+            return singularPointsPI[votes.IndexOf(max)];
+            // return result;
         }
     }
 }

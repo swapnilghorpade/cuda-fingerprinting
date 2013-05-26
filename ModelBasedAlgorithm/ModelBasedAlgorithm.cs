@@ -7,13 +7,6 @@ using ComplexFilterQA;
 
 namespace ModelBasedAlgorithm
 {
-    internal struct PointsOfInterestStruct
-    {
-        public double[,] Points;
-        public int ShiftX;
-        public int ShiftY;
-    }
-
     internal class ModelBasedAlgorithm
     {
         private double[,] orientationField;
@@ -32,7 +25,6 @@ namespace ModelBasedAlgorithm
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
             HoughTransform houghTransform = new HoughTransform(singularPointsPI, orientationField);
             List<double[,]> blocks = new List<double[,]>();
-            PointsOfInterestStruct pointOfInterest;
             double backgroundOrientation;
 
             foreach (Tuple<int, int> point in singularPointsPI)
@@ -43,12 +35,11 @@ namespace ModelBasedAlgorithm
                 }
 
                 blocks = GetBlocks(point);
-                pointOfInterest = GetPointsOfInterest(point);
 
                 foreach (double[,] block in blocks)
                 {
                     backgroundOrientation = GetBackgroundOrientation(block);
-                    houghTransform.Transform(point, pointOfInterest, backgroundOrientation);
+                    houghTransform.Transform(point, backgroundOrientation);
                 }
             }
 
@@ -77,24 +68,6 @@ namespace ModelBasedAlgorithm
             }
 
             return value / (xLength * yLength);
-        }
-
-        private PointsOfInterestStruct GetPointsOfInterest(Tuple<int, int> point)
-        {
-            double[,] pointsOfInterest = new double[Constants.W, Constants.W];
-
-            int upperBound = (int)(Constants.W / 2);
-            int lowerBound = -1 * upperBound;
-
-            for (int x = lowerBound; x < upperBound; x++)
-            {
-                for (int y = lowerBound; y < upperBound; y++)
-                {
-                    pointsOfInterest[x - lowerBound, y - lowerBound] = orientationField[point.Item1 + x, point.Item2 + y];
-                }
-            }
-
-            return new PointsOfInterestStruct() { Points = pointsOfInterest, ShiftX = point.Item1 + lowerBound, ShiftY = point.Item2 + lowerBound };
         }
 
         private List<double[,]> GetBlocks(Tuple<int, int> point)
