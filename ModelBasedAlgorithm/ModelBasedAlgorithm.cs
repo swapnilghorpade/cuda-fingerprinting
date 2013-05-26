@@ -20,7 +20,7 @@ namespace ModelBasedAlgorithm
             lowerBound = -1 * upperBound;
         }
 
-        internal List<Tuple<int, int>> FindSingularPoints(List<Tuple<int, int>> singularPointsPI)
+        internal Tuple<int, int> FindSingularPoints(List<Tuple<int, int>> singularPointsPI)
         {
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
             HoughTransform houghTransform = new HoughTransform(singularPointsPI, orientationField);
