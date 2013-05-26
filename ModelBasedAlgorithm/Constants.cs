@@ -12,5 +12,6 @@ namespace ModelBasedAlgorithm
         public static readonly int WNum = 3;
         public static readonly int W = 35;
         public static readonly int AreaPI = 11;
+        public static readonly int N = 15;
     }
 }

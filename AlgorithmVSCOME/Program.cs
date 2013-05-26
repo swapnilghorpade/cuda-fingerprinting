@@ -9,6 +9,7 @@ using ComplexFilterQA;
 using FingerprintPhD;
 using FingerprintLib;
 using FingerprintPhD.Common;
+using System.IO;
 
 namespace AlgorithmVSCOME
 {
@@ -16,32 +17,39 @@ namespace AlgorithmVSCOME
     {
         static void Main(string[] args)
         {
-            string path = "C:\\Users\\Tanya\\Documents\\tests_data\\101_s.tif";
+            string[] pathes = Directory.GetFiles("C:\\Users\\Tanya\\Documents\\tests_data\\db");
+            StreamWriter writer = new StreamWriter("C:\\Users\\Tanya\\Documents\\Results\\AlgorithmVSCOMEResult.txt", true);
 
-            double[,] imgBytes = ImageHelper.LoadImage(path);
-            imgBytes = ImageEnhancementHelper.EnhanceImage(imgBytes);
+            for (int i = 0; i < 3 /*pathes.GetLength(0)*/; i++)
+            {
+                Tuple<int, int> redPoint = ImageHelper.FindRedPoint(pathes[i]);
+                double[,] imgBytes = ImageEnhancementHelper.EnhanceImage(ImageHelper.LoadImage(pathes[i]));
+                
+                double[,] orientationField = OrientationFieldGenerator.GenerateOrientationField(imgBytes.Select2D(x => (int)x));
+                Complex[,] complexOrientationField = orientationField.Select2D(x => (new Complex(Math.Cos(2 * x), Math.Sin(2 * x))));
+                
+                Complex[,] filter = Filter.GetFilter(orientationField);
+                Complex[,] complexFilteredField = ConvolutionHelper.ComplexConvolve(complexOrientationField, filter);
+                double[,] filteredField = complexFilteredField.Select2D(x => x.Magnitude);
 
-            double[,] orientationField = OrientationFieldGenerator.GenerateOrientationField(imgBytes.Select2D(x => (int)x));
-            Complex[,] complexOrientationField = orientationField.Select2D(x => (new Complex(Math.Cos(2 * x), Math.Sin(2 * x))));
+                VSCOME vscome = new VSCOME(orientationField, filteredField);   
+                
+                double[,] vscomeValue = vscome.CalculateVscomeValue();
+                Tuple<int, int> corePoint = KernelHelper.Max2dPosition(vscomeValue);
 
-            Complex[,] filter = Filter.GetFilter(orientationField);
+                writer.WriteLine(GetDistance(redPoint, corePoint));
 
-            Complex[,] complexFilteredField = ConvolutionHelper.ComplexConvolve(complexOrientationField, filter);
-            double[,] filteredField = complexFilteredField.Select2D(x => x.Magnitude);
+                // ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\orientationField.jpg");
+                // ImageHelper.SaveArray(filteredField, "C:\\Users\\Tanya\\Documents\\Results\\filteredField.jpg");
+                //ImageHelper.SaveArray(vscomeValue, "C:\\Users\\Tanya\\Documents\\Results\\vscomeValue_1.jpg");
+            }
 
-            ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\orientationField.jpg");
-            ImageHelper.SaveArray(filteredField, "C:\\Users\\Tanya\\Documents\\Results\\filteredField.jpg");
+            writer.Close();
+        }
 
-            VSCOME vscome = new VSCOME(orientationField, filteredField);
-
-            double[,] vscomeValue = vscome.CalculateVscomeValue();
-
-            ImageHelper.SaveArray(vscomeValue, "C:\\Users\\Tanya\\Documents\\Results\\vscomeValue_1.jpg");
-
-            Tuple<int, int> corePoint = KernelHelper.Max2dPosition(vscomeValue);
-
-            Console.WriteLine("Reference point ({0},{1})", corePoint.Item1, corePoint.Item2);
-            Console.ReadLine();
+        private static double GetDistance(Tuple<int, int> a, Tuple<int, int> b)
+        {
+            return Math.Sqrt(Math.Pow((a.Item1 - b.Item1), 2) + Math.Pow((a.Item2 - b.Item2), 2));
         }
     }
 }

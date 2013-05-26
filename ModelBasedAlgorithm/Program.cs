@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,30 +13,36 @@ namespace ModelBasedAlgorithm
     {
         static void Main(string[] args)
         {
-            string path = "C:\\Users\\Tanya\\Documents\\tests_data\\101_1.tif";
+            string[] pathes = Directory.GetFiles("C:\\Users\\Tanya\\Documents\\tests_data\\db");
+            StreamWriter writer = new StreamWriter("C:\\Users\\Tanya\\Documents\\Results\\ModelBasedAlgorithmResult.txt", true);
 
-            double[,] imgBytes = ImageHelper.LoadImage(path);
-            imgBytes = ImageEnhancementHelper.EnhanceImage(imgBytes);
+            for (int i = 0; i < 10 /*pathes.GetLength(0)*/; i++)
+            {
+                Tuple<int, int> redPoint = ImageHelper.FindRedPoint(pathes[i]);
+                double[,] imgBytes = ImageEnhancementHelper.EnhanceImage(ImageHelper.LoadImage(pathes[i]));
+                double[,] orientationField = GenerateOrientationField(imgBytes);
+                List<Tuple<int, int>> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
+                ModelBasedAlgorithm modelBasedAlgorithm = new ModelBasedAlgorithm(orientationField);
+                singularPoints = modelBasedAlgorithm.FindSingularPoints(singularPoints);
 
-            // double[,] pixelwiseOrientationField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(imgBytes);
-            double[,] orientationField = GenerateOrientationField(imgBytes, 15);
+                //Tuple<int, int> corePoint = 
+               // KernelHelper.Max2dPosition(vscomeValue);
+               // writer.WriteLine(GetDistance(redPoint, corePoint));
 
-            //ImageHelper.SaveArray(pixelwiseOrientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
-            ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
+                //ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
+            }
 
-            List<Tuple<int, int>> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);
-            ModelBasedAlgorithm modelBasedAlgorithm = new ModelBasedAlgorithm(orientationField);
-            singularPoints = modelBasedAlgorithm.FindSingularPoints(singularPoints);
+            writer.Close();
         }
 
-        private static double[,] GenerateOrientationField(double[,] bytes, int n)
+        private static double[,] GenerateOrientationField(double[,] bytes)
         {
             double size = 1;
             double avSigma = 5;
-            double value = 1 / ((double)n * n);
-            var array = new double[n, n];
+            double value = 1 / ((double)Constants.N * Constants.N);
+            var array = new double[Constants.N, Constants.N];
 
-            array = array.Select2D(x => value); // GetArray(n);
+            array = array.Select2D(x => value);
 
             var kernelAv = KernelHelper.MakeKernel((x, y) => Gaussian.Gaussian2D(x, y, avSigma),
                                                    KernelHelper.GetKernelSizeForGaussianSigma(avSigma));
@@ -64,6 +71,11 @@ namespace ModelBasedAlgorithm
             angles = angles.Select2D(angle => angle <= 0 ? angle + Math.PI / 2 : angle - Math.PI / 2);
             //ImageHelper.SaveArray(angles, "C:\\temp\\angles.png");
             return angles;
+        }
+
+        private static double GetDistance(Tuple<int, int> a, Tuple<int, int> b)
+        {
+            return Math.Sqrt(Math.Pow((a.Item1 - b.Item1), 2) + Math.Pow((a.Item2 - b.Item2), 2));
         }
     }
 }

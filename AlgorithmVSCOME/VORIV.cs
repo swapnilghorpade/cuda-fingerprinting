@@ -51,7 +51,7 @@ namespace AlgorithmVSCOME
                 return Math.PI + arg;
             }
 
-            throw new ArgumentException("FunctionF");
+            return 0;
         }
     }
 }
