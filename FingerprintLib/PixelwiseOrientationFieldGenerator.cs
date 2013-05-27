@@ -41,8 +41,6 @@ namespace FingerprintLib
             Gyy = ConvolutionHelper.Convolve(Gyy, kernelAv);
 
             var angles = Gxx.Select2D((gxx, row, column) => 0.5*Math.Atan2( 2.0*Gxy[row, column],gxx - Gyy[row, column]));
-
-            var min = KernelHelper.Min2d(angles);
             
             angles = angles.Select2D(angle => angle <= 0 ? angle + Math.PI/2 : angle - Math.PI/2);
             //ImageHelper.SaveFieldAbove(bytes, angles, "C:\\temp\\orField.png");
