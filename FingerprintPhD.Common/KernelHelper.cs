@@ -31,6 +31,19 @@ namespace ComplexFilterQA
             return max;
         }
 
+        public static double Min2d(double[,] arr)
+        {
+            double min = double.PositiveInfinity;
+            for (int x = 0; x < arr.GetLength(0); x++)
+            {
+                for (int y = 0; y < arr.GetLength(1); y++)
+                {
+                    if (arr[x, y] < min) min = arr[x, y];
+                }
+            }
+            return min;
+        }
+
         public static Tuple<int, int> Max2dPosition(double[,] arr)
         {
             double max = double.NegativeInfinity;
