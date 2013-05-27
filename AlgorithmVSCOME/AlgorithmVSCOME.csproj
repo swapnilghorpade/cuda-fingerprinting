@@ -47,10 +47,8 @@
     <Compile Include="Gaussian.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Symmetry.cs" />
     <Compile Include="VORIV.cs" />
     <Compile Include="VSCOME.cs" />
-    <Compile Include="XY_Function.cs" />
     <Compile Include="XY_WithLine.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -18,14 +18,14 @@ namespace AlgorithmVSCOME
 
             for (int k = -halfK; k <= halfK; k++)
             {
-                for (int i = 0; i <= Constants.N - 1; i++)
+                for (int i = Constants.N - 1; i >= 0; i--)
                 {
-                    if (v + k < 0 || u - i - 1 < 0 || u - i >= maxValueX || v + k >= maxValueY)
+                    if (v + k < 0 || u - i < 0 || u - i + 1 >= maxValueX || v + k >= maxValueY)
                     {
                         continue;
                     }
 
-                    sum += FunctionF(orientationField[u - i, v + k] - orientationField[u - i - 1, v + k]);
+                    sum += FunctionF(orientationField[u - i, v + k] - orientationField[u - i + 1, v + k]);
                 }
 
                 result += sum;
@@ -36,19 +36,14 @@ namespace AlgorithmVSCOME
 
         private static double FunctionF(double arg)
         {
-            if (Math.Abs(arg) <= Math.PI / 2)
+            if (arg >= 0 && arg <= Math.PI)
             {
                 return arg;
             }
 
-            if (arg > Math.PI / 2)
+            if (arg < 0 && arg > Math.PI* (-1))
             {
-                return Math.PI - arg;
-            }
-
-            if (arg < Math.PI / -2)
-            {
-                return Math.PI + arg;
+                return arg * (-1);
             }
 
             return 0;
