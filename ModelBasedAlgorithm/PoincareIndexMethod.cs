@@ -9,8 +9,6 @@ namespace ModelBasedAlgorithm
 {
     internal static class PoincareIndexMethod
     {
-        // Поиск особых точек методом Пуанкаре
-
         public static List<Tuple<int, int>> FindSingularPoins(double[,] orientationField)
         {
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
@@ -29,8 +27,6 @@ namespace ModelBasedAlgorithm
             return result;
         }
 
-        // Проверка является ли точка особой
-
         private static bool IsSingularPoint(double[,] orientationField, int xPoint, int yPoint)
         {
             if (xPoint - Constants.AreaPI < 0 || xPoint + Constants.AreaPI >= orientationField.GetLength(0)
@@ -39,54 +35,51 @@ namespace ModelBasedAlgorithm
                 return false;
             }
 
-            List<Tuple<int, int>> points = new List<Tuple<int, int>>();
             int x = xPoint - Constants.AreaPI;
-            int y = yPoint - Constants.AreaPI;
+            int y = yPoint + Constants.AreaPI;
             Tuple<int, int> currentPoint;
             Tuple<int, int> nextPoint = new Tuple<int, int>(x, y);
-            double pi = 0;
+            Tuple<int, int> firstPoint = new Tuple<int, int>(x, y);
+            double indexPoincare = 0;
             int closedCurveSquare = (Constants.AreaPI * 2) * 4;
 
-            for (int k = 0; k < closedCurveSquare - 1; k++)
+            for (int k = 0; k < closedCurveSquare; k++)
             {
-               points.Add(nextPoint);
-
                 currentPoint = nextPoint;
 
-                if (x < xPoint + Constants.AreaPI && y == yPoint - Constants.AreaPI)
+                if (x == xPoint - Constants.AreaPI && y > yPoint - Constants.AreaPI)
+                {
+                    y--;
+                    nextPoint = new Tuple<int, int>(x, y);
+                }
+                else if (x < xPoint + Constants.AreaPI && y == yPoint - Constants.AreaPI)
                 {
                     x++;
                     nextPoint = new Tuple<int, int>(x, y);
-                    
                 }
                 else if (x == xPoint + Constants.AreaPI && y < yPoint + Constants.AreaPI)
                 {
                     y++;
                     nextPoint = new Tuple<int, int>(x, y);
                 }
-                else if (x != xPoint - Constants.AreaPI && y == yPoint + Constants.AreaPI)
+                else if (x > xPoint - Constants.AreaPI + 1 && y == yPoint + Constants.AreaPI)
                 {
                     x--;
                     nextPoint = new Tuple<int, int>(x, y);
                 }
-                else if (x == xPoint - Constants.AreaPI && y == yPoint + Constants.AreaPI)
-                {
-                    y--;
-                    nextPoint = new Tuple<int, int>(x, y);
-                }
                 else
                 {
-                    nextPoint = points[0];
+                    nextPoint = firstPoint;
                 }
 
                 // Считается сумма разностей соседних направлений
-                pi += FunctionF(orientationField[nextPoint.Item1, nextPoint.Item2] 
+                indexPoincare += FunctionF(orientationField[nextPoint.Item1, nextPoint.Item2] 
                                 - orientationField[currentPoint.Item1, currentPoint.Item2]);
             }
 
-            pi = pi / Math.PI;
+            indexPoincare = indexPoincare / Math.PI;
 
-            return (int)pi != 0;
+            return indexPoincare == 1.0 || indexPoincare == 2.0;
         }
 
         private static double FunctionF(double arg)

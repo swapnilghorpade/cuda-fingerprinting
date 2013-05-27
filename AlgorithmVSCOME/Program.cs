@@ -20,7 +20,7 @@ namespace AlgorithmVSCOME
             string[] pathes = Directory.GetFiles("C:\\Users\\Tanya\\Documents\\tests_data\\db");
             StreamWriter writer = new StreamWriter("C:\\Users\\Tanya\\Documents\\Results\\AlgorithmVSCOMEResult.txt", true);
 
-            for (int i = 50; i < 60 /*pathes.GetLength(0)*/; i++)
+            for (int i = 50; i < 100/*pathes.GetLength(0)*/; i++)
             {
                 Tuple<int, int> redPoint = ImageHelper.FindRedPoint(pathes[i]);
                 double[,] imgBytes = ImageEnhancementHelper.EnhanceImage(ImageHelper.LoadImage(pathes[i]));

@@ -66,30 +66,26 @@ namespace ModelBasedAlgorithm
             return false;
         }
 
-        public Tuple<int, int> FilterThreshold()
+        public List<Tuple<int, int>> FilterThreshold()
         {
-            int threshold = (int)((Constants.W * Constants.W) / 2);
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
-            int max = 0;
+            int threshold = (int)((orientationField.GetLength(0) * orientationField.GetLength(1)) / 5);
+            int max = votes.Max();
 
-            votes = votes.FindAll(vote => vote > threshold);
+            if (max < threshold)
+            {
+                Console.WriteLine("No singular points. Sorry.");
+            }
 
             for (int i = 0; i < votes.Count; i++)
             {
-                if (max < votes[i])
-                {
-                    max = votes[i];
-                }
-
-             /*   if (votes[i] > 0)
+                if (votes[i] == max)
                 {
                     result.Add(singularPointsPI[i]);
                 }
-              */
             }
 
-            return singularPointsPI[votes.IndexOf(max)];
-            // return result;
+            return result;
         }
     }
 }
