@@ -47,7 +47,11 @@ namespace ModelBasedAlgorithm
             {
                 currentPoint = nextPoint;
 
-                if (x == xPoint - Constants.AreaPI && y > yPoint - Constants.AreaPI)
+                if (k == 7)
+                {
+                    nextPoint = firstPoint;
+                }
+                else if (x == xPoint - Constants.AreaPI && y > yPoint - Constants.AreaPI)
                 {
                     y--;
                     nextPoint = new Tuple<int, int>(x, y);
@@ -67,19 +71,30 @@ namespace ModelBasedAlgorithm
                     x--;
                     nextPoint = new Tuple<int, int>(x, y);
                 }
-                else
-                {
-                    nextPoint = firstPoint;
-                }
 
-                // Считается сумма разностей соседних направлений
-                indexPoincare += FunctionF(orientationField[nextPoint.Item1, nextPoint.Item2] 
-                                - orientationField[currentPoint.Item1, currentPoint.Item2]);
+                indexPoincare += FunctionF(orientationField[currentPoint.Item1, currentPoint.Item2]
+                                            - orientationField[nextPoint.Item1, nextPoint.Item2]);
             }
 
-            indexPoincare = indexPoincare / Math.PI;
 
+            indexPoincare = indexPoincare / Math.PI;
+            
             return indexPoincare == 1.0 || indexPoincare == 2.0;
+        }
+
+        private static double FunctionFVORIV(double arg)
+        {
+            if (arg >= 0 && arg <= Math.PI)
+            {
+                return arg;
+            }
+
+            if (arg < 0 && arg > Math.PI * (-1))
+            {
+                return arg * (-1);
+            }
+
+            return 0;
         }
 
         private static double FunctionF(double arg)

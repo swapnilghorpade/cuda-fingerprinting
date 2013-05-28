@@ -15,9 +15,16 @@ namespace ModelBasedAlgorithm
         {
             string[] pathes = Directory.GetFiles("C:\\Users\\Tanya\\Documents\\tests_data\\db");
             StreamWriter writer = new StreamWriter("C:\\Users\\Tanya\\Documents\\Results\\ModelBasedAlgorithmResult.txt", true);
+            StreamWriter writerResult = new StreamWriter("C:\\Users\\Tanya\\Documents\\Results\\ModelBasedAlgorithmSummaryResult.txt", true);
+            List<double> distances = new List<double>();
+            double sum15 = 0;
+            double sum30 = 0;
+            double sumOther = 0;
+            double distance = 0;
 
-            for (int i = 0; i < 10 /*pathes.GetLength(0)*/; i++)
+            for (int i = 0; i < pathes.GetLength(0); i++)
             {
+                break;
                 Tuple<int, int> redPoint = ImageHelper.FindRedPoint(pathes[i]);
                 double[,] imgBytes = ImageEnhancementHelper.EnhanceImage(ImageHelper.LoadImage(pathes[i]));
                 double[,] orientationField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(imgBytes);
@@ -29,11 +36,34 @@ namespace ModelBasedAlgorithm
 
                 foreach (Tuple<int, int> corePoint in corePoints)
                 {
-                    writer.WriteLine(GetDistance(redPoint, corePoint));
+                    distance = GetDistance(redPoint, corePoint);
+                    distances.Add(distance);
+                    writer.WriteLine(distance);
                 }
 
                 //ImageHelper.SaveArray(orientationField, "C:\\Users\\Tanya\\Documents\\Results\\china\\orientationField.jpg");
             }
+
+
+            foreach (double d in distances)
+            {
+                if (d <= 15)
+                {
+                    sum15 += d;
+                }
+                else if (d <= 30)
+                {
+                    sum30 += d;
+                }
+                else
+                {
+                    sumOther += d;
+                }
+            }
+
+            writerResult.WriteLine("0..15 => {0}", sum15);
+            writerResult.WriteLine("15..30 => {0}", sum30);
+            writerResult.WriteLine(">30 => {0}", sumOther);
 
             writer.Close();
         }

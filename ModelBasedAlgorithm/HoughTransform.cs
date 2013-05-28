@@ -68,14 +68,20 @@ namespace ModelBasedAlgorithm
 
         public List<Tuple<int, int>> FilterThreshold()
         {
+            if (votes.Count == 0)
+            {
+                return new List<Tuple<int, int>>();
+            }
+
             List<Tuple<int, int>> result = new List<Tuple<int, int>>();
             int threshold = (int)((orientationField.GetLength(0) * orientationField.GetLength(1)) / 5);
             int max = votes.Max();
 
-            if (max < threshold)
+          /*  if (max < threshold)
             {
                 Console.WriteLine("No singular points. Sorry.");
             }
+           */
 
             for (int i = 0; i < votes.Count; i++)
             {
