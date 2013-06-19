@@ -136,7 +136,7 @@ int main()
 	//		
 	//		float dt = (float)(t2-t1) / CLOCKS_PER_SEC;
 	//		time+=dt;
-	//		sprintf(buf,"C:\\temp\\enh\\%d_%d.bin",i,j);
+	//		sprintf(buf,"C:\\temp\\enh_bin\\%d_%d.bin",i,j);
 
 	//		SaveArray(enhanced, buf);
 	//		sourceImage.Dispose();
@@ -146,47 +146,47 @@ int main()
 
 	//time /= 880;
 
-	//// minutia extraction
+	// minutia extraction
 
-	//time = 0;
+	time = 0;
 
-	//for(int  i=1;i<=110;i++)
-	//{
-	//	for(int j=1;j<=8;j++)
-	//	{
-	//		cudaDeviceReset();
+	for(int  i=1;i<=110;i++)
+	{
+		for(int j=1;j<=8;j++)
+		{
+			cudaDeviceReset();
 
-	//		sprintf(buf,"C:\\temp\\enh\\%d_%d.bin",i,j);
+			sprintf(buf,"C:\\temp\\enh_bin\\%d_%d.bin",i,j);
 
-	//		CUDAArray<float> sourceImage = loadImage(buf,true);
-	//			
-	//		clock_t t1 = clock();
+			CUDAArray<float> sourceImage = loadImage(buf,true);
+				
+			clock_t t1 = clock();
 
-	//		int* xs;
-	//		int* ys;
+			int* xs;
+			int* ys;
 
-	//		ExtractMinutiae(&xs, &ys, sourceImage);
+			ExtractMinutiae(&xs, &ys, sourceImage);
 
-	//		time+= (float)(clock()-t1) / CLOCKS_PER_SEC;
+			time+= (float)(clock()-t1) / CLOCKS_PER_SEC;
 
-	//		sprintf(buf,"C:\\temp\\min\\%d_%d.min",i,j);
-	//		FILE* f = fopen(buf,"wb");
-	//		int y = 32;
-	//		fwrite(&y,sizeof(int),1,f);
-	//		for(int i=0;i<32;i++)
-	//		{
-	//			int result = fwrite(xs+i,sizeof(int),1,f);
-	//			result = fwrite(ys+i,sizeof(int),1,f);
-	//		}
-	//		fclose(f);
-	//		free(xs);
-	//		free(ys);
+			sprintf(buf,"C:\\temp\\min\\%d_%d.min",i,j);
+			FILE* f = fopen(buf,"wb");
+			int y = 32;
+			fwrite(&y,sizeof(int),1,f);
+			for(int i=0;i<32;i++)
+			{
+				int result = fwrite(xs+i,sizeof(int),1,f);
+				result = fwrite(ys+i,sizeof(int),1,f);
+			}
+			fclose(f);
+			free(xs);
+			free(ys);
 
-	//		sourceImage.Dispose();
-	//	}
-	//}
+			sourceImage.Dispose();
+		}
+	}
 
-	//time /= 880;
+	time /= 880;
 
 	//// minutia matching
 	

@@ -5,13 +5,14 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{0BA2BA9A-687E-41D5-9564-653667A3323B}</ProjectGuid>
+    <ProjectGuid>{0826A364-6A2F-4351-AFFA-7877BF8578F3}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CUDAFingerprint</RootNamespace>
-    <AssemblyName>CUDAFingerprint</AssemblyName>
+    <RootNamespace>CUDAFingerprinting.TemplateBuilding.FingerCode</RootNamespace>
+    <AssemblyName>CUDAFingerprinting.TemplateBuilding.FingerCode</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
@@ -48,21 +49,19 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Debug\CUDAFingercode.dll">
-      <Link>CUDAFingercode.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
+    <ProjectReference Include="..\FingerprintLib\CUDAFingerprinting.Common.OrientationField.csproj">
+      <Project>{5EEC4BD2-E1B0-4794-948A-45732CD41F99}</Project>
+      <Name>CUDAFingerprinting.Common.OrientationField</Name>
+    </ProjectReference>
     <ProjectReference Include="..\FingerprintPhD.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>copy $(SolutionDir)$(ConfigurationName)\CUDAFingercode.dll</PostBuildEvent>
-  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
