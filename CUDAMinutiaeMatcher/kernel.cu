@@ -4,9 +4,12 @@
 #include <stdio.h>
 #include "MinutiaExtraction.h"
 #include <time.h>
+
 extern "C"{
 
-__declspec(dllexport) int main();
+__declspec(dllexport) void Init();
+
+__declspec(dllexport) int Identify(float* image, int width, int height);
 
 }
 
@@ -72,6 +75,8 @@ CUDAArray<float> EnhanceImage(CUDAArray<float> sourceImage)
 	return enhanced;
 }
 
+
+
 CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 {
 	FILE* f = fopen(name,"rb");
@@ -112,8 +117,24 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 
 int main()
 {
+	Init();
+
+	CUDAArray<float> img = loadImage("C:\\temp\\bin\\104_6.bin");
+
+	float* image = img.GetData();
+
+	for(int i=0;i<img.Height*img.Width;i++)
+	{
+		if(image[i]<0||image[i]>255)
+		{
+			i++;
+		}
+	}
+
+	int result = Identify(image, img.Width, img.Height);
+
 	// Choose which GPU to run on, change this on a multi-GPU system.
-    cudaSetDevice(0);
+	cudaSetDevice(0);
 
 	char* buf = (char*)malloc(sizeof(char)*50);
 	float time = 0;
@@ -189,8 +210,7 @@ int main()
 	time /= 880;
 
 	//// minutia matching
-	
-	int* dBaseX = (int*)malloc(sizeof(int)*32*880);
+		int* dBaseX = (int*)malloc(sizeof(int)*32*880);
 	int* dBaseY = (int*)malloc(sizeof(int)*32*880);
 	
 	int ptrX = 0, ptrY = 0;
@@ -276,4 +296,90 @@ int main()
 	cudaDeviceReset();
 	free(buf);
     return 0;
+}
+
+
+
+int* dBaseX;
+int* dBaseY;
+
+void Init()
+{
+	cudaSetDevice(0);
+	char* buf = (char*)malloc(sizeof(char)*50);
+
+	dBaseX = (int*)malloc(sizeof(int)*32*440);
+	dBaseY = (int*)malloc(sizeof(int)*32*440);
+	
+	int ptrX = 0, ptrY = 0;
+
+	for(int  i=1;i<=110;i++)
+	{
+		for(int j=1;j<=4;j++)
+		{
+			sprintf(buf,"C:\\temp\\min\\%d_%d.min",i,j);
+
+			FILE* f = fopen(buf,"rb");
+
+			int amount = 0;
+
+			fread(&amount, sizeof(int), 1, f);
+			
+			for(int n = 0; n< amount; n++)
+			{
+				fread(dBaseX+ptrX++,sizeof(int), 1,f);
+				fread(dBaseY+ptrY++,sizeof(int), 1,f);
+			}
+
+			fclose(f);
+		}
+	}
+	free(buf);
+}
+
+int Identify(float* image, int width, int height)
+{
+	cudaDeviceReset();
+
+	CUDAArray<float> cudaImg = CUDAArray<float>(image, width, height);
+	//SaveArray(cudaImg,"C:\\temp\\check.bin");
+	FillDirections();
+	CUDAArray<float> enh = EnhanceImage(cudaImg);
+	//SaveArray(enh,"C:\\temp\\check.bin");
+	int* xs;
+	int* ys;
+
+	ExtractMinutiae(&xs, &ys, enh);
+
+	CUDAArray<int> cudaBaseX = CUDAArray<int>(dBaseX,32,440);
+	CUDAArray<int> cudaBaseY = CUDAArray<int>(dBaseY,32,440);
+
+	CUDAArray<int> result = MatchFingers(xs,ys, cudaBaseX, cudaBaseY);
+
+	
+
+	int* resultLocal = result.GetData();
+
+	int max =0;
+	int index = 0;
+
+	for(int i=0;i<440;i++)
+	{
+		if(resultLocal[i]>max)
+		{
+			max = resultLocal[i];
+			index = i/4;
+		}
+	}
+
+	cudaImg.Dispose();
+	enh.Dispose();
+	cudaBaseX.Dispose();
+	cudaBaseY.Dispose();
+	result.Dispose();
+	free(resultLocal);
+	free(xs);
+	free(ys);
+
+	return index+1;
 }

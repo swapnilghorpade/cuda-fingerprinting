@@ -115,6 +115,7 @@ int compare( const void *arg1, const void *arg2 )
 
 void ExtractMinutiae(int** xs, int** ys, CUDAArray<float> source)
 {
+	SaveArray(source,"C:\\temp\\check.bin");
 	clock_t clk1 = clock();
 	cudaError error;
 	CUDAArray<float> psReal;
