@@ -49,11 +49,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FingerprintLib\CUDAFingerprinting.Common.OrientationField.csproj">
+    <ProjectReference Include="..\CUDAFingerprinting.Common.OrientationField\CUDAFingerprinting.Common.OrientationField.csproj">
       <Project>{5EEC4BD2-E1B0-4794-948A-45732CD41F99}</Project>
       <Name>CUDAFingerprinting.Common.OrientationField</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FingerprintPhD.Common\CUDAFingerprinting.Common.csproj">
+    <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
     </ProjectReference>

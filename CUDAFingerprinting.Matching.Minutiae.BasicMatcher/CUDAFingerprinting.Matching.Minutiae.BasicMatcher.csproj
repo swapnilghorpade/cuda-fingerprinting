@@ -53,7 +53,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\FingerprintPhD.Common\CUDAFingerprinting.Common.csproj">
+    <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
     </ProjectReference>

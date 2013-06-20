@@ -57,7 +57,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\ComplexFilterQA\CUDAFingerprinting.Matching.Minutiae.BasicMatcher.csproj">
+    <ProjectReference Include="..\CUDAFingerprinting.Matching.Minutiae.BasicMatcher\CUDAFingerprinting.Matching.Minutiae.BasicMatcher.csproj">
       <Project>{9139de55-f3b0-4118-83a6-9604d83dcbc6}</Project>
       <Name>CUDAFingerprinting.Matching.Minutiae.BasicMatcher</Name>
     </ProjectReference>
@@ -65,11 +65,11 @@
       <Project>{83EBBA4F-41BD-4103-92DA-8923AEC11EFA}</Project>
       <Name>CUDAFingerprinting.ImageEnhancement.LinearSymmetry</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FingerprintLib\CUDAFingerprinting.Common.OrientationField.csproj">
+    <ProjectReference Include="..\CUDAFingerprinting.Common.OrientationField\CUDAFingerprinting.Common.OrientationField.csproj">
       <Project>{5eec4bd2-e1b0-4794-948a-45732cd41f99}</Project>
       <Name>CUDAFingerprinting.Common.OrientationField</Name>
     </ProjectReference>
-    <ProjectReference Include="..\FingerprintPhD.Common\CUDAFingerprinting.Common.csproj">
+    <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6fd094cc-0f63-47bd-a377-f054ae615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
     </ProjectReference>
