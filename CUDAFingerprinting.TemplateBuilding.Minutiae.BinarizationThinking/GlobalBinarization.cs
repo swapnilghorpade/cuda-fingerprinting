@@ -7,6 +7,5 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 {
     public class GlobalBinarization
     {
-
     }
 }
