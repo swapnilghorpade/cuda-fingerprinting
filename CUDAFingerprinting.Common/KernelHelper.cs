@@ -190,5 +190,17 @@ namespace CUDAFingerprinting.Common
 
             return result;
         }
+
+        public static double Average(double[,] arr)
+        {
+            double sum = 0;
+
+            foreach (double d in arr)
+            {
+                sum += d;
+            }
+
+            return sum / (arr.GetLength(0) * arr.GetLength(1));
+        }
     }
 }
