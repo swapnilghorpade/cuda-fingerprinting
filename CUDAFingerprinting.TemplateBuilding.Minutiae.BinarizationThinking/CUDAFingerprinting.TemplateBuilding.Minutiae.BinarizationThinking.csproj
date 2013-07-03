@@ -43,6 +43,28 @@
     <Compile Include="GlobalBinarization.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.ComplexFilters\CUDAFingerprinting.Common.ComplexFilters.csproj">
+      <Project>{9CBC91CE-0EE7-4A78-A5F5-89EA40023F52}</Project>
+      <Name>CUDAFingerprinting.Common.ComplexFilters</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.OrientationField\CUDAFingerprinting.Common.OrientationField.csproj">
+      <Project>{5EEC4BD2-E1B0-4794-948A-45732CD41F99}</Project>
+      <Name>CUDAFingerprinting.Common.OrientationField</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
+      <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
+      <Name>CUDAFingerprinting.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.ImageEnhancement.LinearSymmetry\CUDAFingerprinting.ImageEnhancement.LinearSymmetry.csproj">
+      <Project>{83EBBA4F-41BD-4103-92DA-8923AEC11EFA}</Project>
+      <Name>CUDAFingerprinting.ImageEnhancement.LinearSymmetry</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Matching.Minutiae.BasicMatcher\CUDAFingerprinting.Matching.Minutiae.BasicMatcher.csproj">
+      <Project>{9139DE55-F3B0-4118-83A6-9604D83DCBC6}</Project>
+      <Name>CUDAFingerprinting.Matching.Minutiae.BasicMatcher</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
