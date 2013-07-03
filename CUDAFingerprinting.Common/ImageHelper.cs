@@ -65,10 +65,8 @@ namespace CUDAFingerprinting.Common
 
         }
 
-        public static double[,] LoadImage(string path)
+        public static double[,] LoadImage(Bitmap bmp)
         {
-
-            var bmp = new Bitmap(path);
             double[,] imgBytes = new double[bmp.Width, bmp.Height];
             for (int x = 0; x < bmp.Width; x++)
             {
@@ -78,6 +76,11 @@ namespace CUDAFingerprinting.Common
                 }
             }
             return imgBytes;
+        }
+
+        public static double[,] LoadImage(string path)
+        {
+            return LoadImage(new Bitmap(path));
         }
 
         public static void SaveComplexArrayAsHSV(Complex[,] data, string path)
