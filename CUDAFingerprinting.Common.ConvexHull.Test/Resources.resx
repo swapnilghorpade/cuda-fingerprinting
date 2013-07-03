@@ -117,7 +117,73 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TestArray1" xml:space="preserve">
+  <data name="Columns1" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;10&lt;/int&gt;</value>
+  </data>
+  <data name="Columns2" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;15&lt;/int&gt;</value>
+  </data>
+  <data name="ConvexHullTest1Answer" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;Point&gt;
+    &lt;X&gt;4&lt;/X&gt;
+    &lt;Y&gt;6&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;3&lt;/X&gt;
+    &lt;Y&gt;5&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;7&lt;/X&gt;
+    &lt;Y&gt;1&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;8&lt;/X&gt;
+    &lt;Y&gt;9&lt;/Y&gt;
+  &lt;/Point&gt;
+&lt;/ArrayOfPoint&gt;</value>
+  </data>
+  <data name="ConvexHullTest2Answer" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;Point&gt;
+    &lt;X&gt;1&lt;/X&gt;
+    &lt;Y&gt;3&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;5&lt;/X&gt;
+    &lt;Y&gt;2&lt;/Y&gt;
+  &lt;/Point&gt; 
+  &lt;Point&gt;
+    &lt;X&gt;10&lt;/X&gt;
+    &lt;Y&gt;2&lt;/Y&gt;
+  &lt;/Point&gt; 
+  &lt;Point&gt;
+    &lt;X&gt;12&lt;/X&gt;
+    &lt;Y&gt;5&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;8&lt;/X&gt;
+    &lt;Y&gt;11&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;2&lt;/X&gt;
+    &lt;Y&gt;11&lt;/Y&gt;
+  &lt;/Point&gt;
+&lt;/ArrayOfPoint&gt;</value>
+  </data>
+  <data name="Rows1" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;10&lt;/int&gt;</value>
+  </data>
+  <data name="Rows2" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;15&lt;/int&gt;</value>
+  </data>
+  <data name="Sample1" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
   &lt;Point&gt;
@@ -142,28 +208,7 @@
   &lt;/Point&gt;
 &lt;/ArrayOfPoint&gt;</value>
   </data>
-  <data name="TestArray1Result" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-  &lt;Point&gt;
-    &lt;X&gt;4&lt;/X&gt;
-    &lt;Y&gt;6&lt;/Y&gt;
-  &lt;/Point&gt;
-  &lt;Point&gt;
-    &lt;X&gt;3&lt;/X&gt;
-    &lt;Y&gt;5&lt;/Y&gt;
-  &lt;/Point&gt;
-  &lt;Point&gt;
-    &lt;X&gt;7&lt;/X&gt;
-    &lt;Y&gt;1&lt;/Y&gt;
-  &lt;/Point&gt;
-  &lt;Point&gt;
-    &lt;X&gt;8&lt;/X&gt;
-    &lt;Y&gt;9&lt;/Y&gt;
-  &lt;/Point&gt;
-&lt;/ArrayOfPoint&gt;</value>
-  </data>
-  <data name="TestArray2" xml:space="preserve">
+  <data name="Sample2" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
   &lt;Point&gt;
@@ -233,35 +278,6 @@
   &lt;Point&gt;
     &lt;X&gt;10&lt;/X&gt;
     &lt;Y&gt;2&lt;/Y&gt;
-  &lt;/Point&gt;
-&lt;/ArrayOfPoint&gt;</value>
-  </data>
-  <data name="TestArray2Result" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
-  &lt;Point&gt;
-    &lt;X&gt;1&lt;/X&gt;
-    &lt;Y&gt;3&lt;/Y&gt;
-  &lt;/Point&gt;
-  &lt;Point&gt;
-    &lt;X&gt;5&lt;/X&gt;
-    &lt;Y&gt;2&lt;/Y&gt;
-  &lt;/Point&gt; 
-  &lt;Point&gt;
-    &lt;X&gt;10&lt;/X&gt;
-    &lt;Y&gt;2&lt;/Y&gt;
-  &lt;/Point&gt; 
-  &lt;Point&gt;
-    &lt;X&gt;12&lt;/X&gt;
-    &lt;Y&gt;5&lt;/Y&gt;
-  &lt;/Point&gt;
-  &lt;Point&gt;
-    &lt;X&gt;8&lt;/X&gt;
-    &lt;Y&gt;11&lt;/Y&gt;
-  &lt;/Point&gt;
-  &lt;Point&gt;
-    &lt;X&gt;2&lt;/X&gt;
-    &lt;Y&gt;11&lt;/Y&gt;
   &lt;/Point&gt;
 &lt;/ArrayOfPoint&gt;</value>
   </data>

@@ -62,32 +62,21 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         
         /// <summary>
         ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;4&lt;/X&gt;
-        ///    &lt;Y&gt;6&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;5&lt;/X&gt;
-        ///    &lt;Y&gt;5&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;8&lt;/X&gt;
-        ///    &lt;Y&gt;9&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;7&lt;/X&gt;
-        ///    &lt;Y&gt;1&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;3&lt;/X&gt;
-        ///    &lt;Y&gt;5&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///&lt;/ArrayOfPoint&gt;.
+        ///&lt;int&gt;10&lt;/int&gt;.
         /// </summary>
-        internal static string TestArray1 {
+        internal static string Columns1 {
             get {
-                return ResourceManager.GetString("TestArray1", resourceCulture);
+                return ResourceManager.GetString("Columns1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;int&gt;15&lt;/int&gt;.
+        /// </summary>
+        internal static string Columns2 {
+            get {
+                return ResourceManager.GetString("Columns2", resourceCulture);
             }
         }
         
@@ -112,9 +101,95 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         ///  &lt;/Point&gt;
         ///&lt;/ArrayOfPoint&gt;.
         /// </summary>
-        internal static string TestArray1Result {
+        internal static string ConvexHullTest1Answer {
             get {
-                return ResourceManager.GetString("TestArray1Result", resourceCulture);
+                return ResourceManager.GetString("ConvexHullTest1Answer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;1&lt;/X&gt;
+        ///    &lt;Y&gt;3&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;5&lt;/X&gt;
+        ///    &lt;Y&gt;2&lt;/Y&gt;
+        ///  &lt;/Point&gt; 
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;10&lt;/X&gt;
+        ///    &lt;Y&gt;2&lt;/Y&gt;
+        ///  &lt;/Point&gt; 
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;12&lt;/X&gt;
+        ///    &lt;Y&gt;5&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;8&lt;/X&gt;
+        ///    &lt;Y&gt;11&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;2&lt;/X&gt;
+        ///    &lt;Y&gt;11&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///&lt;/ArrayOfPoint&gt;.
+        /// </summary>
+        internal static string ConvexHullTest2Answer {
+            get {
+                return ResourceManager.GetString("ConvexHullTest2Answer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;int&gt;10&lt;/int&gt;.
+        /// </summary>
+        internal static string Rows1 {
+            get {
+                return ResourceManager.GetString("Rows1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;int&gt;15&lt;/int&gt;.
+        /// </summary>
+        internal static string Rows2 {
+            get {
+                return ResourceManager.GetString("Rows2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;4&lt;/X&gt;
+        ///    &lt;Y&gt;6&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;5&lt;/X&gt;
+        ///    &lt;Y&gt;5&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;8&lt;/X&gt;
+        ///    &lt;Y&gt;9&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;7&lt;/X&gt;
+        ///    &lt;Y&gt;1&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;3&lt;/X&gt;
+        ///    &lt;Y&gt;5&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///&lt;/ArrayOfPoint&gt;.
+        /// </summary>
+        internal static string Sample1 {
+            get {
+                return ResourceManager.GetString("Sample1", resourceCulture);
             }
         }
         
@@ -150,44 +225,9 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         ///    &lt;Y&gt;4&lt;/Y&gt;
         ///  &lt;/Point [остаток строки не уместился]&quot;;.
         /// </summary>
-        internal static string TestArray2 {
+        internal static string Sample2 {
             get {
-                return ResourceManager.GetString("TestArray2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;1&lt;/X&gt;
-        ///    &lt;Y&gt;3&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;5&lt;/X&gt;
-        ///    &lt;Y&gt;2&lt;/Y&gt;
-        ///  &lt;/Point&gt; 
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;10&lt;/X&gt;
-        ///    &lt;Y&gt;2&lt;/Y&gt;
-        ///  &lt;/Point&gt; 
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;12&lt;/X&gt;
-        ///    &lt;Y&gt;5&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;8&lt;/X&gt;
-        ///    &lt;Y&gt;11&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///  &lt;Point&gt;
-        ///    &lt;X&gt;2&lt;/X&gt;
-        ///    &lt;Y&gt;11&lt;/Y&gt;
-        ///  &lt;/Point&gt;
-        ///&lt;/ArrayOfPoint&gt;.
-        /// </summary>
-        internal static string TestArray2Result {
-            get {
-                return ResourceManager.GetString("TestArray2Result", resourceCulture);
+                return ResourceManager.GetString("Sample2", resourceCulture);
             }
         }
     }
