@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Drawing;
 
@@ -69,12 +70,16 @@ namespace CUDAFingerprinting.Common.ConvexHull    {
             Point top = arr[1];
             Point nextToTop = arr[0];
             for (int i = 2; i < arr.Count; i++)    {
-                while (ActionsWithVectors.VectorProduct(ActionsWithVectors.SubtractOf(arr[i], nextToTop), ActionsWithVectors.SubtractOf(top, nextToTop)) <= 0)
+                while ((ActionsWithVectors.VectorProduct(ActionsWithVectors.SubtractOf(arr[i], nextToTop),
+                       ActionsWithVectors.SubtractOf(top, nextToTop)) <= 0) && (!Equals(top,firstPoint)))
                 {
                     top = nextToTop;
                     hullStack.Pop();
                     hullStack.Pop();
-                    nextToTop = hullStack.Peek();
+                    if (Equals(top, firstPoint))
+                        nextToTop = top;
+                    else
+                        nextToTop = hullStack.Peek();
                     hullStack.Push(top);
                 }
                 hullStack.Push(arr[i]);

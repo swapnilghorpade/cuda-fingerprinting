@@ -117,5 +117,78 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
                 return ResourceManager.GetString("TestArray1Result", resourceCulture);
             }
         }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;1&lt;/X&gt;
+        ///    &lt;Y&gt;3&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;2&lt;/X&gt;
+        ///    &lt;Y&gt;9&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;8&lt;/X&gt;
+        ///    &lt;Y&gt;6&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;8&lt;/X&gt;
+        ///    &lt;Y&gt;4&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;10&lt;/X&gt;
+        ///    &lt;Y&gt;6&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;12&lt;/X&gt;
+        ///    &lt;Y&gt;5&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;5&lt;/X&gt;
+        ///    &lt;Y&gt;4&lt;/Y&gt;
+        ///  &lt;/Point [остаток строки не уместился]&quot;;.
+        /// </summary>
+        internal static string TestArray2 {
+            get {
+                return ResourceManager.GetString("TestArray2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;1&lt;/X&gt;
+        ///    &lt;Y&gt;3&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;5&lt;/X&gt;
+        ///    &lt;Y&gt;2&lt;/Y&gt;
+        ///  &lt;/Point&gt; 
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;10&lt;/X&gt;
+        ///    &lt;Y&gt;2&lt;/Y&gt;
+        ///  &lt;/Point&gt; 
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;12&lt;/X&gt;
+        ///    &lt;Y&gt;5&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;8&lt;/X&gt;
+        ///    &lt;Y&gt;11&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;2&lt;/X&gt;
+        ///    &lt;Y&gt;11&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///&lt;/ArrayOfPoint&gt;.
+        /// </summary>
+        internal static string TestArray2Result {
+            get {
+                return ResourceManager.GetString("TestArray2Result", resourceCulture);
+            }
+        }
     }
 }
