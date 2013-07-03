@@ -1,0 +1,11 @@
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\bin\Debug\CUDAFingerprinting.Common.ConvexHull.Test.dll
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\bin\Debug\CUDAFingerprinting.Common.ConvexHull.Test.pdb
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\bin\Debug\CUDAFingerprinting.Common.ConvexHull.dll
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\bin\Debug\CUDAFingerprinting.Common.SerializationHelper.dll
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\bin\Debug\CUDAFingerprinting.Common.ConvexHull.pdb
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\bin\Debug\CUDAFingerprinting.Common.SerializationHelper.pdb
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\obj\Debug\CUDAFingerprinting.Common.ConvexHull.Test.csprojResolveAssemblyReference.cache
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\obj\Debug\CUDAFingerprinting.Common.ConvexHull.Test.Resources.resources
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\obj\Debug\CUDAFingerprinting.Common.ConvexHull.Test.csproj.GenerateResource.Cache
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\obj\Debug\CUDAFingerprinting.Common.ConvexHull.Test.dll
+D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.ConvexHull.Test\obj\Debug\CUDAFingerprinting.Common.ConvexHull.Test.pdb
