@@ -17,9 +17,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod1()
         {
+            double board = 220d;
             var img = ImageHelper.LoadImage(TestResource._104_6);
-            double[,] binarization = GlobalBinarization.Binarization(img, 220d);
-            var path = Path.GetTempPath() + "binarization.png";
+            double[,] binarization = GlobalBinarization.Binarization(img, board);
+            var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
             ImageHelper.SaveArray(img, path);
             Process.Start(path);
         }
@@ -27,9 +28,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod2()
         {
+            double board = 200d;
             var img = ImageHelper.LoadImage(TestResource._104_6);
-            double[,] binarization = GlobalBinarization.Binarization(img, 200d);
-            var path = Path.GetTempPath() + "binarization.png";
+            double[,] binarization = GlobalBinarization.Binarization(img, board);
+            var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
             ImageHelper.SaveArray(img, path);
             Process.Start(path);
         }
@@ -37,9 +39,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod3()
         {
+            double board = 150d;
             var img = ImageHelper.LoadImage(TestResource._104_6);
-            double[,] binarization = GlobalBinarization.Binarization(img, 150d);
-            var path = Path.GetTempPath() + "binarization.png";
+            double[,] binarization = GlobalBinarization.Binarization(img, board);
+            var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
             ImageHelper.SaveArray(img, path);
             Process.Start(path);
         }
@@ -47,9 +50,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod4()
         {
+            double board = 110d;
             var img = ImageHelper.LoadImage(TestResource._104_6);
-            double[,] binarization = GlobalBinarization.Binarization(img, 110d);
-            var path = Path.GetTempPath() + "binarization.png";
+            double[,] binarization = GlobalBinarization.Binarization(img, board);
+            var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
             ImageHelper.SaveArray(img, path);
             Process.Start(path);
         }
