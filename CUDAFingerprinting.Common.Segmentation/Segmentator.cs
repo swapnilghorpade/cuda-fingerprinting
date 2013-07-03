@@ -9,7 +9,7 @@ namespace CUDAFingerprinting.Common.Segmentation
         {
             int[,] xGradients = OrientationFieldGenerator.GenerateXGradients(img.Select2D(a => (int)a));
             int[,] yGradients = OrientationFieldGenerator.GenerateYGradients(img.Select2D(a => (int)a));
-            double[,] magnitudes = xGradients.Select2D((x, y, value) => Math.Sqrt(xGradients[x, y] * xGradients[x, y] + yGradients[x, y] * yGradients[x, y]));
+            double[,] magnitudes = xGradients.Select2D((value, x, y) => Math.Sqrt(xGradients[x, y] * xGradients[x, y] + yGradients[x, y] * yGradients[x, y]));
             double averege = KernelHelper.Average(magnitudes);
             double[,] window = new double[windowRadius * 2 + 1, windowRadius * 2 + 1];
             double[,] result = new double[img.GetLength(0), img.GetLength(1)];

@@ -16,7 +16,7 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
             double[,] img = ImageHelper.LoadImage(Resources.TestImage);
             double[,] resultImg;
             int minValue = 5;
-            int maxValue = 24;
+            int maxValue = 6;
 
             for (int windowRadius = minValue; windowRadius < maxValue; windowRadius++)
             {
