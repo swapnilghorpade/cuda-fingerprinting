@@ -16,10 +16,10 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
         [TestMethod]
         public void Normalize()
         {
-            var img = ImageHelper.LoadImage(TestResources.sample);
+            var img = ImageHelper.LoadImageAsInt(TestResources.sample);
             Normalizer.Normalize(100, 100, img);
             var path = Path.GetTempPath() + "normalizied.png";
-            ImageHelper.SaveArray(img, path);
+            ImageHelper.SaveIntArray(img, path);
             Process.Start(path);
         }
     }

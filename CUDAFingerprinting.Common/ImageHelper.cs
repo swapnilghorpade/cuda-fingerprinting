@@ -168,10 +168,24 @@ namespace CUDAFingerprinting.Common
 
         }
 
+        public static void SaveIntArray(int[,] data, string path)
+        {
+            int x = data.GetLength(0);
+            int y = data.GetLength(1);
+            var bmp = new Bitmap(x, y);
+            data.Select2D((value, row, column) =>
+                {
+                    bmp.SetPixel(row, column, Color.FromArgb(value, value, value));
+                    return value;
+                });
+            bmp.Save(path);
+        }
+
+
         public static void SaveArray(double[,] data, string path)
         {
-            int X = data.GetLength(0);
-            int Y = data.GetLength(1);
+            int x = data.GetLength(0);
+            int y = data.GetLength(1);
             var max = double.NegativeInfinity;
             var min = double.PositiveInfinity;
             foreach (var num in data)
@@ -179,7 +193,7 @@ namespace CUDAFingerprinting.Common
                 if (num > max) max = num;
                 if (num < min) min = num;
             }
-            var bmp = new Bitmap(X, Y);
+            var bmp = new Bitmap(x, y);
             data.Select2D((value, row, column) =>
             {
                 var gray = (int)((value - min) / (max - min) * 255);

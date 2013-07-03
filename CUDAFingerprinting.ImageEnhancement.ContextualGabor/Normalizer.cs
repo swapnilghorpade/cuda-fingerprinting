@@ -7,7 +7,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 {
     public static class Normalizer
     {
-        public static void Normalize(int expectedMean, int expectedVar, double[,] image)
+        public static void Normalize(int expectedMean, int expectedVar, int[,] image)
         {
             double mean = Mean(image);
             double variance = Variance(image);
@@ -16,14 +16,14 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                 for (int j = 0; j < image.GetUpperBound(1); ++j)
                 {
                     if (image[i, j] > mean)
-                        image[i, j] = expectedMean + Math.Sqrt(expectedMean * Math.Pow(image[i, j] - mean, 2) / variance);
+                        image[i, j] = Convert.ToInt32(expectedMean + Math.Sqrt(expectedMean * Math.Pow(image[i, j] - mean, 2) / variance));
                     else
-                        image[i, j] = expectedMean - Math.Sqrt(expectedMean * Math.Pow(image[i, j] - mean, 2) / variance);
+                        image[i, j] = Convert.ToInt32(expectedMean - Math.Sqrt(expectedMean * Math.Pow(image[i, j] - mean, 2) / variance));
                 }
             }
         }
 
-        public static double Mean(double[,] image)
+        public static double Mean(int[,] image)
         {
             double summ = 0;
             for (int i = 0; i < image.GetUpperBound(0); ++i)
@@ -36,7 +36,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             return summ / (image.GetUpperBound(0) * image.GetUpperBound(1));
         }
 
-        public static double Variance(double[,] image)
+        public static double Variance(int[,] image)
         {
             double summ = 0;
             double mean = Mean(image);
