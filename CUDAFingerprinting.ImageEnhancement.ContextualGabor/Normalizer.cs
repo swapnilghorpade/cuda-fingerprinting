@@ -25,6 +25,31 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             }
         }
 
+        public static void LinearNormalize(int newMin, int newMax, int[,] img)
+        {
+            int min = 255;
+            int max = 0;
+            foreach (var i in img)
+            {
+                if (i > max)
+                    max = i;
+                if (i < min)
+                    min = i;
+            }
+
+            if (max == min)
+                return;
+
+            for (int i = 0; i < img.GetLength(0); i++)
+            {
+                for (int j = 0; j < img.GetLength(1); j++)
+                {
+                    var tmp = (img[i, j] - min) * (newMax - newMin) / (max - min) + newMin;
+                    img[i, j] = tmp > 255 ? 255 : (tmp < 0 ? 0 : tmp);
+                }
+            }
+        }
+
         public static double Mean(int[,] image)
         {
             double summ = 0;
