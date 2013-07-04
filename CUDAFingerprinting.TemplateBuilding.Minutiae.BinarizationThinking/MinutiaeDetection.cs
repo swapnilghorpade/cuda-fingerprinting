@@ -8,9 +8,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 {
     public static class MinutiaeDetection
     {
-        public static int CheckMinutiae(double[,] area)
-        {
-            int result; // 1 - ending, >2 - branching,
+        public static int CheckMinutiae(double[,] area) //Данный метод определяет, является ли пиксель минуцией, result = 0 - не минуция, иначе - минуция
+        {                                               //На вход дается окрестность пикселя, включая сам пиксель                                                                                    , в центре к
+            int result; // 1 - ending, >2 - branching,                     
             int counter = 0;
             area[1, 1] = 255;
             for (int i = 0; i < area.GetLength(0); i++)
@@ -60,7 +60,7 @@ public static List<Minutia> FindMinutiae(double[,] picture)
             {
                 for (int j = 1; j < newPicture.GetLength(1) - 1; j++)
                 {
-                    newPicture[i, j] = picture[i - 1, j - 1];
+                    newPicture[i, j] = picture[i - 1, j - 1];                              //Вставляем входную картинку в более широкий массив для удобства рассмотрения граничных случаев 
                 }
             }
             for (int i = 1; i < newPicture.GetLength(0) - 1; i++)
@@ -73,12 +73,12 @@ public static List<Minutia> FindMinutiae(double[,] picture)
                         {
                             for (int l = 0; l < 3; l++)
                             {
-                                area[k, l] = newPicture[i - 1 + k, j - 1 + l];
+                                area[k, l] = newPicture[i - 1 + k, j - 1 + l];    //Проходим по массиву и проверяем для каждого черного пикселя, является ли он минуцией. 
                             }
                         }
                         if (CheckMinutiae(area) > 0)
                         {
-                            Minutia newMinutiae = new Minutia();
+                            Minutia newMinutiae = new Minutia();                 //Если да, то добавляем минуцию в стек
                             newMinutiae.X = i;
                             newMinutiae.Y = j;
                             minutiae.Add(newMinutiae);

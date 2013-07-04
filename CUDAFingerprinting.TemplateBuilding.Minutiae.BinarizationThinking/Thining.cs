@@ -7,13 +7,13 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 {
     public static class Thining
     {
-        public static double B(double[,] picture, int x, int y)
+        public static double B(double[,] picture, int x, int y)        //Метод В(Р) возвращает количество черных пикселей в окрестности точки Р
         {
             return picture[x, y - 1] + picture[x + 1, y - 1] + picture[x + 1, y] + picture[x + 1, y + 1] +
                    picture[x, y + 1] + picture[x - 1, y + 1] + picture[x - 1, y] + picture[x - 1, y - 1];
         }
 
-        public static double A(double[,] picture, int x, int y)
+        public static double A(double[,] picture, int x, int y)        //Метод А(Р) возвращает количество подряд идущих белых и черных пикселей вокруг точки Р (..0->1..)
         {
             int counter = 0;
             if((picture[x, y - 1] == 0) && (picture[x + 1, y - 1] == 1))
@@ -66,7 +66,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 
             for (int i = 0; i < newPicture.GetLength(1); i++)
             {
-                for (int j = 0; j < newPicture.GetLength(0); j++)
+                for (int j = 0; j < newPicture.GetLength(0); j++)      //Вставляем входную картинку в более широкий массив для удобства рассмотрения граничных случаев 
                 {
                     picture[j + 1, i + 1] = newPicture[j, i];
                 }
@@ -76,14 +76,14 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             {
                 for (int j = 0; j < picture.GetLength(0); j++)
                 {
-                    picture[j, i] = picture[j, i] == 0 ? picture[j, i] = 1 : picture[j, i] = 0;
+                    picture[j, i] = picture[j, i] == 0 ? picture[j, i] = 1 : picture[j, i] = 0;   //Черным клеткам присваиваем значения 1, белым - 0;
                 }
             }
             for (int i = 0; i < newPicture.GetLength(1); i++)
             {
                 for (int j = 0; j < newPicture.GetLength(0); j++)
                 {
-                    if ((picture[j, i] == 1) && (2 <= B(picture, j, i)) && (B(picture, j, i) <= 6) && (A(picture, j, i) == 1) &&
+                    if ((picture[j, i] == 1) && (2 <= B(picture, j, i)) && (B(picture, j, i) <= 6) && (A(picture, j, i) == 1) &&     //Непосредственное удаление точки, см. Zhang-Suen thinning algorithm, http://www-prima.inrialpes.fr/perso/Tran/Draft/gateway.cfm.pdf
                         (picture[j, i - 1]*picture[j + 1, i]*picture[j, i + 1] == 0) &&
                         (picture[j + 1, i]*picture[j, i + 1]*picture[j - 1, i] == 0))
                     {
@@ -109,7 +109,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                 for (int j = 0; j < newPicture.GetLength(0); j++)
                 {
                     if ((picture[j, i] == 1) &&
-                        (((picture[j, i - 1] * picture[j + 1, i] == 1) && (picture[j - 1, i + 1] != 1)) || ((picture[j + 1, i] * picture[j, i + 1] == 1) && (picture[j - 1, i - 1] != 1)) ||
+                        (((picture[j, i - 1] * picture[j + 1, i] == 1) && (picture[j - 1, i + 1] != 1)) || ((picture[j + 1, i] * picture[j, i + 1] == 1) && (picture[j - 1, i - 1] != 1)) ||      //Небольшая модификцаия алгоритма для ещё большего утоньшения
                         ((picture[j, i + 1] * picture[j - 1, i] == 1) && (picture[j + 1, i - 1] != 1)) || ((picture[j, i - 1] * picture[j - 1, i] == 1) && (picture[j + 1, i + 1] != 1))))
                     {
                         picture[j, i] = 0;
@@ -120,18 +120,20 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             {
                 for (int j = 0; j < picture.GetLength(0); j++)
                 {
-                    picture[j, i] = picture[j, i] == 0 ? picture[j, i] = 255 : picture[j, i] = 0;
+                    picture[j, i] = picture[j, i] == 0 ? picture[j, i] = 255 : picture[j, i] = 0;       // Черным клеткам присваеваем значения 0, белым - 255
                 }
             }
             
+            double [,] outPicture = new double[newPicture.GetLength(0),newPicture.GetLength(1)];
+
             for (int i = 0; i < newPicture.GetLength(1); i++)
             {
                 for (int j = 0; j < newPicture.GetLength(0); j++)
-                {
-                    newPicture[j, i] = picture[j + 1, i + 1];
+                {                                                                                       
+                    outPicture[j, i] = picture[j + 1, i + 1];
                 }
             }
-            return newPicture;
+            return outPicture;
         }
     }
 }
