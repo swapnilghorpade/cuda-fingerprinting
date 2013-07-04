@@ -71,9 +71,9 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test
         public void BuildWorkingAreaTest()
         {
             //List<Point> Minutiae = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample3); // TODO: инициализация подходящего значения
-            int radius = SerializationHelper.XmlSerializationHelper.DeserializeObject<int>(Resources.Radius3); // TODO: инициализация подходящего значения
-            int rows = SerializationHelper.XmlSerializationHelper.DeserializeObject<int>(Resources.Rows3); // TODO: инициализация подходящего значения
-            int columns = SerializationHelper.XmlSerializationHelper.DeserializeObject<int>(Resources.Columns3); // TODO: инициализация подходящего значения
+            int radius = 5; // TODO: инициализация подходящего значения
+            int rows = 31; // TODO: инициализация подходящего значения
+            int columns = 26; // TODO: инициализация подходящего значения
             bool[,] expected = null; // TODO: инициализация подходящего значения
             List<Point> Minutiae = SerializationHelper.XmlSerializationHelper.DeserializeObject<List<Point>>(Resources.Sample3);
             List<Point> Hull = ConvexHull.GetConvexHull(Minutiae);

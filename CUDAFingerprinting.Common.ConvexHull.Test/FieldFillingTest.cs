@@ -71,8 +71,8 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test
         public void GetFieldFillingTest()
         {
 
-            int rows = SerializationHelper.XmlSerializationHelper.DeserializeObject<int>(Resources.Rows1) ; // TODO: инициализация подходящего значения
-            int columns = SerializationHelper.XmlSerializationHelper.DeserializeObject<int>(Resources.Columns1);
+            int rows = 10; // TODO: инициализация подходящего значения
+            int columns = 10;
             List<Point> Minutiae = SerializationHelper.XmlSerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1); // TODO: инициализация подходящего значения
             bool[,] actual = FieldFilling.GetFieldFilling(rows, columns, Minutiae);
             //var str = SerializationHelper.SerializationHelper.SerializeObject(actual);
