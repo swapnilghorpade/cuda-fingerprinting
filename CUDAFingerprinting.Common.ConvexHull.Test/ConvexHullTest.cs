@@ -71,8 +71,8 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test
         public void GetConvexHullTest()
         {
 
-            List<Point> arr = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1); // TODO: инициализация подходящего значения
-            List<Point> expected = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.ConvexHullTest1Answer); // TODO: инициализация подходящего значения
+            List<Point> arr = SerializationHelper.XmlSerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1); // TODO: инициализация подходящего значения
+            List<Point> expected = SerializationHelper.XmlSerializationHelper.DeserializeObject<List<Point>>(Resources.ConvexHullTest1Answer); // TODO: инициализация подходящего значения
             List<Point> actual = ConvexHull.GetConvexHull(arr);
             CollectionAssert.AreEqual(expected, actual);        
         }
