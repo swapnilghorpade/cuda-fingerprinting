@@ -150,9 +150,14 @@ namespace CUDAFingerprinting.Common.Segmentation
                                 areaNumberi = area.Key;
                             }
                         }
-                        areas[areaNumberi].AddRange(areas[areaNumberj]);
-                        areas[areaNumberi] = new List<Tuple<int, int>>(areas[areaNumberi].Distinct());
-                        areas.Remove(areaNumberj);
+
+                        if (areaNumberi != areaNumberj)
+                        {
+                            areas[areaNumberi].AddRange(areas[areaNumberj]);
+                            areas[areaNumberi] = new List<Tuple<int, int>>(areas[areaNumberi].Distinct());
+                            areas.Remove(areaNumberj);
+                        }
+
                         areas[areaNumberi].Add(new Tuple<int, int>(i, j));
                         continue;
                     }
@@ -221,9 +226,12 @@ namespace CUDAFingerprinting.Common.Segmentation
                             }
                         }
 
-                        areas[areaNumberi].AddRange(areas[areaNumberj]);
-                        areas[areaNumberi] = new List<Tuple<int, int>>(areas[areaNumberi].Distinct());
-                        areas.Remove(areaNumberj);
+                        if (areaNumberi != areaNumberj)
+                        {
+                            areas[areaNumberi].AddRange(areas[areaNumberj]);
+                            areas[areaNumberi] = new List<Tuple<int, int>>(areas[areaNumberi].Distinct());
+                            areas.Remove(areaNumberj);
+                        }
                         areas[areaNumberi].Add(new Tuple<int, int>(i, j));
                         continue;
                     }
