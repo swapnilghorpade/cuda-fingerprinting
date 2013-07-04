@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BuildConvexHull.cs" />
+    <Compile Include="WorkingArea.cs" />
     <Compile Include="FieldFilling.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
