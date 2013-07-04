@@ -7,7 +7,6 @@ namespace CUDAFingerprinting.Common.ConvexHull
         public static bool[,] BuildWorkingArea(List<Point> Minutiae, int radius, int rows, int columns)
         {
             bool[,] primaryField = FieldFilling.GetFieldFilling(rows, columns, Minutiae);
-            bool lol = primaryField[5, 9];
             bool[,] resField = new bool[rows,columns];
             for (int i = 0; i < rows; i ++) 
                 for (int j = 0; j < columns; j++)
