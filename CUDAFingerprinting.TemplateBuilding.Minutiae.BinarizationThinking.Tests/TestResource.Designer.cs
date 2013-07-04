@@ -74,5 +74,19 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
+        
+        internal static System.Drawing.Bitmap ThiningImageTest {
+            get {
+                object obj = ResourceManager.GetObject("ThiningImageTest", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap ThiningImageTest2 {
+            get {
+                object obj = ResourceManager.GetObject("ThiningImageTest2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
     }
 }

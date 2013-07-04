@@ -54,16 +54,12 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
-    <Compile Include="Resource1.Designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>Resource1.resx</DependentUpon>
-    </Compile>
     <Compile Include="TestResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>TestResource.resx</DependentUpon>
     </Compile>
+    <Compile Include="ThiningTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
@@ -84,10 +80,6 @@
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
-    <EmbeddedResource Include="Resource1.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>Resource1.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
     <EmbeddedResource Include="TestResource.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>TestResource.Designer.cs</LastGenOutput>
@@ -98,6 +90,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Test.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ThiningImageTest.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ThiningImageTest2.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
