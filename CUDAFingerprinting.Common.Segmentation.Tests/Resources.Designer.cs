@@ -63,6 +63,26 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap _104_6 {
+            get {
+                object obj = ResourceManager.GetObject("_104_6", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap _65_8 {
+            get {
+                object obj = ResourceManager.GetObject("_65_8", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap TestImage {
             get {
                 object obj = ResourceManager.GetObject("TestImage", resourceCulture);

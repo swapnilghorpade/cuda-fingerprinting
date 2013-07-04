@@ -13,7 +13,7 @@ namespace CUDAFingerprinting.Common.OrientationField
         /// <summary>
         /// Размер блока поля направлений
         /// </summary>
-        public const int W = 10;
+        public const int W = 24;
 
         public static int[,] GenerateXGradients(int[,] bytes)
         {
@@ -31,8 +31,13 @@ namespace CUDAFingerprinting.Common.OrientationField
                         {
                             for (int dy = -1; dy < 2; dy++)
                             {
-                                if (x + dx < 0 || x + dx >= maxX || y + dy < 0 || y + dy >= maxY) continue;
-                                result[x, y] += filter[1 + dx, 1 + dy]*bytes[dx + x, dy + y];
+                                var imgX = x + dx;
+                                var imgY = y + dy;
+                                if (imgX < 0) imgX = 0;
+                                if (imgY < 0) imgY = 0;
+                                if (imgX >= maxX) imgX = maxX-1; 
+                                if (imgY >= maxY) imgY = maxY-1;
+                                result[x, y] += filter[1 + dx, 1 + dy]*bytes[imgX, imgY];
                             }
                         }
                         
@@ -59,8 +64,13 @@ namespace CUDAFingerprinting.Common.OrientationField
                         {
                             for (int dy = -1; dy < 2; dy++)
                             {
-                                if (x + dx < 0 || x + dx >= maxX || y + dy < 0 || y + dy >= maxY) continue;
-                                result[x, y] += filter[1 + dx, 1 + dy]*bytes[dx + x, dy + y];
+                                var imgX = x + dx;
+                                var imgY = y + dy;
+                                if (imgX < 0) imgX = 0;
+                                if (imgY < 0) imgY = 0;
+                                if (imgX >= maxX) imgX = maxX - 1;
+                                if (imgY >= maxY) imgY = maxY - 1;
+                                result[x, y] += filter[1 + dx, 1 + dy] * bytes[imgX, imgY];
                             }
                         }
                         
