@@ -62,36 +62,6 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         
         /// <summary>
         ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;10&lt;/int&gt;.
-        /// </summary>
-        internal static string Columns1 {
-            get {
-                return ResourceManager.GetString("Columns1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;15&lt;/int&gt;.
-        /// </summary>
-        internal static string Columns2 {
-            get {
-                return ResourceManager.GetString("Columns2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;26&lt;/int&gt;.
-        /// </summary>
-        internal static string Columns3 {
-            get {
-                return ResourceManager.GetString("Columns3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
         ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
         ///  &lt;Point&gt;
         ///    &lt;X&gt;4&lt;/X&gt;
@@ -149,66 +119,6 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         internal static string ConvexHullTest2Answer {
             get {
                 return ResourceManager.GetString("ConvexHullTest2Answer", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;2&lt;/int&gt;.
-        /// </summary>
-        internal static string Radius1 {
-            get {
-                return ResourceManager.GetString("Radius1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;3&lt;/int&gt;.
-        /// </summary>
-        internal static string Radius2 {
-            get {
-                return ResourceManager.GetString("Radius2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;5&lt;/int&gt;.
-        /// </summary>
-        internal static string Radius3 {
-            get {
-                return ResourceManager.GetString("Radius3", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;10&lt;/int&gt;.
-        /// </summary>
-        internal static string Rows1 {
-            get {
-                return ResourceManager.GetString("Rows1", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;15&lt;/int&gt;.
-        /// </summary>
-        internal static string Rows2 {
-            get {
-                return ResourceManager.GetString("Rows2", resourceCulture);
-            }
-        }
-        
-        /// <summary>
-        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
-        ///&lt;int&gt;31&lt;/int&gt;.
-        /// </summary>
-        internal static string Rows3 {
-            get {
-                return ResourceManager.GetString("Rows3", resourceCulture);
             }
         }
         
