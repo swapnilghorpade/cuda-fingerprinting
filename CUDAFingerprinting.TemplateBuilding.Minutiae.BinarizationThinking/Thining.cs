@@ -103,23 +103,19 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                     }
                 }
             }
-            /*&&
-                        ((picture[j, i - 1]*picture[j + 1, i] == 1)||(picture[j + 1, i]*picture[j, i + 1] == 1)||
-                        (picture[j, i + 1]*picture[j - 1, i] == 1)||(picture[j, i - 1]*picture[j - 1, i] == 1))*/
-
+            
             for (int i = 0; i < newPicture.GetLength(1); i++)
             {
                 for (int j = 0; j < newPicture.GetLength(0); j++)
                 {
                     if ((picture[j, i] == 1) &&
-                        ((picture[j, i - 1] * picture[j + 1, i] == 1) || (picture[j + 1, i] * picture[j, i + 1] == 1) ||
-                        (picture[j, i + 1] * picture[j - 1, i] == 1) || (picture[j, i - 1] * picture[j - 1, i] == 1)))
+                        (((picture[j, i - 1] * picture[j + 1, i] == 1) && (picture[j - 1, i + 1] != 1)) || ((picture[j + 1, i] * picture[j, i + 1] == 1) && (picture[j - 1, i - 1] != 1)) ||
+                        ((picture[j, i + 1] * picture[j - 1, i] == 1) && (picture[j + 1, i - 1] != 1)) || ((picture[j, i - 1] * picture[j - 1, i] == 1) && (picture[j + 1, i + 1] != 1))))
                     {
                         picture[j, i] = 0;
                     }
                 }
             }
-            
             for (int i = 0; i < picture.GetLength(1); i++)
             {
                 for (int j = 0; j < picture.GetLength(0); j++)
