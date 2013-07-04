@@ -136,4 +136,16 @@
   <data name="_104_6" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\104_6.tif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="_104_61" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\104_6.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_104_61globalBinarization150" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\104_61globalBinarization150.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_104_61globalBinarization150Thinned" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\104_61globalBinarization150Thinned.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_104_61globalBinarization150ThinnedMinutuaeFinded" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\104_61globalBinarization150ThinnedMinutuaeFinded.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

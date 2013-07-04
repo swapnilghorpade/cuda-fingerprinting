@@ -40,7 +40,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         public void TestMethod3()
         {
             double board = 150d;
-            var img = ImageHelper.LoadImage(TestResource._104_6);
+            var img = ImageHelper.LoadImage(TestResource._104_61);
             double[,] binarization = GlobalBinarization.Binarization(img, board);
             var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
             ImageHelper.SaveArray(img, path);

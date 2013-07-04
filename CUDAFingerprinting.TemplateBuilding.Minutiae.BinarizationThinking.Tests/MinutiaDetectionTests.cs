@@ -18,9 +18,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         public void TestMethod1()
         {
             //var img = ImageHelper.LoadImage(TestResource._104_6);
-            var img = ImageHelper.LoadImage(TestResource.thininned);
+            var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150Thinned);
             var path = Path.GetTempPath() + "detection.png";
-            ImageHelper.MarkMinutiae(TestResource.thininned, MinutiaeDetection.FindMinutiae(img), path);
+            ImageHelper.MarkMinutiae(TestResource._104_61globalBinarization150Thinned, MinutiaeDetection.FindMinutiae(img), path);
             //Trace.WriteLine(MinutiaeDetection.FindMinutiae(img));
             //ImageHelper.SaveArray(Detection, path);
             Process.Start(path);

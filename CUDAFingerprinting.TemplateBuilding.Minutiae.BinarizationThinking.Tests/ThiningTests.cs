@@ -42,5 +42,15 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
         }
+        [TestMethod]
+        public void TestMethod4()
+        {
+            //var img = ImageHelper.LoadImage(TestResource._104_6);
+            var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150);
+            var path = Path.GetTempPath() + "thininig.png";
+            var thining = Thining.ThiningPicture(img);
+            ImageHelper.SaveArray(thining, path);
+            Process.Start(path);
+        }
     }
 }
