@@ -123,6 +123,17 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         }
         
         /// <summary>
+        ///   Ищет локализованную строку, похожую на яяяя
+        ///
+        ///.
+        /// </summary>
+        internal static string FieldFilling1Answer {
+            get {
+                return ResourceManager.GetString("FieldFilling1Answer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
         ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
         ///  &lt;Point&gt;
