@@ -70,16 +70,13 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test
         [TestMethod()]
         public void BuildWorkingAreaTest()
         {
-            //List<Point> Minutiae = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample3); // TODO: инициализация подходящего значения
-            int radius = 5; // TODO: инициализация подходящего значения
-            int rows = 31; // TODO: инициализация подходящего значения
-            int columns = 26; // TODO: инициализация подходящего значения
-            bool[,] expected = null; // TODO: инициализация подходящего значения
-            List<Point> Minutiae = SerializationHelper.XmlSerializationHelper.DeserializeObject<List<Point>>(Resources.Sample3);
-            List<Point> Hull = ConvexHull.GetConvexHull(Minutiae);
+            int radius = 2; // TODO: инициализация подходящего значения
+            int rows = 10; // TODO: инициализация подходящего значения
+            int columns = 10; // TODO: инициализация подходящего значения
+            List<Point> Minutiae = SerializationHelper.XmlSerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1);
             bool[,] actual = WorkingArea.BuildWorkingArea(Minutiae, radius, rows, columns);
-            Minutiae = SerializationHelper.XmlSerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1);
-            Assert.AreEqual(expected, actual);
+            bool[,] expected = SerializationHelper.BinarySerializationHelper.DeserializeObject<bool[,]>(Resources.WorkingArea1Answer);
+            
         }
     }
 }

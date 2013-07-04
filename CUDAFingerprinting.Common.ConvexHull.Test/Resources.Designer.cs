@@ -123,13 +123,67 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на яяяя
-        ///
-        ///.
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;3&lt;/X&gt;
+        ///    &lt;Y&gt;24&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;2&lt;/X&gt;
+        ///    &lt;Y&gt;3&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;13&lt;/X&gt;
+        ///    &lt;Y&gt;4&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;19&lt;/X&gt;
+        ///    &lt;Y&gt;5&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;20&lt;/X&gt;
+        ///    &lt;Y&gt;11&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;19&lt;/X&gt;
+        ///    &lt;Y&gt;25&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///&lt;/ArrayOfPoint&gt;.
         /// </summary>
-        internal static string FieldFilling1Answer {
+        internal static string ConvexHullTest3Answer {
             get {
-                return ResourceManager.GetString("FieldFilling1Answer", resourceCulture);
+                return ResourceManager.GetString("ConvexHullTest3Answer", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] FieldFilling1Answer {
+            get {
+                object obj = ResourceManager.GetObject("FieldFilling1Answer", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] FieldFilling2Answer {
+            get {
+                object obj = ResourceManager.GetObject("FieldFilling2Answer", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] FieldFilling3Answer {
+            get {
+                object obj = ResourceManager.GetObject("FieldFilling3Answer", resourceCulture);
+                return ((byte[])(obj));
             }
         }
         
@@ -237,6 +291,36 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         internal static string Sample3 {
             get {
                 return ResourceManager.GetString("Sample3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] WorkingArea1Answer {
+            get {
+                object obj = ResourceManager.GetObject("WorkingArea1Answer", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] WorkingArea2Answer {
+            get {
+                object obj = ResourceManager.GetObject("WorkingArea2Answer", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Byte[].
+        /// </summary>
+        internal static byte[] WorkingArea3Answer {
+            get {
+                object obj = ResourceManager.GetObject("WorkingArea3Answer", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }

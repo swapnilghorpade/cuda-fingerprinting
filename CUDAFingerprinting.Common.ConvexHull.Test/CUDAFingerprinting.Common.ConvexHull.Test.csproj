@@ -70,6 +70,10 @@
       <Project>{C57F6464-8900-4CC8-A08C-5A7B33BDAF60}</Project>
       <Name>CUDAFingerprinting.Common.Serialization</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
+      <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
+      <Name>CUDAFingerprinting.Common</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Resources.resx">
@@ -78,7 +82,23 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="bin\Debug\Test.bin" />
+    <None Include="Resources\FieldFilling1Answer.bin" />
     <None Include="Resources\FieldFilling1Answer.txt" />
+    <None Include="Resources\FieldFilling2Answer.bin" />
+    <None Include="Resources\FieldFilling3Answer.bin" />
+    <None Include="Resources\WorkingArea1Answer.bin" />
+    <None Include="Resources\WorkingArea2Answer.bin" />
+    <None Include="Resources\WorkingArea3Answer.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FieldFilling2Answer.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\FieldFilling3Answer.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Test.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

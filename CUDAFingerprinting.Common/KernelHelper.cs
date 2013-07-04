@@ -133,7 +133,7 @@ namespace CUDAFingerprinting.Common
             return result;
         }
 
-        public static V[,] Zip2D<T, U, V>(T[,] arr1, U[,] arr2, Func<T, U, V> f)
+        public static V[,] Zip2D<T, U, V>(this T[,] arr1, U[,] arr2, Func<T, U, V> f)
         {
             var result = new V[arr1.GetLength(0), arr1.GetLength(1)];
             for (int x = 0; x < arr1.GetLength(0); x++)

@@ -76,15 +76,8 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test
             int columns = 10;
             List<Point> Minutiae = SerializationHelper.XmlSerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1); // TODO: инициализация подходящего значения
             bool[,] actual = FieldFilling.GetFieldFilling(rows, columns, Minutiae);
-            //var str = SerializationHelper.BinarySerializationHelper.SerializeObject(actual);
-            
-            var str = SerializationHelper.BinarySerializationHelper.SerializeObject(Resources.FieldFilling1Answer);
-            bool[,] expected = SerializationHelper.XmlSerializationHelper.DeserializeObject<bool[,]>((SerializationHelper.BinarySerializationHelper.DeserializeObject<String>(str)));
-                //SerializationHelper.BinarySerializationHelper.DeserializeObject<bool[,]>(str);
-            SerializationHelper.BinarySerializationHelper.SaveSerializedValue(str,"dFieldFilling1Answer.txt");
+            bool[,] expected = SerializationHelper.BinarySerializationHelper.DeserializeObject<bool[,]>(Resources.FieldFilling1Answer);
             // TODO: инициализация подходящего значения
-            //rows = SerializationHelper.SerializationHelper.DeserializeObject<int>(Resources.Rows1);
-            //CollectionAssert.AreEqual(expected, actual);
         }
     }
 }
