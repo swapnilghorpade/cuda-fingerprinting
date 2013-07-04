@@ -9,11 +9,11 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test
     
     
     /// <summary>
-    ///Это класс теста для FieldFillingTest, в котором должны
-    ///находиться все модульные тесты FieldFillingTest
+    ///Это класс теста для WorkingAreaTest, в котором должны
+    ///находиться все модульные тесты WorkingAreaTest
     ///</summary>
     [TestClass()]
-    public class FieldFillingTest
+    public class WorkingAreaTest
     {
 
 
@@ -67,21 +67,20 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test
 
 
         /// <summary>
-        ///Тест для GetFieldFilling
+        ///Тест для BuildWorkingArea
         ///</summary>
         [TestMethod()]
-        public void GetFieldFillingTest()
+        public void BuildWorkingAreaTest()
         {
-
-            int rows = SerializationHelper.SerializationHelper.DeserializeObject<int>(Resources.Rows1) ; // TODO: инициализация подходящего значения
-            int columns = SerializationHelper.SerializationHelper.DeserializeObject<int>(Resources.Columns1);
             List<Point> Minutiae = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1); // TODO: инициализация подходящего значения
-            bool[,] actual = FieldFilling.GetFieldFilling(rows, columns, Minutiae);
-            //var str = SerializationHelper.SerializationHelper.SerializeObject(actual);
-            //bool[,] expected = FieldFilling.GetFieldFilling(rows, columns, Minutiae); 
-            // TODO: инициализация подходящего значения
-            //rows = SerializationHelper.SerializationHelper.DeserializeObject<int>(Resources.Rows1);
-            //CollectionAssert.AreEqual(expected, actual);
+            int radius = 2; // TODO: инициализация подходящего значения
+            int rows = 10; // TODO: инициализация подходящего значения
+            int columns = 10; // TODO: инициализация подходящего значения
+            bool[,] expected = null; // TODO: инициализация подходящего значения
+            bool[,] actual = WorkingArea.BuildWorkingArea(Minutiae, radius, rows, columns);
+            Minutiae = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1);
+            //Assert.AreEqual(expected, actual);
+            //Assert.Inconclusive("Проверьте правильность этого метода теста.");
         }
     }
 }
