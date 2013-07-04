@@ -1,4 +1,0 @@
-D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.SerializationHelper\bin\Debug\CUDAFingerprinting.Common.SerializationHelper.dll
-D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.SerializationHelper\bin\Debug\CUDAFingerprinting.Common.SerializationHelper.pdb
-D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.SerializationHelper\obj\Debug\CUDAFingerprinting.Common.SerializationHelper.dll
-D:\MyData\Documents\Visual Studio 2010\Projects\Fingerprinting\CUDAFingerprinting.Common.SerializationHelper\obj\Debug\CUDAFingerprinting.Common.SerializationHelper.pdb
