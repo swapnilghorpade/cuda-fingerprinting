@@ -70,15 +70,16 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test
         [TestMethod()]
         public void BuildWorkingAreaTest()
         {
-            List<Point> Minutiae = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1); // TODO: инициализация подходящего значения
-            int radius = 2; // TODO: инициализация подходящего значения
-            int rows = 10; // TODO: инициализация подходящего значения
-            int columns = 10; // TODO: инициализация подходящего значения
+            //List<Point> Minutiae = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample3); // TODO: инициализация подходящего значения
+            int radius = SerializationHelper.SerializationHelper.DeserializeObject<int>(Resources.Radius3); // TODO: инициализация подходящего значения
+            int rows = SerializationHelper.SerializationHelper.DeserializeObject<int>(Resources.Rows3); // TODO: инициализация подходящего значения
+            int columns = SerializationHelper.SerializationHelper.DeserializeObject<int>(Resources.Columns3); // TODO: инициализация подходящего значения
             bool[,] expected = null; // TODO: инициализация подходящего значения
+            List<Point> Minutiae = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample3);
+            List<Point> Hull = ConvexHull.GetConvexHull(Minutiae);
             bool[,] actual = WorkingArea.BuildWorkingArea(Minutiae, radius, rows, columns);
             Minutiae = SerializationHelper.SerializationHelper.DeserializeObject<List<Point>>(Resources.Sample1);
-            //Assert.AreEqual(expected, actual);
-            //Assert.Inconclusive("Проверьте правильность этого метода теста.");
+            Assert.AreEqual(expected, actual);
         }
     }
 }

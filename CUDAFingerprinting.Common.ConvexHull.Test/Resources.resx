@@ -127,6 +127,11 @@
 &lt;int&gt;15&lt;/int&gt;</value>
     <comment>For WorkingArea and FieldFilling, Sample 2</comment>
   </data>
+  <data name="Columns3" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;26&lt;/int&gt;</value>
+    <comment>For WorkingArea and FieldFilling, Sample 3</comment>
+  </data>
   <data name="ConvexHullTest1Answer" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
@@ -189,6 +194,11 @@
 &lt;int&gt;3&lt;/int&gt;</value>
     <comment>For WorkingArea, Sample 2</comment>
   </data>
+  <data name="Radius3" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;5&lt;/int&gt;</value>
+    <comment>For WorkingArea, Sample 3</comment>
+  </data>
   <data name="Rows1" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;int&gt;10&lt;/int&gt;</value>
@@ -198,6 +208,11 @@
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;int&gt;15&lt;/int&gt;</value>
     <comment>For WorkingArea and FieldFilling, Sample 2</comment>
+  </data>
+  <data name="Rows3" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;31&lt;/int&gt;</value>
+    <comment>For WorkingArea and FieldFilling, Sample 3</comment>
   </data>
   <data name="Sample1" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
@@ -298,5 +313,55 @@
   &lt;/Point&gt;
 &lt;/ArrayOfPoint&gt;</value>
     <comment>For all projects, Sample 2</comment>
+  </data>
+  <data name="Sample3" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
+  &lt;Point&gt;
+    &lt;X&gt;2&lt;/X&gt;
+    &lt;Y&gt;3&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;20&lt;/X&gt;
+    &lt;Y&gt;11&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;19&lt;/X&gt;
+    &lt;Y&gt;5&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;12&lt;/X&gt;
+    &lt;Y&gt;12&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;3&lt;/X&gt;
+    &lt;Y&gt;24&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;15&lt;/X&gt;
+    &lt;Y&gt;18&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;6&lt;/X&gt;
+    &lt;Y&gt;6&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;19&lt;/X&gt;
+    &lt;Y&gt;25&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;3&lt;/X&gt;
+    &lt;Y&gt;15&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;13&lt;/X&gt;
+    &lt;Y&gt;4&lt;/Y&gt;
+  &lt;/Point&gt;
+  &lt;Point&gt;
+    &lt;X&gt;8&lt;/X&gt;
+    &lt;Y&gt;22&lt;/Y&gt;
+  &lt;/Point&gt;
+&lt;/ArrayOfPoint&gt;</value>
+    <comment>For all projects, Sample 3</comment>
   </data>
 </root>

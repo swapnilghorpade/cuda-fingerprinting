@@ -82,6 +82,16 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         
         /// <summary>
         ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;int&gt;26&lt;/int&gt;.
+        /// </summary>
+        internal static string Columns3 {
+            get {
+                return ResourceManager.GetString("Columns3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
         ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
         ///  &lt;Point&gt;
         ///    &lt;X&gt;4&lt;/X&gt;
@@ -164,6 +174,16 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         
         /// <summary>
         ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;int&gt;5&lt;/int&gt;.
+        /// </summary>
+        internal static string Radius3 {
+            get {
+                return ResourceManager.GetString("Radius3", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
         ///&lt;int&gt;10&lt;/int&gt;.
         /// </summary>
         internal static string Rows1 {
@@ -179,6 +199,16 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         internal static string Rows2 {
             get {
                 return ResourceManager.GetString("Rows2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;int&gt;31&lt;/int&gt;.
+        /// </summary>
+        internal static string Rows3 {
+            get {
+                return ResourceManager.GetString("Rows3", resourceCulture);
             }
         }
         
@@ -248,6 +278,44 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         internal static string Sample2 {
             get {
                 return ResourceManager.GetString("Sample2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;ArrayOfPoint xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot; xmlns:xsd=&quot;http://www.w3.org/2001/XMLSchema&quot;&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;2&lt;/X&gt;
+        ///    &lt;Y&gt;3&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;20&lt;/X&gt;
+        ///    &lt;Y&gt;11&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;19&lt;/X&gt;
+        ///    &lt;Y&gt;5&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;12&lt;/X&gt;
+        ///    &lt;Y&gt;12&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;3&lt;/X&gt;
+        ///    &lt;Y&gt;24&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;15&lt;/X&gt;
+        ///    &lt;Y&gt;18&lt;/Y&gt;
+        ///  &lt;/Point&gt;
+        ///  &lt;Point&gt;
+        ///    &lt;X&gt;6&lt;/X&gt;
+        ///    &lt;Y&gt;6&lt;/Y&gt;
+        ///  &lt; [остаток строки не уместился]&quot;;.
+        /// </summary>
+        internal static string Sample3 {
+            get {
+                return ResourceManager.GetString("Sample3", resourceCulture);
             }
         }
     }
