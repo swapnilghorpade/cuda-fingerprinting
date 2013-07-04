@@ -117,21 +117,6 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="Columns1" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;10&lt;/int&gt;</value>
-    <comment>For WorkingArea and FieldFilling, Sample 1</comment>
-  </data>
-  <data name="Columns2" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;15&lt;/int&gt;</value>
-    <comment>For WorkingArea and FieldFilling, Sample 2</comment>
-  </data>
-  <data name="Columns3" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;26&lt;/int&gt;</value>
-    <comment>For WorkingArea and FieldFilling, Sample 3</comment>
-  </data>
   <data name="ConvexHullTest1Answer" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;ArrayOfPoint xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"&gt;
@@ -183,36 +168,6 @@
   &lt;/Point&gt;
 &lt;/ArrayOfPoint&gt;</value>
     <comment>ConvexHull, Answer for Sample 2</comment>
-  </data>
-  <data name="Radius1" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;2&lt;/int&gt;</value>
-    <comment>For WorkingArea, Sample 1</comment>
-  </data>
-  <data name="Radius2" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;3&lt;/int&gt;</value>
-    <comment>For WorkingArea, Sample 2</comment>
-  </data>
-  <data name="Radius3" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;5&lt;/int&gt;</value>
-    <comment>For WorkingArea, Sample 3</comment>
-  </data>
-  <data name="Rows1" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;10&lt;/int&gt;</value>
-    <comment>For WorkingArea and FieldFilling, Sample 1</comment>
-  </data>
-  <data name="Rows2" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;15&lt;/int&gt;</value>
-    <comment>For WorkingArea and FieldFilling, Sample 2</comment>
-  </data>
-  <data name="Rows3" xml:space="preserve">
-    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
-&lt;int&gt;31&lt;/int&gt;</value>
-    <comment>For WorkingArea and FieldFilling, Sample 3</comment>
   </data>
   <data name="Sample1" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
