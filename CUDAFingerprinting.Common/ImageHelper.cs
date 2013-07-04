@@ -172,19 +172,23 @@ namespace CUDAFingerprinting.Common
 
         public static void SaveIntArray(int[,] data, string path)
         {
+            SaveArrayToBitmap(data).Save(path);
+        }
+
+        public static Bitmap SaveArrayToBitmap(int[,] data)
+        {
             int x = data.GetLength(0);
             int y = data.GetLength(1);
             var bmp = new Bitmap(x, y);
             data.Select2D((value, row, column) =>
-                {
-                    bmp.SetPixel(row, column, Color.FromArgb(value, value, value));
-                    return value;
-                });
-            bmp.Save(path);
+            {
+                bmp.SetPixel(row, column, Color.FromArgb(value, value, value));
+                return value;
+            });
+            return bmp;
         }
 
-
-        public static void SaveArray(double[,] data, string path)
+        public static Bitmap SaveArrayToBitmap(double[,] data)
         {
             int x = data.GetLength(0);
             int y = data.GetLength(1);
@@ -202,8 +206,12 @@ namespace CUDAFingerprinting.Common
                 bmp.SetPixel(row, column, Color.FromArgb(gray, gray, gray));
                 return value;
             });
+            return bmp;
+        }
 
-            bmp.Save(path);
+        public static void SaveArray(double[,] data, string path)
+        {
+            SaveArrayToBitmap(data).Save(path);
         }
 
         public static void SaveBinaryAsImage(string pathFrom, string pathTo, bool applyNormalization = false)
