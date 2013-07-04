@@ -144,6 +144,26 @@ namespace CUDAFingerprinting.Common.ConvexHull.Test {
         
         /// <summary>
         ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;int&gt;2&lt;/int&gt;.
+        /// </summary>
+        internal static string Radius1 {
+            get {
+                return ResourceManager.GetString("Radius1", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
+        ///&lt;int&gt;3&lt;/int&gt;.
+        /// </summary>
+        internal static string Radius2 {
+            get {
+                return ResourceManager.GetString("Radius2", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Ищет локализованную строку, похожую на &lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-16&quot;?&gt;
         ///&lt;int&gt;10&lt;/int&gt;.
         /// </summary>
         internal static string Rows1 {

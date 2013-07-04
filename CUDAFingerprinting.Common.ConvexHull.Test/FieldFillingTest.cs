@@ -1,6 +1,4 @@
-﻿using CUDAFingerprinting.Common.ConvexHull;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Drawing;
 using System.Collections.Generic;
 

@@ -120,10 +120,12 @@
   <data name="Columns1" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;int&gt;10&lt;/int&gt;</value>
+    <comment>For WorkingArea and FieldFilling, Sample 1</comment>
   </data>
   <data name="Columns2" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;int&gt;15&lt;/int&gt;</value>
+    <comment>For WorkingArea and FieldFilling, Sample 2</comment>
   </data>
   <data name="ConvexHullTest1Answer" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
@@ -145,6 +147,7 @@
     &lt;Y&gt;9&lt;/Y&gt;
   &lt;/Point&gt;
 &lt;/ArrayOfPoint&gt;</value>
+    <comment>ConvexHull, Answer for Sample 1</comment>
   </data>
   <data name="ConvexHullTest2Answer" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
@@ -174,14 +177,27 @@
     &lt;Y&gt;11&lt;/Y&gt;
   &lt;/Point&gt;
 &lt;/ArrayOfPoint&gt;</value>
+    <comment>ConvexHull, Answer for Sample 2</comment>
+  </data>
+  <data name="Radius1" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;2&lt;/int&gt;</value>
+    <comment>For WorkingArea, Sample 1</comment>
+  </data>
+  <data name="Radius2" xml:space="preserve">
+    <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
+&lt;int&gt;3&lt;/int&gt;</value>
+    <comment>For WorkingArea, Sample 2</comment>
   </data>
   <data name="Rows1" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;int&gt;10&lt;/int&gt;</value>
+    <comment>For WorkingArea and FieldFilling, Sample 1</comment>
   </data>
   <data name="Rows2" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
 &lt;int&gt;15&lt;/int&gt;</value>
+    <comment>For WorkingArea and FieldFilling, Sample 2</comment>
   </data>
   <data name="Sample1" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
@@ -207,6 +223,7 @@
     &lt;Y&gt;5&lt;/Y&gt;
   &lt;/Point&gt;
 &lt;/ArrayOfPoint&gt;</value>
+    <comment>For all projects, Sample 1</comment>
   </data>
   <data name="Sample2" xml:space="preserve">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;
@@ -280,5 +297,6 @@
     &lt;Y&gt;2&lt;/Y&gt;
   &lt;/Point&gt;
 &lt;/ArrayOfPoint&gt;</value>
+    <comment>For all projects, Sample 2</comment>
   </data>
 </root>
