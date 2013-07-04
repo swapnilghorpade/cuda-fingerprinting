@@ -20,7 +20,21 @@ namespace CUDAFingerprinting.Common.SerializationHelper
 
         public static T DeserializeObject<T>(byte[] toDeserialize)
         {
-            return (T)_formatter.Deserialize(new MemoryStream(toDeserialize));
+            return (T) _formatter.Deserialize(new MemoryStream(toDeserialize));
+        }
+
+        public static void SaveSerializedValue(byte[] value, string path)
+        {
+            using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
+            {
+                using (BinaryWriter bw = new BinaryWriter(fs))
+                {
+                    foreach (byte b in value)
+                    {
+                        bw.Write(b);
+                    }
+                }
+            }
         }
     }
 }
