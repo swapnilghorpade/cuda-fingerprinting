@@ -9,15 +9,14 @@ namespace CUDAFingerprinting.Common
 {
     public static class ImageHelper
     {
-        public static void MarkMinutiae(string sourcePath, List<Minutia> minutiae, string path)
+        public static void MarkMinutiae(Bitmap source, List<Minutia> minutiae, string path)
         {
-            var bmp = new Bitmap(sourcePath);
-            var bmp2 = new Bitmap(bmp.Width, bmp.Height);
+            var bmp2 = new Bitmap(source.Width, source.Height);
             for (int x = 0; x < bmp2.Width; x++)
             {
                 for (int y = 0; y < bmp2.Height; y++)
                 {
-                    bmp2.SetPixel(x, y, bmp.GetPixel(x, y));
+                    bmp2.SetPixel(x, y, source.GetPixel(x, y));
                 }
             }
             var gfx = Graphics.FromImage(bmp2);
@@ -30,8 +29,11 @@ namespace CUDAFingerprinting.Common
 
             gfx.Save();
 
-            bmp2.Save(path, ImageFormat.Png);
-
+            bmp2.Save(path, ImageFormat.Png);   
+        }
+        public static void MarkMinutiae(string sourcePath, List<Minutia> minutiae, string path)
+        {
+            MarkMinutiae(new Bitmap(sourcePath), minutiae, path);
         }
 
         public static void MarkMinutiae(string sourcePath, List<Minutia> minutiae, List<Minutia> minutiae2, string path)
