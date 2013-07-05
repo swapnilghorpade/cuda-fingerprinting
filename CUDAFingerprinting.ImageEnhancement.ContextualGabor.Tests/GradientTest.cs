@@ -3,24 +3,24 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CUDAFingerprinting.Common;
-using CUDAFingerprinting.ImageEnhancement.ContextualGabor;
 using System.IO;
 using System.Diagnostics;
+using CUDAFingerprinting.Common;
+using CUDAFingerprinting.ImageEnhancement.ContextualGabor;
 
 namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
 {
     [TestClass]
-    public class NormalizatorTest
+    public class GradientTest
     {
         [TestMethod]
-        public void NormalizeTest()
+        public void GradientsTest()
         {
             var img = ImageHelper.LoadImageAsInt(TestResources.sample);
-            Normalizer.Normalize(100, 5000, img);
-            Normalizer.LinearNormalize(0, 255, img);
-            var path = Path.GetTempPath() + "normalizied.png";
-            ImageHelper.SaveIntArray(img, path);
+            var grad = GradientHelper.GenerateGradient(img);
+            var path = Path.GetTempPath() + "grad.png";
+            var x = OrientationFieldGenerator.GenerateLeastSquareEstimate(img);
+            ImageHelper.SaveIntArray(grad, path);
             Process.Start(path);
         }
     }
