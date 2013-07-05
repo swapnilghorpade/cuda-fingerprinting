@@ -57,11 +57,11 @@ namespace CUDAFingerprinting.Common.Segmentation
 
             bool[,] mask = PrivateSegmetator(img, windowSize, weight, threshold);
             Tuple<int, int> averagePoint = FindAveragePoint(mask);
-            double[,] gaussian = MakeGaussian((x, y) => Gaussian.Gaussian2D(x, y, 8, 5), 
+            double[,] gaussian = MakeGaussian((x, y) => (Gaussian.Gaussian2D(x, y, 8, 5)/Gaussian.Gaussian2D(0,0,8,5)), 
                 img.GetLength(0), img.GetLength(1), averagePoint.Item1, averagePoint.Item2);
 
-            weight = weight.Select2D((value, x, y) => value * gaussian[x, y]);
-            mask = PrivateSegmetator(img, windowSize, weight, threshold);
+            //weight = weight.Select2D((value, x, y) => value * gaussian[x, y]);
+            //mask = PrivateSegmetator(img, windowSize, weight, threshold);
 
             return ColorImage(img, mask, windowSize);
         }
