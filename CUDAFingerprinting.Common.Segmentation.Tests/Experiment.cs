@@ -20,24 +20,33 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
             double[,] resultImg2;
             double[,] resultImg3;
 
-            int windowSize = 20;
-            double minValue = 0.3;
-            double maxValue = 1;
-            int minThreshold = 2;
-            int maxThreshold = 7;
-            for (double weight = minValue; weight <= maxValue; weight+= 0.1)
-            {
-                for (int currentThreshold = minThreshold; currentThreshold <= maxThreshold; currentThreshold++)
-                {
-                    resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, currentThreshold);
-                    ImageHelper.SaveArray(resultImg1, Path.GetTempPath() + "/104_6/resultImg_" + weight + "_" + currentThreshold + ".png");
-                    resultImg2 = Segmentator.Segmetator(img2, windowSize, weight, currentThreshold);
-                    ImageHelper.SaveArray(resultImg2, Path.GetTempPath() + "/65_8/resultImg_" + weight + "_" + currentThreshold + ".png");
-                    resultImg3 = Segmentator.Segmetator(img3, windowSize, weight, currentThreshold);
-                    ImageHelper.SaveArray(resultImg3, Path.GetTempPath() + "/103_7/resultImg_" + weight + "_" + currentThreshold + ".png");
+            int windowSize = 12;
+            double weight = 0.3;
+            int currentThreshold = 5;
 
-                }
-            }
+            //double minValue = 0.3;
+            //double maxValue = 0.5;
+            //int minThreshold = 3;
+            //int maxThreshold = 6;
+            //for (double weight = minValue; weight <= maxValue; weight+= 0.1)
+            //{
+            //    for (int currentThreshold = minThreshold; currentThreshold <= maxThreshold; currentThreshold++)
+            //    {
+            //        resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, currentThreshold);
+            //        ImageHelper.SaveArray(resultImg1, Path.GetTempPath() + "104_6_resultImg_" + weight + "_" + currentThreshold + ".png");
+            //        resultImg2 = Segmentator.Segmetator(img2, windowSize, weight, currentThreshold);
+            //        ImageHelper.SaveArray(resultImg2, Path.GetTempPath() + "65_8_resultImg_" + weight + "_" + currentThreshold + ".png");
+            //        resultImg3 = Segmentator.Segmetator(img3, windowSize, weight, currentThreshold);
+            //        ImageHelper.SaveArray(resultImg3, Path.GetTempPath() + "103_7_resultImg_" + weight + "_" + currentThreshold + ".png");
+            //    }
+            //}
+
+            resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, currentThreshold);
+            ImageHelper.SaveArray(resultImg1, Path.GetTempPath() + "104_6_resultImg_" + weight + "_" + currentThreshold + ".png");
+            resultImg2 = Segmentator.Segmetator(img2, windowSize, weight, currentThreshold);
+            ImageHelper.SaveArray(resultImg2, Path.GetTempPath() + "65_8_resultImg_" + weight + "_" + currentThreshold + ".png");
+            resultImg3 = Segmentator.Segmetator(img3, windowSize, weight, currentThreshold);
+            ImageHelper.SaveArray(resultImg3, Path.GetTempPath() + "103_7_resultImg_" + weight + "_" + currentThreshold + ".png");
         }
     }
 }
