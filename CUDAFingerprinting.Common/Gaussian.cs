@@ -22,7 +22,11 @@ namespace CUDAFingerprinting.Common
 
         public static double Gaussian2D(double x, double y, double sigmaX, double sigmaY)
         {
-            return Math.Exp(-(x * x/sigmaX/sigmaX + y * y/sigmaY/sigmaY) / 2.0) / 2.0/Math.PI/sigmaX/sigmaY;
+            var value = -(x * x / (sigmaX * sigmaX) + y * y / (sigmaY / sigmaY)) / 2.0;
+            var denominator = 2.0 * Math.PI * sigmaX * sigmaY;
+            double gaus = Math.Exp(value) / denominator;
+
+            return gaus;
         }
     }
 }
