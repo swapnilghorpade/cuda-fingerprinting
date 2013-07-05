@@ -47,5 +47,63 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.SaveArray(sobel, path);
             Process.Start(path);
         }
+
+        [TestMethod]
+        public void TestMethod4()
+        {
+            double sigma = 1.41d;
+            var img = ImageHelper.LoadImage(TestResource._104_6);
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            var path = Path.GetTempPath() + "localSol" + sigma + ".png";
+            ImageHelper.SaveArray(nonMax, path);
+            Process.Start(path);
+        }
+
+        [TestMethod]
+        public void TestMethod5()
+        {
+            double sigma = 1.4d;
+            var img = ImageHelper.LoadImage(TestResource._104_6);
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 50);
+            var path = Path.GetTempPath() + "localSol" + sigma + ".png";
+            ImageHelper.SaveArray(nonMax, path);
+            Process.Start(path);
+        }
+
+        [TestMethod]
+        public void TestMethod6()
+        {
+            double sigma = 1.4d;
+            var img = ImageHelper.LoadImage(TestResource._104_6);
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 50);
+            nonMax = LocalBinarizationCanny.Traceroute(nonMax);
+            var path = Path.GetTempPath() + "localSol" + sigma + ".png";
+            ImageHelper.SaveArray(nonMax, path);
+            Process.Start(path);
+        }
+
+        [TestMethod]
+        public void TestMethod7()
+        {
+            double sigma = 1.4d;
+            var img = ImageHelper.LoadImage(TestResource._104_6);
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 50);
+            nonMax = LocalBinarizationCanny.Traceroute(nonMax);
+            nonMax = LocalBinarizationCanny.inv(nonMax);
+            var path = Path.GetTempPath() + "localSol" + sigma + ".png";
+            ImageHelper.SaveArray(nonMax, path);
+            Process.Start(path);
+        }
     }
 }
