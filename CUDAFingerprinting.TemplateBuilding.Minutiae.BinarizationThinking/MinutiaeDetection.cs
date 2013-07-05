@@ -9,7 +9,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
     public static class MinutiaeDetection
     {
         public static int CheckMinutiae(double[,] area) //Данный метод определяет, является ли пиксель минуцией, result = 0 - не минуция, иначе - минуция
-        {                                               //На вход дается окрестность пикселя, включая сам пиксель                                                                                    , в центре к
+        {                                               //На вход дается окрестность пикселя
             int result; // 1 - ending, >2 - branching,                     
             int counter = 0;
             area[1, 1] = 255;
