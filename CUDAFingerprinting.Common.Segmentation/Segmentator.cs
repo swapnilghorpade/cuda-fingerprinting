@@ -267,5 +267,20 @@ namespace CUDAFingerprinting.Common.Segmentation
 
             return mask;
         }
+
+        //double[,] bigGaussian = MakeGaussian((x, y) =>
+         //       Gaussian.Gaussian2D((float)x, (float)y, 8, 5), img.GetLength(0), img.GetLength(1));
+        static double[,] MakeGaussian(Func<float, float, double> function, int sizeX, int sizeY, int centerX, int centerY)
+        {
+            double[,] kernel = new double[sizeX, sizeY];            
+            for (int x = -centerX; x <= sizeX-centerX; x++)
+            {
+                for (int y = -centerY; y <= sizeY - centerY; y++)
+                {
+                    kernel[centerX + x, centerY + y] = function(x, y);
+                }
+            }
+            return kernel;
+        }
     }
 }
