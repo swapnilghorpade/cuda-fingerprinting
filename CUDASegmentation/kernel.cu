@@ -3,6 +3,9 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
+
+//Ура! Вперед, к светлому будущему параллельных вычислений!
+
 /*
 cudaError_t addWithCuda(int *c, const int *a, const int *b, size_t size);
 
