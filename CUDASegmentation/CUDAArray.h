@@ -27,7 +27,7 @@ public:
 	CUDAArray()
 	{
 	}
-
+	//Create Cuda 
 	CUDAArray(const CUDAArray& arr)
 	{
 		cudaPtr = arr.cudaPtr;
@@ -36,7 +36,7 @@ public:
 		Stride = arr.Stride;
 		deviceStride = arr.deviceStride;
 	}
-
+	//Create Cuda array - copy of array in cpu
 	CUDAArray(T* cpuPtr, int width, int height)
 	{
 		Width = width;
