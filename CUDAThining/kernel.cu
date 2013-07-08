@@ -3,6 +3,7 @@
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
+#include<stdlib.h>
 
 cudaError_t addWithCuda(int *c, const int *a, const int *b, size_t size);
 
@@ -104,8 +105,13 @@ int main()
 //    int c[arraySize] = { 0 };
 
     // Add vectors in parallel.
-	double *picture ...
-	pitch ...
+	int size;
+	double **picture = (double**)malloc(size*size*sizeof(double*));
+	for(int i = 0; i < size; i++){
+		picture[i] = (double*)malloc(10*sizeof(double));
+	}
+
+	pitch ...	
     cudaError_t cudaStatus = addWithCuda(pitcure, pitch);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addWithCuda failed!");
@@ -119,6 +125,10 @@ int main()
 //        fprintf(stderr, "cudaDeviceReset failed!");
 //        return 1;
 //    }
+	for(int i = 0; i < size; i++){
+		free(picture[i]);
+	}
+	free(picture);
 
     return 0;
 }
