@@ -7,7 +7,7 @@
 //#include<MinutiaMatching.h>
 
 //cudaError_t addWithCuda(int *c, const int *a, const int *b, size_t size);
-cudaError_t addWithCuda(double **picture, int size, double **result);
+cudaError_t addWithCuda(double *picture, int size, double *result);
 
 //__global__ void addKernel(int *c, const int *a, const int *b)
 //{
@@ -104,9 +104,11 @@ __global__ void ThiningPictureWithCUDA(double* newPicture,double *thinnedPicture
 	double *picture = newPicture;
 	int x = threadIdx.x + blockIdx.x*blockDim.x;
     int y = threadIdx.y + blockIdx.y*blockDim.y;
-    if((x > 0) && (y > 0) && (x < width) && (y < height))
+	pitch = pitch/sizeof(size_t);
+    //if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
+	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
 	{             
-		if ((picture[x, y] == 1) && (2 <= B(picture, x, y, pitch)) && (B(picture, x, y, pitch) <= 6) && (A(picture, x, y, pitch) == 1) &&     //Непосредственное удаление точки, см. Zhang-Suen thinning algorithm, http://www-prima.inrialpes.fr/perso/Tran/Draft/gateway.cfm.pdf
+		if ((picture[x + y*pitch] == 1) && (2 <= B(picture, x, y, pitch)) && (B(picture, x, y, pitch) <= 6) && (A(picture, x, y, pitch) == 1) &&     //Непосредственное удаление точки, см. Zhang-Suen thinning algorithm, http://www-prima.inrialpes.fr/perso/Tran/Draft/gateway.cfm.pdf
             (picture[x + (y - 1)*pitch]*picture[x + 1 + y*pitch]*picture[x + (y + 1)*pitch] == 0) &&
             (picture[x + 1 + y*pitch]*picture[x + (y + 1)*pitch]*picture[x - 1 + y*pitch] == 0))
         {
@@ -120,15 +122,17 @@ __global__ void ThiningPictureWithCUDA(double* newPicture,double *thinnedPicture
 			picture[x + y*pitch] = 0;
 		} 
 		
-		if ((picture[x, y] == 1) &&
+		if ((picture[x + y*pitch] == 1) &&
             (((picture[x, (y - 1)*pitch] * picture[x + 1 + y*pitch] == 1) && (picture[x - 1 + (y + 1)*pitch] != 1)) || ((picture[x + 1 + y*pitch] * picture[x + (y + 1)*pitch] == 1) && (picture[x - 1 + (y - 1)*pitch] != 1)) ||      //Небольшая модификцаия алгоритма для ещё большего утоньшения
             ((picture[x + (y + 1)*pitch] * picture[x - 1 + y*pitch] == 1) && (picture[x + 1 + (y - 1)*pitch] != 1)) || ((picture[x + (y - 1)*pitch] * picture[x - 1 + y*pitch] == 1) && (picture[x + 1 + (y + 1)*pitch] != 1))))
         {
             picture[x + y*pitch] = 0;
+			//thinnedPicture[x + y*pitch] = 0;
         }
 		
-		thinnedPicture = picture;
+		//thinnedPicture = picture;
 	}
+	thinnedPicture = picture;
 }
 
 
@@ -147,19 +151,16 @@ int main()
 
     // Add vectors in parallel.
 	int size = 32;
-	double **picture = (double**)malloc(size*size*sizeof(double*));
-	for(int i = 0; i < size; i++){
-		picture[i] = (double*)malloc(size*sizeof(double));
-	}
-	double **result = (double**)malloc(size*size*sizeof(double*));
-	for(int i = 0; i < size; i++){
-		result[i] = (double*)malloc(size*sizeof(double));
-	}
+	double *picture = (double*)malloc(size*size*sizeof(double));
+
+	double *result = (double*)malloc(size*size*sizeof(double));
+	FILE *in = fopen("C:\\picture.in","r");
+	FILE *out = fopen("C:\\picture.out","w");
 	for(int i = 0; i < size; i++)
 	{
 		for(int j = 0; j < size; j++)
 		{
-			scanf("%d",&picture[i][j]);
+			fscanf(in,"%lf",&picture[i*size+j]);
 		}
 	}
 
@@ -168,6 +169,15 @@ int main()
         fprintf(stderr, "addWithCuda failed!");
         return 1;
     }
+	for(int i = 0; i < size; i++)
+	{
+		for(int j = 0; j < size; j++)
+		{
+			fprintf(out,"%lf ",result[i*size + j]);
+		}
+		fprintf(out,"\n");
+	}
+
 
     // cudaDeviceReset must be called before exiting in order for profiling and
     // tracing tools such as Nsight and Visual Profiler to show complete traces.
@@ -176,20 +186,15 @@ int main()
 //        fprintf(stderr, "cudaDeviceReset failed!");
 //        return 1;
 //    }
-	for(int i = 0; i < size; i++){
-		free(picture[i]);
-	}
-	free(picture);\
-	for(int i = 0; i < size; i++){
-		free(result[i]);
-	}
+
+	free(picture);
 	free(result);
 
     return 0;
 }
 
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(double **picture, int size, double **result)
+cudaError_t addWithCuda(double *picture, int size, double *result)
 {
     //int *dev_a = 0;
     //int *dev_b = 0;
@@ -247,7 +252,15 @@ cudaError_t addWithCuda(double **picture, int size, double **result)
     //}
 
     // Launch a kernel on the GPU with one thread for each element.
-    ThiningPictureWithCUDA<<<1, size>>>(dev_picture, dev_pictureThinned, pitch, width, height);
+    //int dimA = size*size;
+    //int numThreadsPerBlock = 16;
+    //int numBlocks = dimA / numThreadsPerBlock;
+    //
+    //dim3 dimGrid(numBlocks);
+    //dim3 dimBlock(numThreadsPerBlock);
+
+//    ThiningPictureWithCUDA<<<(size*size+16-1)/16,dim3(16,16,1)>>>(dev_picture, dev_pictureThinned, pitch, width, height);
+	ThiningPictureWithCUDA<<<dim3(2,2),dim3(16,16)>>>(dev_picture, dev_pictureThinned, pitch, width, height);
 
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
     // any errors encountered during the launch.
@@ -256,6 +269,17 @@ cudaError_t addWithCuda(double **picture, int size, double **result)
         fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
         goto Error;
     }
+	
+	//FILE *out = fopen("C:\\picture2.out","w");
+	//
+	//for(int i = 0; i < size; i++)
+	//{
+	//	for(int j = 0; j < size; j++){
+	//		fprintf(out,"%lf ", dev_pictureThinned);
+	//	}
+	//	fprintf(out,"\n");
+	//}
+	//scanf("\n");
 
     // Copy output vector from GPU buffer to host memory.
 	cudastatus = cudaMemcpy2D(result,width*sizeof(int),dev_pictureThinned,pitch,width*sizeof(int),height,cudaMemcpyDeviceToHost);
