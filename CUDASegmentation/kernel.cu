@@ -3,7 +3,7 @@
 #include "device_launch_parameters.h"
 
 #include "ConvolutionHelper.h"
-//#include "CUDAArray.h"
+
 #include <stdio.h>
 
 //Ура! Вперед, к светлому будущему параллельных вычислений!
@@ -92,6 +92,10 @@ cudaError_t addWithCuda(int *c, const int *a, const int *b, size_t size)
         goto Error;
     }
 
+
+
+
+
     // Launch a kernel on the GPU with one thread for each element.
     addKernel<<<1, size>>>(dev_c, dev_a, dev_b);
 
@@ -119,32 +123,99 @@ Error:
 }
 */
 
+__global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
+{
+	int row = defaultRow();
+	int column = defaultColumn();
+	float newValue = xGradient.At(row,column)*xGradient.At(row,column) +yGradient.At(row,column)*yGradient.At(row,column);
+	newValue = sqrt(newValue);
+	magnitude.SetAt(row,column, newValue);
+}
+
+void GetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
+{
+		dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	dim3 gridSize = 
+		dim3(ceilMod(magnitude.Width,defaultThreadCount),
+		ceilMod(magnitude.Height,defaultThreadCount));
+
+	cudaGetMagnitude<<<gridSize,blockSize>>>(magnitude, xGradient, yGradient);
+
+	cudaError_t error = cudaDeviceSynchronize();
+}
+
+
+__global__ void cudaGetMask(CUDAArray<float> initialArray, CUDAArray<bool> mask, int blockSize, float average)
+{
+	float sum = 0;
+	for(int i; i<blockSize; i++)
+	{
+		for(int j; j<blockSize; j++)
+		{
+			if(defaultRow()*blockSize+j<initialArray.Height&&
+				defaultColumn()*blockSize+i<initialArray.Width)
+			{
+			sum += initialArray.At(defaultRow()*blockSize+j,defaultColumn()*blockSize+i);
+			}
+		}
+	}
+	sum = sum/(blockSize*blockSize);
+	mask.SetAt(defaultRow(),defaultColumn(),(sum < average));
+}
+
+//__global__ void cudaGetAverageFromArray(CUDAArray<float> arrayToAverage, float* average)
+//{
+//	float sum = 0;
+//	for(int i; i<arrayToAverage.Width; i++)
+//	{		
+//		for(int j; j<arrayToAverage.Height; j++)
+//		{
+//			sum+= arrayToAverage.At(i,j);
+//		}
+//	}
+//	*average = sum/(float)(arrayToAverage.Height*arrayToAverage.Width);
+//}
+
   int main(float* img, int xSizeImg, int ySizeImg, int windowSize, double weightConstant, int threshold)
   {
 	  // Sobel:
 	  CUDAArray<float> source = CUDAArray<float>(img,xSizeImg,ySizeImg);
 
 	  CUDAArray<float> xGradient = CUDAArray<float>(xSizeImg,ySizeImg);
-	  CUDAArray<float> xGradient = CUDAArray<float>(xSizeImg,ySizeImg);
+	  CUDAArray<float> yGradient = CUDAArray<float>(xSizeImg,ySizeImg);
 
 	  float xKernelCPU[3][3] = {{-1,0,1},
 							{-2,0,2},
 							{-1,0,1}};
-	  CUDAArray<float> xKernel = CUDAArray<float>(&xKernelCPU,3,3);
+	  CUDAArray<float> xKernel = CUDAArray<float>(*xKernelCPU,3,3);
 	  
-	  float yKernel[3][3] = {{-1,-2,-1},
+	  float yKernelCPU[3][3] = {{-1,-2,-1},
 							{0,0,0},
 							{1,2,1}};
+	  CUDAArray<float> yKernel = CUDAArray<float>(*yKernelCPU,3,3);
+	  
+	  Convolve(xGradient, source, xKernel);
+	  Convolve(yGradient, source, yKernel);
 
-	  cudaConvolve(xGradient, source, xFilter);
+	  CUDAArray<float> magnitude = CUDAArray<float>(xSizeImg,ySizeImg);
 
-	//int* xGradients = (int*)malloc((xSizeImg* ySizeImg +1)*sizeof(int)); 
-      //      int* yGradients = (int*)malloc((xSizeImg* ySizeImg +1)*sizeof(int));
+	  xGradient.Dispose();
+	  yGradient.Dispose();
+	  xKernel.Dispose();
+	  yKernel.Dispose();
 
-            //xGradients = OrientationFieldGenerator.GenerateXGradients(img.Select2D(a => (int)a));
-            //yGradients = OrientationFieldGenerator.GenerateYGradients(img.Select2D(a => (int)a));
-         /*   double[,] magnitudes = xGradients.Select2D((value, x, y) => Math.Sqrt(xGradients[x, y] * xGradients[x, y] + yGradients[x, y] * yGradients[x, y]));
-            double averege = KernelHelper.Average(magnitudes);
+
+	  float averege;
+
+	  //cudaGetAverageFromArray<<<1,1>>>(magnitude, *average);
+	  int N = (int)ceil(((double)source.Width) / windowSize);
+	  int M = (int)ceil(((double)source.Height) / windowSize);
+	  
+	  	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+		dim3 gridSize =dim3(ceilMod(N,defaultThreadCount),
+							ceilMod(M,defaultThreadCount));
+
+	  /* 
             double[,] window = new double[windowSize, windowSize];
 
             int N = (int)Math.Ceiling(((double)img.GetLength(0)) / windowSize);
