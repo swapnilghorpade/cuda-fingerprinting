@@ -146,7 +146,7 @@ int main()
 //    int c[arraySize] = { 0 };
 
     // Add vectors in parallel.
-	int size;
+	int size = 32;
 	double **picture = (double**)malloc(size*size*sizeof(double*));
 	for(int i = 0; i < size; i++){
 		picture[i] = (double*)malloc(size*sizeof(double));
