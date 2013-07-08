@@ -2,6 +2,8 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
+#include "ConvolutionHelper.h"
+#include "CUDAArray.h"
 #include <stdio.h>
 
 //Ура! Вперед, к светлому будущему параллельных вычислений!
@@ -119,6 +121,11 @@ Error:
 
   int main(double* img, int xSizeImg, int ySizeImg, int windowSize, double weightConstant, int threshold)
   {
+	  // Sobel:
+	  CU
+
+	  cudaConvolve(CUDAArray<float> target, CUDAArray<float> source, CUDAArray<float> filter)
+
 	//int* xGradients = (int*)malloc((xSizeImg* ySizeImg +1)*sizeof(int)); 
       //      int* yGradients = (int*)malloc((xSizeImg* ySizeImg +1)*sizeof(int));
 
