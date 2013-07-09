@@ -136,9 +136,6 @@
   <data name="_104_6" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\104_6.tif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="_104_61" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\104_6.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="_104_61globalBinarization150" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\104_61globalBinarization150.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
@@ -150,5 +147,14 @@
   </data>
   <data name="Valve_original__1_" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\Valve_original_(1).PNG;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_104_6_ench" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\104_6_ench.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_108_6" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\108_6.tif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="_110_6" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\110_6.tif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

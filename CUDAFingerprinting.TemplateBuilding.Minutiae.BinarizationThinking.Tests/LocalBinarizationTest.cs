@@ -100,9 +100,28 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
             nonMax = GlobalBinarization.Binarization(nonMax, 50);
             nonMax = LocalBinarizationCanny.Traceroute(nonMax);
-            nonMax = LocalBinarizationCanny.inv(nonMax);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
             var path = Path.GetTempPath() + "localSol" + sigma + ".png";
             ImageHelper.SaveArray(nonMax, path);
+            Process.Start(path);
+        }
+
+        [TestMethod]
+        public void TestLocalBinarization()
+        {
+            double sigma = 1.4d;
+            var img = ImageHelper.LoadImage(TestResource._110_6);
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 50);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+
+            int sizeWin = 16;
+            double[,] resImg = LocalBinarizationCanny.LocalBinarization(img, nonMax, sizeWin, 1.3d);
+
+            var path = Path.GetTempPath() + "localSol" + sizeWin + ".png";
+            ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
         }
     }

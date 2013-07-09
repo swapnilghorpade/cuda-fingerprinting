@@ -5,7 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CUDAFingerprinting.Common;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
-using CUDAFingerprinting.ImageEnhancement.ContextualGabor;
+//using CUDAFingerprinting.ImageEnhancement.ContextualGabor;
 using System.IO;
 using System.Diagnostics;
 
@@ -40,7 +40,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         public void TestMethod3()
         {
             double board = 150d;
-            var img = ImageHelper.LoadImage(TestResource._104_61);
+            var img = ImageHelper.LoadImage(TestResource._104_6);
             double[,] binarization = GlobalBinarization.Binarization(img, board);
             var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
             ImageHelper.SaveArray(img, path);
@@ -50,8 +50,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod4()
         {
-            double board = 110d;
-            var img = ImageHelper.LoadImage(TestResource._104_6);
+            double board = 153d;
+            var img = ImageHelper.LoadImage(TestResource._110_6);
             double[,] binarization = GlobalBinarization.Binarization(img, board);
             var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
             ImageHelper.SaveArray(img, path);

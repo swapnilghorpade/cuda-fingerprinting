@@ -68,9 +68,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             }
         }
         
-        internal static System.Drawing.Bitmap _104_61 {
+        internal static System.Drawing.Bitmap _104_6_ench {
             get {
-                object obj = ResourceManager.GetObject("_104_61", resourceCulture);
+                object obj = ResourceManager.GetObject("_104_6_ench", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -92,6 +92,20 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         internal static System.Drawing.Bitmap _104_61globalBinarization150ThinnedMinutuaeFinded {
             get {
                 object obj = ResourceManager.GetObject("_104_61globalBinarization150ThinnedMinutuaeFinded", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap _108_6 {
+            get {
+                object obj = ResourceManager.GetObject("_108_6", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        internal static System.Drawing.Bitmap _110_6 {
+            get {
+                object obj = ResourceManager.GetObject("_110_6", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
