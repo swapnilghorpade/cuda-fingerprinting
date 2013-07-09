@@ -18,23 +18,21 @@ int main()
 	Hull = (Point*) malloc (N*sizeof(Point));
 	int NHull = 0;
 	Build(arr,N,Hull,&NHull);
-	bool **field;
+	for (int i = 0 ; i < NHull; i ++ )
+		Hull[i].print();
+	system("PAUSE");
+	bool *field;
 	int rows = 31;
 	int columns = 25;
-	field = (bool**) malloc (rows * sizeof(bool*));
-	for (int i = 0; i < rows; i++) 
-		field[i] = (bool*) calloc (columns, sizeof(bool));
-
+	field = (bool*) malloc ((rows * columns) * sizeof(bool));
 	FieldFilling(field,rows,columns,Hull,NHull);
 	for (int i = 0; i< rows; i++) {
 		for (int j = 0; j < columns ; j++) 
-			printf("%d ",field[i][j]);
+			printf("%d ",field[i*columns+j]);
 		printf("\n");
 	}
 	free(arr);
 	free(Hull);
-	for (int i = 0;i<rows;i++)
-		free(field[i]);
 	system("PAUSE");
 	free(field);
     return 0;
