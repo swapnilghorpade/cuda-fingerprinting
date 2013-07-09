@@ -2,15 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CUDAFingerprinting.Common;
 
 namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 {
     public static class OrientationFieldGenerator
     {
-        // Half of the frame's size
+        // Half of the frame's size for square estimate
         private const int W = 8;
         // Sigma of Gaussian's blur
-        private const double sigma = 5;
+        // from 0.34 to 0.65 for recommended size of low-pass filter
+        private const double sigma = 0.65; 
+
+
 
         public static double[,] GenerateLeastSquareEstimate(int[,] image)
         {
@@ -41,7 +45,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                             }
                         }
                     }
-                    result[i, j] = 0.5 * Math.Atan2(vx, vy);
+                    result[i, j] = 0.5 * Math.Atan2(vy, vx);
                 }
             }
             return result;
@@ -101,5 +105,42 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             }
             return result;
         }
+
+        // (x, y) pairs of continious vector field
+        public static Tuple<double, double>[,] GenerateLowPassFilteredContiniousVectorField(int[,] image)
+        {
+            int maxY = image.GetLength(0);
+            int maxX = image.GetLength(1);
+            var cvf = new Tuple<double, double>[maxY, maxX];
+            var lsq = GenerateLeastSquareEstimate(image);
+
+            for (int i = 0; i < maxY; i++)
+            {
+                for (int j = 0; j < maxX; j++)
+                {
+                    cvf[i, j] = new Tuple<double, double>(Math.Cos(2 * lsq[i, j]), Math.Sin(2 * lsq[i, j]));
+                }
+            }
+
+
+            return KernelHelper.Zip2D(GenerateBlur(cvf.Select2D(x => x.Item1)), GenerateBlur(cvf.Select2D(x => x.Item2)), (x, y) => new Tuple<double, double>(x, y));
+        }
+
+        public static double[,] GenerateLocalRidgeOrientation(int[,] image)
+        {
+            int maxY = image.GetLength(0);
+            int maxX = image.GetLength(1);
+            double[,] lro = new double[maxX, maxY];
+            var cvf = GenerateLowPassFilteredContiniousVectorField(image);
+
+            for (int i = 0; i < maxY; i++)
+            {
+                for (int j = 0; j < maxX; j++)
+                {
+                    lro[i, j] = 0.5 * Math.Atan2(cvf[i, j].Item2, cvf[i, j].Item1);
+                }
+            }
+            return lro;
+        }   
     }
 }

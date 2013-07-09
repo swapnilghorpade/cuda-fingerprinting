@@ -63,9 +63,9 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
-        internal static System.Drawing.Bitmap noise {
+        internal static System.Drawing.Bitmap lrotest {
             get {
-                object obj = ResourceManager.GetObject("noise", resourceCulture);
+                object obj = ResourceManager.GetObject("lrotest", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
