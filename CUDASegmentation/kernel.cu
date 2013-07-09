@@ -50,14 +50,16 @@ __global__ void cudaGetMask(CUDAArray<float> initialArray, CUDAArray<bool> mask,
 float GetAverageFromArray(CUDAArray<float> arrayToAverage)
 {
 	float sum = 0;
+	float* ar = arrayToAverage.GetData();
 	for(int i; i<arrayToAverage.Width; i++)
 	{		
 		for(int j; j<arrayToAverage.Height; j++)
 		{
-			sum+= arrayToAverage.At(i,j);
+			sum+= ar[i+j*arrayToAverage.Width];
 		}
 	}
 	return sum/(float)(arrayToAverage.Height*arrayToAverage.Width);
+	free(ar);
 }
 
 CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
@@ -98,15 +100,30 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	return sourceImage;
 }
 
-void SaveMask()
+void SaveMask(CUDAArray<bool> mask, const char* name)
 {
+	FILE* f = fopen(name,"w");
+	bool* maskOnCPU = mask.GetData();
+	int* ar = (int*)malloc(sizeof(char)*(mask.Width*2+1)*mask.Height);
+	int k =0;
+	for(int i =0; i<mask.Height; i++)
+	{
+		for(int j =0; j<mask.Width; j++)
+		{
+			ar[k++] = (char)maskOnCPU[j+i*mask.Width]?49:48;
+			ar[k++] = ' ';
+		}
+		ar[k++] = '\n';
+	}
+	fwrite(ar,sizeof(char),(mask.Width*2+1)*mask.Height,f);
+	fclose(f);
 }
 
 
-  int main(float* img, int xSizeImg, int ySizeImg, int windowSize, float weightConstant, int threshold)
+  int main()
   {
 	  //parameters
-	  float weightConstan = 0.3; 
+	  float weightConstant = 0.3; 
 	  int windowSize = 12;
 	  int threshold = 5;
 
@@ -142,7 +159,7 @@ void SaveMask()
 	  yKernel.Dispose();
 
 	  //average magnitude 
-	  float averege = GetAverageFromArray(magnitude);
+	  float average = GetAverageFromArray(magnitude);
 
 	  //dementions of mask
 	  int N = (int)ceil(((double)source.Width) / windowSize);
@@ -155,9 +172,10 @@ void SaveMask()
 
 		//mask creation
 		CUDAArray<bool> mask = CUDAArray<bool>(N,M);
-		cudaGetMask<<<gridSize, blockSize>>>(magnitude, mask, WindowSize, average*weightConstant);
+		cudaGetMask<<<gridSize, blockSize>>>(magnitude, mask, windowSize, average*weightConstant);
 		
-
-
+		//save mask
+		SaveMask(mask, "C:\\temp\\mask.txt");
+		mask.Dispose();
 		return 0;        
   }
