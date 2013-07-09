@@ -1,6 +1,6 @@
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
-
+#include "FieldFilling.h"
 
 __device__ int fmax(int a,int b) {
 	int result = a;
