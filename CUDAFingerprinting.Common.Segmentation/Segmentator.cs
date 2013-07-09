@@ -8,11 +8,13 @@ namespace CUDAFingerprinting.Common.Segmentation
 {
     public static class Segmentator
     {
-        private static bool[,] PrivateSegmetator(double[,] img, int windowSize, double weightConst, int threshold)
+        public static double[,] Segmetator(double[,] img, int windowSize, double weight, int threshold)
         {
             int[,] xGradients = OrientationFieldGenerator.GenerateXGradients(img.Select2D(a => (int)a));
             int[,] yGradients = OrientationFieldGenerator.GenerateYGradients(img.Select2D(a => (int)a));
-            double[,] magnitudes = xGradients.Select2D((value, x, y) => Math.Sqrt(xGradients[x, y] * xGradients[x, y] + yGradients[x, y] * yGradients[x, y]));
+            double[,] magnitudes =
+                xGradients.Select2D(
+                    (value, x, y) => Math.Sqrt(xGradients[x, y] * xGradients[x, y] + yGradients[x, y] * yGradients[x, y]));
             double averege = KernelHelper.Average(magnitudes);
             double[,] window = new double[windowSize, windowSize];
 
@@ -27,7 +29,7 @@ namespace CUDAFingerprinting.Common.Segmentation
                     window = window.Select2D((x, y, value) =>
                     {
                         if (i * windowSize + x >= magnitudes.GetLength(0)
-                           || j * windowSize + y >= magnitudes.GetLength(1))
+                            || j * windowSize + y >= magnitudes.GetLength(1))
                         {
                             return 0;
                         }
@@ -35,7 +37,7 @@ namespace CUDAFingerprinting.Common.Segmentation
                         return magnitudes[(int)(i * windowSize + x), j * windowSize + y];
                     });
 
-                    if (KernelHelper.Average(window) < averege * weightConst)
+                    if (KernelHelper.Average(window) < averege * weight)
                     {
                         mask[i, j] = false;
                     }
@@ -46,53 +48,9 @@ namespace CUDAFingerprinting.Common.Segmentation
                 }
             }
 
-            return PostProcessing(mask, threshold);
-        }
+            mask =  PostProcessing(mask, threshold);
 
-        public static double[,] Segmetator(double[,] img, int windowSize, double weightConstant, int threshold)
-        {
-            bool[,] mask = PrivateSegmetator(img, windowSize, weightConstant, threshold);
             return ColorImage(img, mask, windowSize);
-
-            /* double[,] weight = new double[img.GetLength(0), img.GetLength(1)];
-
-           weight = weight.Select2D(x => 1.0);
-            Tuple<int, int> averagePoint = FindAveragePoint(mask, img, windowSize);
-            int xGaussiana = (int)(img.GetLength(0) / 3);
-            int yGaussiana = (int)(img.GetLength(1) / 3);
-            double[,] gaussian = MakeGaussian((x, y) => (Gaussian.Gaussian2D(x, y, xGaussiana, yGaussiana) / Gaussian.Gaussian2D(0, 0, xGaussiana, yGaussiana)),
-                img.GetLength(0), img.GetLength(1), averagePoint.Item1, averagePoint.Item2);
-
-            weight = weight.Select2D((value, x, y) => weight[x,y] * gaussian[x, y]);
-            mask = PrivateSegmetator(img, windowSize, weightConstant, weight, threshold); */
-        }
-    
-
-        private static Tuple<int, int> FindAveragePoint(bool[,] mask, double[,] img, int windowSize)
-        {
-            int xLength = img.GetLength(0);
-            int yLength = img.GetLength(1);
-            int xAveragePoint = 0;
-            int yAveragePoint = 0;
-            int xBlock = 0;
-            int yBlock = 0;
-
-            for (int i = 0; i < xLength; i++)
-            {
-                for (int j = 0; j < yLength; j++)
-                {
-                    xBlock = (int)(((double)i) / windowSize);
-                    yBlock = (int)(((double)j) / windowSize);
-
-                    if (mask[xBlock, yBlock])
-                    {
-                        xAveragePoint += i;
-                        yAveragePoint += j;
-                    }
-                }
-            }
-
-            return new Tuple<int, int>(xAveragePoint / (xLength * yLength), yAveragePoint / (xLength * yLength));
         }
 
         private static double[,] ColorImage(double[,] img, bool[,] mask, int windowSize)
@@ -115,7 +73,8 @@ namespace CUDAFingerprinting.Common.Segmentation
 
             foreach (var blackArea in blackAreas)
             {
-                if (blackArea.Value.Count < threshold && !IsNearBorder(blackArea.Value, mask.GetLength(0), mask.GetLength(1)))
+                if (blackArea.Value.Count < threshold &&
+                    !IsNearBorder(blackArea.Value, mask.GetLength(0), mask.GetLength(1)))
                 {
                     toRestore.AddRange(blackArea.Value);
                 }
@@ -128,7 +87,8 @@ namespace CUDAFingerprinting.Common.Segmentation
 
             foreach (var imageArea in imageAreas)
             {
-                if (imageArea.Value.Count < threshold && !IsNearBorder(imageArea.Value, mask.GetLength(0), mask.GetLength(1)))
+                if (imageArea.Value.Count < threshold &&
+                    !IsNearBorder(imageArea.Value, mask.GetLength(0), mask.GetLength(1)))
                 {
                     toRestore.AddRange(imageArea.Value);
                 }
@@ -151,7 +111,7 @@ namespace CUDAFingerprinting.Common.Segmentation
                     {
                         continue;
                     }
-                    if (i - 1 >= 0 && !mask[i - 1, j]                   //left block is black
+                    if (i - 1 >= 0 && !mask[i - 1, j] //left block is black
                         && (j - 1 >= 0 && mask[i, j - 1] || j - 1 < 0)) //top block is not black or not exist
                     {
                         foreach (var area in areas)
@@ -163,7 +123,7 @@ namespace CUDAFingerprinting.Common.Segmentation
                         }
                         continue;
                     }
-                    if (j - 1 >= 0 && !mask[i, j - 1]                   //top block is black 
+                    if (j - 1 >= 0 && !mask[i, j - 1] //top block is black 
                         && (i - 1 >= 0 && mask[i - 1, j] || i - 1 < 0)) //left block is not black or not exist
                     {
                         foreach (var area in areas)
@@ -176,8 +136,8 @@ namespace CUDAFingerprinting.Common.Segmentation
                         continue;
 
                     }
-                    if (j - 1 >= 0 && !mask[i, j - 1]        //top block is black 
-                        && i - 1 >= 0 && !mask[i - 1, j])    //left block is black
+                    if (j - 1 >= 0 && !mask[i, j - 1] //top block is black 
+                        && i - 1 >= 0 && !mask[i - 1, j]) //left block is black
                     {
                         int areaNumberi = 0;
                         int areaNumberj = 0;
@@ -293,7 +253,7 @@ namespace CUDAFingerprinting.Common.Segmentation
                                          area.Item2 == 0 ||
                                          area.Item1 == xBorder ||
                                          area.Item2 == yBorder
-                                 ).Any();
+                ).Any();
         }
 
         private static bool[,] ChangeColor(List<Tuple<int, int>> areas, bool[,] mask)
@@ -306,17 +266,18 @@ namespace CUDAFingerprinting.Common.Segmentation
             return mask;
         }
 
-       /* static double[,] MakeGaussian(Func<float, float, double> function, int sizeX, int sizeY, int centerX, int centerY)
-        {
-            double[,] kernel = new double[sizeX, sizeY];
-            for (int x = -centerX; x < sizeX - centerX; x++)
-            {
-                for (int y = -centerY; y < sizeY - centerY; y++)
-                {
-                    kernel[centerX + x, centerY + y] = function(x, y);
-                }
-            }
-            return kernel;
-        } */
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
