@@ -106,6 +106,49 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             return result;
         }
 
+        public static double[,] GenerateBlur(double[,] smth, int step)
+        {
+            int maxY = smth.GetLength(0);
+            int maxX = smth.GetLength(1);
+            var result = new double[maxY, maxX];
+            var gKernel = GenerateGaussianKernel(sigma);
+            int size = gKernel.GetLength(0) / 2;
+
+            for (int i = 0; i < maxY; i++)
+            {
+                for (int j = 0; j < maxX; j++)
+                {
+                    for (int dy = -size; dy <= size; dy++)
+                    {
+                        for (int dx = -size; dx <= size; dx++)
+                        {
+                            int x = j + dx * step;
+                            int y = i + dy * step;
+                            double value = 0;
+                            if (x < 0 || x >= maxX || y < 0 || y >= maxY)
+                            {
+                                if ((x < 0 && y < 0) || (x >= maxX && y >= maxY) || (x >= maxX && y < 0) || (x < 0 && y >= maxY))
+                                    value = smth[y - 2 * dy * step, x - 2 * dx * step];
+                                else if (x < 0 || x >= maxX)
+                                    value = smth[y, x - 2 * dx * step];
+                                else
+                                    value = smth[y - 2 * dy * step, x];
+                            }
+                            else
+                                value = smth[y, x];
+                            result[i, j] += value * gKernel[dy + size, dx + size];
+                        }
+                    }
+                }
+            }
+
+
+
+
+            return result;
+        }
+
+
         // (x, y) pairs of continious vector field
         public static Tuple<double, double>[,] GenerateLowPassFilteredContiniousVectorField(int[,] image)
         {
@@ -121,9 +164,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                     cvf[i, j] = new Tuple<double, double>(Math.Cos(2 * lsq[i, j]), Math.Sin(2 * lsq[i, j]));
                 }
             }
-
-
-            return KernelHelper.Zip2D(GenerateBlur(cvf.Select2D(x => x.Item1)), GenerateBlur(cvf.Select2D(x => x.Item2)), (x, y) => new Tuple<double, double>(x, y));
+            return KernelHelper.Zip2D(GenerateBlur(cvf.Select2D(x => x.Item1), 2 * W), GenerateBlur(cvf.Select2D(x => x.Item2), 2 * W), 
+                (x, y) => new Tuple<double, double>(x, y));
         }
 
         public static double[,] GenerateLocalRidgeOrientation(int[,] image)

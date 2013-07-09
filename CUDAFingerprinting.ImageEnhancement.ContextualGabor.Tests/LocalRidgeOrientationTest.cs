@@ -31,7 +31,6 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
 
             var myLRO = OrientationFieldGenerator.GenerateLocalRidgeOrientation(img);
 
-            // My test
             int w = 16;
             for (int i = 0; i < (img.GetLength(0) / w); i++)
             {
