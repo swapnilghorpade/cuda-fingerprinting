@@ -33,9 +33,9 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
 
             // My test
             int w = 16;
-            for (int i = 0; i < (img.GetLength(0) / w - 1); i++)
+            for (int i = 0; i < (img.GetLength(0) / w); i++)
             {
-                for (int j = 0; j < (img.GetLength(1) / w - 1); j++)
+                for (int j = 0; j < (img.GetLength(1) / w); j++)
                 {
                     g.DrawString(Convert.ToInt32(myLRO[i * w + w / 2, j * w + w / 2] * 180 / Math.PI).ToString(),
                         new Font(FontFamily.GenericSansSerif, 10, FontStyle.Regular), new SolidBrush(Color.White),
