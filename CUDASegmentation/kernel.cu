@@ -18,7 +18,7 @@ typedef struct
 		Point* Points;
 	} AreaStruct;
   			
- __device__ int defaultRow()
+ /*__device__ int defaultRow()
 {
 	return blockIdx.y*blockDim.y+threadIdx.y;
 }
@@ -29,7 +29,7 @@ __device__ int defaultColumn()
 }
 
  static int defaultThreadCount = 32;
- 
+ */
 
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
 {
@@ -196,7 +196,7 @@ void SaveMask(CUDAArray<bool> mask, const char* name)
 		CUDAArray<bool> mask = CUDAArray<bool>(N,M);
 		cudaGetMask<<<gridSize, blockSize>>>(magnitude, mask, windowSize, average*weightConstant);
 		
-//save mask
+		//save mask
 		SaveMask(mask, "C:\\temp\\mask.txt");
 		mask.Dispose();
 return 0;
