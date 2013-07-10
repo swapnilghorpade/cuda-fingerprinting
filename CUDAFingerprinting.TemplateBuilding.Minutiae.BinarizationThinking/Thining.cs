@@ -55,12 +55,14 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
         {
             
             double[,] picture = new double[newPicture.GetLength(0) + 2,newPicture.GetLength(1) + 2];
-
+            double[,] pictureToRemove = new double[newPicture.GetLength(0) + 2, newPicture.GetLength(1) + 2];
+            bool hasChanged;
             for (int i = 0; i < picture.GetLength(1); i++)
             {
                 for (int j = 0; j < picture.GetLength(0); j++)
                 {
                     picture[j, i] = 255;
+                    pictureToRemove[j, i] = 0;
                 }
             }
 
@@ -79,31 +81,61 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                     picture[j, i] = picture[j, i] == 0 ? picture[j, i] = 1 : picture[j, i] = 0;   //Черным клеткам присваиваем значения 1, белым - 0;
                 }
             }
-            for (int i = 0; i < newPicture.GetLength(1); i++)
+            do
             {
-                for (int j = 0; j < newPicture.GetLength(0); j++)
+                hasChanged = false;
+                for (int i = 0; i < newPicture.GetLength(1); i++)
                 {
-                    if ((picture[j, i] == 1) && (2 <= B(picture, j, i)) && (B(picture, j, i) <= 6) && (A(picture, j, i) == 1) &&     //Непосредственное удаление точки, см. Zhang-Suen thinning algorithm, http://www-prima.inrialpes.fr/perso/Tran/Draft/gateway.cfm.pdf
-                        (picture[j, i - 1]*picture[j + 1, i]*picture[j, i + 1] == 0) &&
-                        (picture[j + 1, i]*picture[j, i + 1]*picture[j - 1, i] == 0))
+                    for (int j = 0; j < newPicture.GetLength(0); j++)
                     {
-                        picture[j, i] = 0;
+                        if ((picture[j, i] == 1) && (2 <= B(picture, j, i)) && (B(picture, j, i) <= 6) && (A(picture, j, i) == 1) &&                          //Непосредственное удаление точки, см. Zhang-Suen thinning algorithm, http://www-prima.inrialpes.fr/perso/Tran/Draft/gateway.cfm.pdf
+                            (picture[j, i - 1] * picture[j + 1, i] * picture[j, i + 1] == 0) &&
+                            (picture[j + 1, i] * picture[j, i + 1] * picture[j - 1, i] == 0))
+                        {
+                            pictureToRemove[j, i] = 1;
+                            hasChanged = true;
+                        }
                     }
                 }
-            }
-            for (int i = 0; i < newPicture.GetLength(1); i++)
-            {
-                for (int j = 0; j < newPicture.GetLength(0); j++)
+                for (int i = 0; i < newPicture.GetLength(1); i++)
                 {
-                    if ((picture[j, i] == 1) && (2 <= B(picture, j, i)) && (B(picture, j, i) <= 6) && (A(picture, j, i) == 1) &&
-                        (picture[j, i - 1] * picture[j + 1, i] * picture[j - 1, i] == 0) &&
-                        (picture[j, i - 1] * picture[j, i + 1] * picture[j - 1, i] == 0))
+                    for (int j = 0; j < newPicture.GetLength(0); j++)
                     {
-                        picture[j, i] = 0;
+                        if (pictureToRemove[j, i] == 1)
+                        {
+                            picture[j, i] = 0;
+                            pictureToRemove[j, i] = 0;
+                        }
                     }
                 }
-            }
-            
+                for (int i = 0; i < newPicture.GetLength(1); i++)
+                {
+                    for (int j = 0; j < newPicture.GetLength(0); j++)
+                    {
+                        if ((picture[j, i] == 1) && (2 <= B(picture, j, i)) && (B(picture, j, i) <= 6) &&
+                            (A(picture, j, i) == 1) &&
+                            (picture[j, i - 1] * picture[j + 1, i] * picture[j - 1, i] == 0) &&
+                            (picture[j, i - 1] * picture[j, i + 1] * picture[j - 1, i] == 0))
+                        {
+                            pictureToRemove[j, i] = 1;
+                            hasChanged = true;
+                        }
+                    }
+                }
+
+                for (int i = 0; i < newPicture.GetLength(1); i++)
+                {
+                    for (int j = 0; j < newPicture.GetLength(0); j++)
+                    {
+                        if (pictureToRemove[j, i] == 1)
+                        {
+                            picture[j, i] = 0;
+                            pictureToRemove[j, i] = 0;
+                        }
+                    }
+                }
+            } while (hasChanged);
+
             for (int i = 0; i < newPicture.GetLength(1); i++)
             {
                 for (int j = 0; j < newPicture.GetLength(0); j++)
@@ -116,6 +148,18 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                     }
                 }
             }
+
+
+            //for (int j = 0; j < newPicture.GetLength(0); j++)
+            //{
+            //    for (int i = 0; i < newPicture.GetLength(1); i++)
+            //    {
+            //        System.Console.Write(picture[j, i] + " ");
+            //    }
+            //    System.Console.WriteLine("\n");
+            //}
+                
+
             for (int i = 0; i < picture.GetLength(1); i++)
             {
                 for (int j = 0; j < picture.GetLength(0); j++)
