@@ -8,8 +8,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 {
     public static class OrientationFieldGenerator
     {
-        // Half of the frame's size for square estimate
-        private const int W = 8;
+        // frame's size for square estimate
+        private const int W = 17;
         // Sigma of Gaussian's blur
         // from 0.34 to 0.65 for recommended size of low-pass filter
         private const double sigma = 0.65; 
@@ -31,9 +31,9 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                     double vx = 0;
                     double vy = 0;
 
-                    for (int dy = -W; dy <= W; dy++)
+                    for (int dy = -W / 2; dy < W / 2; dy++)
                     {
-                        for (int dx = -W; dx <= W; dx++)
+                        for (int dx = -W / 2; dx <= W / 2; dx++)
                         {
                             int y = i + dy;
                             int x = j + dx;
@@ -45,9 +45,11 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                             }
                         }
                     }
+                   // result[i, j] = (0.5 * Math.Atan2(vy, vx) >= 0) ? 0.5 * Math.Atan2(vy, vx) : 0.5 * Math.Atan2(vy, vx) + 2 * Math.PI;
                     result[i, j] = 0.5 * Math.Atan2(vy, vx);
                 }
             }
+
             return result;
         }
 
@@ -73,7 +75,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             int maxY = smth.GetLength(0);
             int maxX = smth.GetLength(1);
             var result = new double[maxY, maxX];
-            var gKernel = GenerateGaussianKernel(sigma);
+            var gKernel = GenerateGaussianKernel(sigma); 
+            
             int size = gKernel.GetLength(0) / 2;
 
             for (int i = 0; i < maxY; i++)
@@ -106,6 +109,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             return result;
         }
 
+        // Blur with some fixed step (use for frame's blur)
         public static double[,] GenerateBlur(double[,] smth, int step)
         {
             int maxY = smth.GetLength(0);
@@ -141,10 +145,6 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                     }
                 }
             }
-
-
-
-
             return result;
         }
 
@@ -164,7 +164,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                     cvf[i, j] = new Tuple<double, double>(Math.Cos(2 * lsq[i, j]), Math.Sin(2 * lsq[i, j]));
                 }
             }
-            return KernelHelper.Zip2D(GenerateBlur(cvf.Select2D(x => x.Item1), 2 * W), GenerateBlur(cvf.Select2D(x => x.Item2), 2 * W), 
+            return KernelHelper.Zip2D(GenerateBlur(cvf.Select2D(x => x.Item1), W), GenerateBlur(cvf.Select2D(x => x.Item2), W), 
                 (x, y) => new Tuple<double, double>(x, y));
         }
 

@@ -158,6 +158,8 @@ namespace CUDAFingerprinting.Common.OrientationField
                             if (result[x, y] > Math.PI) result[x, y] -= Math.PI;
                             if (double.IsNaN(xx) || double.IsNaN(yy)) 
                                 result[x, y] = double.NaN;
+                            if (result[x, y] != double.NaN)
+                                result[x, y] += Math.PI / 2;
                         }
                         
                     }

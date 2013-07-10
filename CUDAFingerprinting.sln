@@ -71,6 +71,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDAThining", "CUDAThining\
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDASegmentation", "CUDASegmentation\CUDASegmentation.vcxproj", "{54E311BD-F946-4615-A3A8-443AC8D76F45}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests", "CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests\CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests.csproj", "{2903088B-5258-448A-B107-32B5C8D78C73}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -371,6 +373,18 @@ Global
 		{54E311BD-F946-4615-A3A8-443AC8D76F45}.Release|Win32.ActiveCfg = Release|Win32
 		{54E311BD-F946-4615-A3A8-443AC8D76F45}.Release|Win32.Build.0 = Release|Win32
 		{54E311BD-F946-4615-A3A8-443AC8D76F45}.Release|x86.ActiveCfg = Release|Win32
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Debug|Win32.ActiveCfg = Debug|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Release|Win32.ActiveCfg = Release|Any CPU
+		{2903088B-5258-448A-B107-32B5C8D78C73}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -406,5 +420,6 @@ Global
 		{F2CF4953-53C3-4BDD-BAD5-C93D65E3F47C} = {035755C9-6E6C-4124-A5B3-A5E9D5F5DA21}
 		{52391E9E-C750-4C33-BB5D-118555C98C80} = {035755C9-6E6C-4124-A5B3-A5E9D5F5DA21}
 		{40003687-EBA3-4E83-8076-357F83F89C70} = {035755C9-6E6C-4124-A5B3-A5E9D5F5DA21}
+		{2903088B-5258-448A-B107-32B5C8D78C73} = {035755C9-6E6C-4124-A5B3-A5E9D5F5DA21}
 	EndGlobalSection
 EndGlobal
