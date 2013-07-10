@@ -44,7 +44,9 @@ public:
 		cudaError_t error = cudaMallocPitch((void**)&cudaPtr, &Stride, Width*sizeof(T), Height);
 		error = cudaDeviceSynchronize();
 		deviceStride = Stride/sizeof(T);
-		 error = cudaDeviceSynchronize();
+		error = cudaMemcpy2D(cudaPtr, Stride, cpuPtr, Width*sizeof(T), 
+			Width*sizeof(T), Height, cudaMemcpyHostToDevice);
+		error = cudaDeviceSynchronize();
 		error = cudaGetLastError();
 	}
 
