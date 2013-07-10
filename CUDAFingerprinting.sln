@@ -48,7 +48,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{035755C9
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking", "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.csproj", "{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests", "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests.csproj", "{F2CF4953-53C3-4BDD-BAD5-C93D65E3F47C}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThining.Tests", "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThining.Tests.csproj", "{F2CF4953-53C3-4BDD-BAD5-C93D65E3F47C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.ImageEnhancement.ContextualGabor", "CUDAFingerprinting.ImageEnhancement.ContextualGabor\CUDAFingerprinting.ImageEnhancement.ContextualGabor.csproj", "{8E0B3659-1BED-4580-B777-FE45D6840175}"
 EndProject
@@ -62,7 +62,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.Common.S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.Common.ConvexHull.Test", "CUDAFingerprinting.Common.ConvexHull.Test\CUDAFingerprinting.Common.ConvexHull.Test.csproj", "{40003687-EBA3-4E83-8076-357F83F89C70}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDAConvexHull", "CUDAConvexHull\CUDAConvexHull.vcxproj", "{EE1897E3-C25D-468E-855D-F9C6F8890D47}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDAConvexHull", "CUDAConvexHull\CUDAConvexHull.vcxproj", "{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}"
 	ProjectSection(ProjectDependencies) = postProject
 		{37C1F4E0-0285-4816-97B8-C7140EC0FD88} = {37C1F4E0-0285-4816-97B8-C7140EC0FD88}
 	EndProjectSection
@@ -337,18 +337,18 @@ Global
 		{40003687-EBA3-4E83-8076-357F83F89C70}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{40003687-EBA3-4E83-8076-357F83F89C70}.Release|Win32.ActiveCfg = Release|Any CPU
 		{40003687-EBA3-4E83-8076-357F83F89C70}.Release|x86.ActiveCfg = Release|Any CPU
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Debug|Any CPU.ActiveCfg = Debug|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Debug|Mixed Platforms.Build.0 = Debug|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Debug|Win32.ActiveCfg = Debug|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Debug|Win32.Build.0 = Debug|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Debug|x86.ActiveCfg = Debug|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Release|Any CPU.ActiveCfg = Release|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Release|Mixed Platforms.ActiveCfg = Release|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Release|Mixed Platforms.Build.0 = Release|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Release|Win32.ActiveCfg = Release|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Release|Win32.Build.0 = Release|Win32
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47}.Release|x86.ActiveCfg = Release|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Debug|Mixed Platforms.Build.0 = Debug|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Debug|Win32.Build.0 = Debug|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Debug|x86.ActiveCfg = Debug|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Release|Any CPU.ActiveCfg = Release|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Release|Mixed Platforms.ActiveCfg = Release|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Release|Mixed Platforms.Build.0 = Release|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Release|Win32.ActiveCfg = Release|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Release|Win32.Build.0 = Release|Win32
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19}.Release|x86.ActiveCfg = Release|Win32
 		{4E94B69F-754B-4463-B141-B03DC58B1FBC}.Debug|Any CPU.ActiveCfg = Debug|Win32
 		{4E94B69F-754B-4463-B141-B03DC58B1FBC}.Debug|Mixed Platforms.ActiveCfg = Debug|Win32
 		{4E94B69F-754B-4463-B141-B03DC58B1FBC}.Debug|Mixed Platforms.Build.0 = Debug|Win32
@@ -399,7 +399,7 @@ Global
 		{0BA2BA9A-687E-41D5-9564-653667A3323B} = {CBFC5374-A7E8-4511-BDDF-431518148856}
 		{98E3BD2D-0774-472E-A5F7-4E8EC945D651} = {CBFC5374-A7E8-4511-BDDF-431518148856}
 		{37C1F4E0-0285-4816-97B8-C7140EC0FD88} = {CBFC5374-A7E8-4511-BDDF-431518148856}
-		{EE1897E3-C25D-468E-855D-F9C6F8890D47} = {CBFC5374-A7E8-4511-BDDF-431518148856}
+		{DFCC03EF-43BB-4A04-841F-8636AF1DDA19} = {CBFC5374-A7E8-4511-BDDF-431518148856}
 		{4E94B69F-754B-4463-B141-B03DC58B1FBC} = {CBFC5374-A7E8-4511-BDDF-431518148856}
 		{54E311BD-F946-4615-A3A8-443AC8D76F45} = {CBFC5374-A7E8-4511-BDDF-431518148856}
 		{5EEC4BD2-E1B0-4794-948A-45732CD41F99} = {E1D96C30-1596-4CC9-8F10-31335FD69F87}
