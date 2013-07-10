@@ -18,7 +18,6 @@ typedef struct
 		Point* Points;
 	} AreaStruct;
   			
-/*
 bool IsNearBorder(Point* points, int size, int xBorder, int yBorder)
 {
 	for (int i = 0; i < size; i++)
@@ -35,11 +34,20 @@ bool IsNearBorder(Point* points, int size, int xBorder, int yBorder)
 	return false;
 }
 
-void MergeAreas(AreaStruct* areas, AreaStruct initialValue, int maskX, int areasSize, int i, int j, int areaIndex)
+void AddPointToArea(CUDAArray<AreaStruct> areas, int areaNumber, int pointNumber, Point newPoint)
+{
+	AreaStruct area = areas.At(areaNumber, 1);
+
+	area.Points[area.AreaSize] = newPoint;
+	area.AreaSize++;
+	areas.SetAt(areaNumber, 1, area);
+}
+
+void MergeAreas(CUDAArray<AreaStruct> areas, AreaStruct initialValue, int maskX, int areasSize, int i, int j, int areaIndex)
 {
 	int areaNumberi = 0;
 	int areaNumberj = 0;
-	AreaStruct area = areas[j*maskX + i];
+	AreaStruct area = areas.At(j*maskX + i, 1);
 
 	for (int k = 0; k < areasSize; k++)
 	{
@@ -55,22 +63,24 @@ void MergeAreas(AreaStruct* areas, AreaStruct initialValue, int maskX, int areas
                        
 	if (areaNumberi != areaNumberj)
 	{
-		for (int k = 0; k < areas[areaNumberj].AreaSize; k++)
+		for (int k = 0; k < (areas.At(areaNumberj, 1)).AreaSize; k++)
 		{
-			areas[areaNumberi].Points[areas[areaNumberi].AreaSize++] 
-				= areas[areaNumberj].Points[k];
+			AddPointToArea(areas, areaNumberi, 
+				(areas.At(areaNumberi, 1)).AreaSize, 
+				(areas.At(areaNumberj, 1)).Points[k]
+			);
 		}
 
-		areas[areaNumberj] = initialValue;
+		areas.SetAt(areaNumberj, 1, initialValue);
 
 		for (int k = areaNumberj + 1; k < areaIndex; k++)
 		{
-			areas[k-1] = areas[k];
+			areas.SetAt(k-1, 1, areas.At(k, 1));
 		}
 	}
     
 	Point p = {i,j};
-	areas[areaNumberi].Points[areas[areaNumberi].AreaSize++] = p;
+	AddPointToArea(areas, areaNumberi, (areas.At(areaNumberi, 1)).AreaSize, p);
 }
 
 bool IsLeftImageTopBlack(int i, int j, bool topValue, bool leftValue, bool isBlack) 
@@ -91,31 +101,32 @@ bool IsLeftBlackTopBlack(int i, int j, bool topValue, bool leftValue, bool isBla
             i - 1 >= 0 && (leftValue || isBlack) && !(leftValue && isBlack));					//left block is black
 }
 
-AreaStruct MakeInitialValue(AreaStruct* areas, Point* initialPoints, int areasSize)
+AreaStruct MakeInitialValue(CUDAArray<AreaStruct> areas, CUDAArray<Point> initialPoints, int areasSize)
 {
 	Point point = {-1,-1};
 	cudaError_t cudaStatus;
 
 	for (int i = 0; i < areasSize; i++)
 	{
-		initialPoints[i] = point;
+		initialPoints.SetAt(i, 1, point);
 	}
 
-	AreaStruct initialValue = {-1, 0, initialPoints};
+	AreaStruct initialValue = {-1, 0, initialPoints.GetData()};
 	
 	for (int i = 0; i < areasSize; i++)
 	{
-		areas[i] = initialValue;
+		areas.SetAt(i, 1, initialValue);
 	}
 
 	return initialValue;
 }
 
-__global__ void fillArea(AreaStruct* dev_areas, int areasSize, int maskX, int iSearch, int jSearch, int i, int j, bool isFirst)
+__global__ void fillArea(CUDAArray<AreaStruct> areas, int areasSize, int maskX, int iSearch, int jSearch, int i, int j, bool isFirst)
 {
     int columnX = defaultColumn();
 	int rowY = defaultRow();
-	AreaStruct area =  dev_areas[rowY*maskX + columnX];
+	AreaStruct area = areas.At(rowY*maskX + columnX, 1);
+	AreaStruct toSetArea;
 
 	if (isFirst)
 	{
@@ -130,59 +141,39 @@ __global__ void fillArea(AreaStruct* dev_areas, int areasSize, int maskX, int iS
 			area.Points[area.AreaSize + 1].X = i;
 			area.Points[area.AreaSize + 1].Y = j;
 			area.AreaNumber++;
-			dev_areas[columnX*maskX + rowY].Points = area.Points;
+			toSetArea = areas.At(columnX*maskX + rowY, 1);
+			toSetArea.Points = area.Points;
+			areas.SetAt(columnX*maskX + rowY, 1, toSetArea);
 			return;
 		}
 	}
 }
 
-AreaStruct* GenerateAreas(bool* mask, int maskX, int maskY, bool isBlack)
+CUDAArray<AreaStruct> GenerateAreas(CUDAArray<bool> mask, int maskX, int maskY, bool isBlack)
 {
 	int areasSize = maskX * maskY + 1;
 	int areaIndex = 0;
 	bool isLeftImageTopBlack, isLeftBlackTopImage, isLeftBlackTopBlack;
-	AreaStruct* areas = 0;
-	AreaStruct* dev_areas = 0;
-	Point* initialPoints = 0;
-	cudaError_t cudaStatus;
-
-	cudaStatus = cudaMalloc((void**)initialPoints, areasSize * sizeof(Point));
-	if (cudaStatus != cudaSuccess) 
-	{
-		fprintf(stderr, "cudaMalloc failed!");
-		//goto Error;
-	}
-
+	CUDAArray<AreaStruct> areas = CUDAArray<AreaStruct>(areasSize, 1);
+	CUDAArray<Point> initialPoints = CUDAArray<Point>(areasSize, 1);
 	AreaStruct initialValue = MakeInitialValue(areas, initialPoints, areasSize);
+	cudaError_t cudaStatus;
 
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
 	dim3 gridSize = dim3(ceilMod(maskX,defaultThreadCount), ceilMod(maskY,defaultThreadCount));
-	
-	cudaStatus = cudaMalloc((void**)areas, areasSize * sizeof(AreaStruct));
-    if (cudaStatus != cudaSuccess) 
-	{
-		fprintf(stderr, "cudaMalloc failed!");
-		//goto Error;
-	}
-
-	cudaStatus = cudaMalloc((void**)&dev_areas, areasSize * sizeof(AreaStruct));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-       // goto Error;
-    }
 	
 	for (int i = 0; i < maskX; i++)
     {
 		for (int j = 0; j < maskY; j++)
         {
-			if (!mask[i, j] && isBlack || mask[i, j] && !isBlack)
+			if (!mask.At(i, j) && isBlack || mask.At(i, j) && !isBlack)
             {
 				continue;
             }
 			
-			isLeftBlackTopImage = IsLeftBlackTopImage(i, j, mask[i, j - 1], mask[i - 1, j], isBlack);
-			isLeftImageTopBlack = IsLeftImageTopBlack(i, j, mask[i, j - 1], mask[i - 1, j], isBlack);
-			isLeftBlackTopBlack = IsLeftBlackTopBlack(i, j, mask[i, j - 1], mask[i - 1, j], isBlack);
+			isLeftBlackTopImage = IsLeftBlackTopImage(i, j, mask.At(i, j - 1), mask.At(i - 1, j), isBlack);
+			isLeftImageTopBlack = IsLeftImageTopBlack(i, j, mask.At(i, j - 1), mask.At(i - 1, j), isBlack);
+			isLeftBlackTopBlack = IsLeftBlackTopBlack(i, j, mask.At(i, j - 1), mask.At(i - 1, j), isBlack);
 
 			if (isLeftBlackTopBlack)
             {
@@ -194,136 +185,82 @@ AreaStruct* GenerateAreas(bool* mask, int maskX, int maskY, bool isBlack)
 
 			if (isLeftBlackTopImage || isLeftImageTopBlack)
             {
-				cudaStatus = cudaMemcpy(dev_areas, areas, areasSize * sizeof(AreaStruct), cudaMemcpyHostToDevice);
-				if (cudaStatus != cudaSuccess) 
-				{
-					fprintf(stderr, "cudaMemcpy failed!");
-					// goto Error;
-				}
-				
 				if (isLeftBlackTopImage)
 				{
-					fillArea<<<gridSize, blockSize>>>(dev_areas, areasSize, maskX, i-1, j, i, j, true);
+					fillArea<<<gridSize, blockSize>>>(areas, areasSize, maskX, i-1, j, i, j, true);
 				}
 				else
 				{
-					fillArea<<<gridSize, blockSize>>>(dev_areas, areasSize, maskX, i, j-1, i, j, false);
-				}
-
-				cudaStatus = cudaDeviceSynchronize();
-				if (cudaStatus != cudaSuccess) {
-					fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching fillArea!\n", cudaStatus);
-				   // goto Error;
-				}
-
-				cudaStatus = cudaMemcpy(areas, dev_areas, areasSize * sizeof(AreaStruct), cudaMemcpyDeviceToHost);
-				if (cudaStatus != cudaSuccess) {
-					fprintf(stderr, "cudaMemcpy failed!");
-				   // goto Error;
+					fillArea<<<gridSize, blockSize>>>(areas, areasSize, maskX, i, j-1, i, j, false);
 				}
 
                 continue;
             }
-			
+
 			Point newPoint = {i, j};
-			Point* newPoints = 0;
-			cudaStatus = cudaMalloc((void**)newPoints, areasSize * sizeof(Point));
-			newPoints[0] = newPoint;
-			AreaStruct newArea = {areaIndex, 1, newPoints};
-			areas[areaIndex++] = newArea;
+			Point emptyPoint = {0, 0};
+			initialPoints.SetAt(0,1, newPoint);
+			AreaStruct newArea = {areaIndex, 1, initialPoints.GetData()};
+			areas.SetAt(areaIndex++, 1, newArea);
+			initialPoints.SetAt(0,1, emptyPoint);
 		}
 	}
 
-	cudaFree(dev_areas);
-	cudaFree(initialPoints);
+	initialPoints.Dispose();
 	
 	return areas;
 } 
 
-__global__ void changeColor(bool* dev_mask, Point* dev_toRestore, int toRestoreCounter)
+__global__ void changeColor(CUDAArray<bool> mask, CUDAArray<Point> toRestore, int toRestoreCounter)
 {
 	// coordinates of points in dev_toRestores
 	int columnX = blockIdx.x*blockIdx.y*blockDim.x+threadIdx.y*blockDim.x + threadIdx.x;  
-	Point point = dev_toRestore[columnX];
+	Point point = toRestore.At(columnX, 1);
 	
-	dev_mask[point.X, point.Y] = !dev_mask[point.X, point.Y];
+	mask.SetAt(point.X, point.Y, !(mask.At(point.X, point.Y)));
 }
 
-CUDAArray<bool> FillAreas(AreaStruct* areas, CUDAArray<bool> mask, int maskX, int maskY, int threshold)
+CUDAArray<bool> FillAreas(CUDAArray<AreaStruct> areas, CUDAArray<bool> mask, int maskX, int maskY, int threshold)
 {
-	CUDAArray<Point, 1> toRestore = CUDAArray,; ////
-	Point* dev_toRestore = 0;
-	CUDAArray<bool> dev_mask = 0;
 	int maskSize = maskX*maskY + 1;
 	int toRestoreCounter = 0;
 	int newRestorePoints = 0;
 	cudaError_t cudaStatus;
-
-	cudaStatus = cudaMalloc((void**)toRestore, maskSize * sizeof(Point));
-	if (cudaStatus != cudaSuccess) 
-	{
-		fprintf(stderr, "cudaMalloc failed!");
-		//goto Error;
-	}
-
+	CUDAArray<Point> toRestore = CUDAArray<Point>(maskSize, 1);
+		
 	for(int i = 0; i < maskSize; i++)
 	{
 		newRestorePoints = 0;
 
-		if (areas[i].AreaSize < threshold && !IsNearBorder(areas[i].Points, areas[i].AreaSize, maskX, maskY))
+		if ((areas.At(i,1)).AreaSize < threshold && 
+			!IsNearBorder((areas.At(i,1)).Points, (areas.At(i,1)).AreaSize, maskX, maskY))
         {
-			while(newRestorePoints <= areas[i].AreaSize)
+			while(newRestorePoints <= (areas.At(i,1)).AreaSize)
 			{
-				toRestore[toRestoreCounter++] = areas[i].Points[newRestorePoints];
+				toRestore.SetAt(toRestoreCounter, 1, (areas.At(i, 1)).Points[newRestorePoints]); 
+				toRestoreCounter++;
 			}
 		}
 	}
 
-	cudaStatus = cudaMalloc((void**)&dev_toRestore, maskSize * sizeof(Point));
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
-       // goto Error;
-    }
-
-	 cudaStatus = cudaMemcpy(dev_toRestore, toRestore, maskSize * sizeof(Point), cudaMemcpyHostToDevice);
-    if (cudaStatus != cudaSuccess) {
-        printf("cudaMemcpy failed!");
-    }
-
 	dim3 blockSize = dim3(defaultThreadCount, defaultThreadCount);
 	dim3 gridSize = dim3(ceilMod(toRestoreCounter, defaultThreadCount));
 
-	changeColor<<<gridSize, blockSize>>>(mask, dev_toRestore, toRestoreCounter);
-
-	cudaStatus = cudaDeviceSynchronize();
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching changeColor!\n", cudaStatus);
-       // goto Error;
-    }
-
-    cudaStatus = cudaMemcpy(mask, dev_mask, maskSize * sizeof(bool), cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-       // goto Error;
-    }
-
-	cudaFree(toRestore);
-	cudaFree(dev_toRestore);
-	cudaFree(dev_mask);
+	changeColor<<<gridSize, blockSize>>>(mask, toRestore, toRestoreCounter);
+	toRestore.Dispose();
 
 	return mask;
 }
 
 CUDAArray<bool> PostProcessing(CUDAArray<bool> mask, int maskX, int maskY, int threshold)
 {
-	AreaStruct* blackAreas = GenerateAreas(mask, maskX, maskY, true);
+	CUDAArray<AreaStruct> blackAreas = GenerateAreas(mask, maskX, maskY, true);
 	mask = FillAreas(blackAreas, mask, maskX, maskY, threshold);
-	AreaStruct* imageAreas = GenerateAreas(mask, maskX, maskY, false);
+	CUDAArray<AreaStruct> imageAreas = GenerateAreas(mask, maskX, maskY, false);
 	mask = FillAreas(imageAreas, mask, maskX, maskY, threshold);
 
 	return mask;
 }
-*/
 
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
 {
@@ -549,4 +486,5 @@ void SaveMask(CUDAArray<bool> mask, const char* name)
 
 		return 0;
 }
+
 
