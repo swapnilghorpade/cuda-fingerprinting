@@ -4,6 +4,8 @@
 #include "device_launch_parameters.h"
 #include <float.h>
 #include <stdlib.h>
+#include <stdio.h>
+
 
 static int defaultThreadCount = 32;
 
