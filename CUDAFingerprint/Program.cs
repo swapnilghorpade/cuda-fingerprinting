@@ -55,7 +55,7 @@ namespace CUDAFingerprint
         private static extern void sortArrayAndIndexes(float[] arr, int[] arrIndexes, int amount);
 
         [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void BuildHull(int[] arr, int NoM, int[] Hull);
+        private static extern void BuildHull(int[] arr, int NoM, int[] Hull,int NHull);
 
         [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void FieldFilling(bool[] field,int rows, int columns,int[] arr, int NoM);
@@ -67,6 +67,7 @@ namespace CUDAFingerprint
             // TestQuality();
             // TestTimings();
             TestSorting();
+            //TestHull();
         }
 
         private static void TestSorting()
@@ -365,5 +366,52 @@ namespace CUDAFingerprint
             Console.WriteLine("Done");
             Console.ReadKey();
         }
+
+        /*private static void TestHull()
+        {
+            Random r = new Random();
+            int rows = r.Next();
+            int columns = r.Next();
+            Console.WriteLine("rows: {0}; columns: {1}", rows, columns);
+            int NoM = r.Next();
+            while (NoM == 0)
+                NoM = r.Next();
+            int[] arr = new int[2*NoM];
+            for (int i = 0; i < NoM; i++)
+            {
+                arr[2*i] = r.Next();
+                arr[2*i + 1] = r.Next();
+                bool repeat = false;
+                for (int j = i - 1; j >= 0; j--)
+                {
+                    if ((arr[2*i] == arr[2*j]) && (arr[2*i + 1] == arr[2*j + 1]))
+                        repeat = true;
+                }
+                while (repeat)
+                {
+                    arr[2*i] = r.Next(0,rows-1);
+                    arr[2*i + 1] = r.Next(0,columns-1);
+                    repeat = false;
+                    for (int j = i - 1; j >= 0; j--)
+                    {
+                        if ((arr[2*i] == arr[2*j]) && (arr[2*i + 1] == arr[2*j + 1]))
+                            repeat = true;
+                    }
+                }
+            }
+            Console.WriteLine("Minutiae:");
+            for (int i = 0; i < NoM; i++)
+            {
+                Console.WriteLine("{0} {1}", arr[2*i], arr[2*i + 1]);
+            }
+            int[] Hull = new int[2*NoM];
+            int NHull = NoM;
+            BuildHull(arr,NoM,Hull,NHull);
+            Console.WriteLine("Hull:");
+            for (int i = 0; i < NHull; i++)
+            {
+                Console.WriteLine("{0} {1}", Hull[2 * i], Hull[2 * i + 1]);
+            }
+        }*/
     }
 }

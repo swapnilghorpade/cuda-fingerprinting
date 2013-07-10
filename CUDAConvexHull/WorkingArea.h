@@ -34,7 +34,9 @@ void BuildWorkingArea(bool *field,int rows,int columns,int radius) {
 	cudaMalloc(&dev_NewField,rows*columns*sizeof(bool));
 	cudaMemcpy(dev_field,field,(size_t)(rows * columns * sizeof(bool)), cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_NewField,field,(size_t)(rows * columns * sizeof(bool)), cudaMemcpyHostToDevice);
+	cudaSetDevice(0);
 	FindArea<<<rows,columns>>>(dev_field,dev_NewField,radius,rows,columns);
+	cudaDeviceReset();
 	cudaMemcpy(field,dev_NewField,(size_t)(rows * columns * sizeof(bool)), cudaMemcpyDeviceToHost);
 	cudaFree(dev_field);
 	cudaFree(dev_NewField);

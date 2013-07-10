@@ -4,6 +4,7 @@
 
 int main()
 {
+
 	/*int N;
 	printf("Enter amount of Minutiae: ");
 	scanf("%d",&N);

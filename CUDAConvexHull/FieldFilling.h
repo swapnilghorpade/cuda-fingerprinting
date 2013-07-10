@@ -19,7 +19,9 @@ void FieldFilling(bool *field,int rows, int columns,int *arr, int N) {
 	Point *dev_Hull;
 	cudaMalloc(&dev_Hull,NHull*sizeof(Point));
 	cudaMemcpy(dev_Hull,Hull,(size_t)(NHull * sizeof(Point)), cudaMemcpyHostToDevice);
+	cudaSetDevice(0);
     Fill<<<rows,columns>>>(dev_field,dev_Hull,NHull);
+	cudaDeviceReset();
 	cudaMemcpy(field,dev_field,(size_t)((rows*columns) * sizeof(bool)), cudaMemcpyDeviceToHost);
 	cudaFree(dev_field);
 	cudaFree(dev_Hull);
