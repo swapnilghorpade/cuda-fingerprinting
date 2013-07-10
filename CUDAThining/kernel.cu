@@ -182,20 +182,20 @@ __global__ void ThiningPictureWithCUDA3(int* newPicture, int *picture ,size_t pi
     //if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
 	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
 	{           
-		if ((picture[x + y*rowWidthInElements] == 1) &&
-            (((picture[x, (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] == 1) && (picture[x - 1 + (y + 1)*rowWidthInElements] != 1)) || ((picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] == 1) && (picture[x - 1 + (y - 1)*rowWidthInElements] != 1)) ||      //Íåáîëüøàÿ ìîäèôèêöàèÿ àëãîðèòìà äëÿ åù¸ áîëüøåãî óòîíüøåíèÿ
-            ((picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y - 1)*rowWidthInElements] != 1)) || ((picture[x + (y - 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y + 1)*rowWidthInElements] != 1))))
-        {
-            picture[x + y*rowWidthInElements] = 0;
-        }
-
-
-		//if ((picture[x, y] == 1) &&
-		//   (((picture[x, y - 1] * picture[x + 1, y] == 1) && (picture[x - 1, y + 1] != 1)) || ((picture[x + 1, y] * picture[x, y + 1] == 1) && (picture[x - 1, y - 1] != 1)) ||      //Небольшая модификцаия алгоритма для ещё большего утоньшения
-  //         ((picture[x, y + 1] * picture[x - 1, y] == 1) && (picture[x + 1, y - 1] != 1)) || ((picture[x, y - 1] * picture[x - 1, y] == 1) && (picture[x + 1, y + 1] != 1))))
+		//if ((picture[x + y*rowWidthInElements] == 1) &&
+  //          (((picture[x, (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] == 1) && (picture[x - 1 + (y + 1)*rowWidthInElements] != 1)) || ((picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] == 1) && (picture[x - 1 + (y - 1)*rowWidthInElements] != 1)) ||      //Íåáîëüøàÿ ìîäèôèêöàèÿ àëãîðèòìà äëÿ åù¸ áîëüøåãî óòîíüøåíèÿ
+  //          ((picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y - 1)*rowWidthInElements] != 1)) || ((picture[x + (y - 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y + 1)*rowWidthInElements] != 1))))
   //      {
-		//	picture[x, y] = 0;
+  //          picture[x + y*rowWidthInElements] = 0;
   //      }
+
+
+		if ((picture[x + y*rowWidthInElements] == 1) &&
+		   (((picture[x + (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] == 1) && (picture[x - 1 + (y + 1)*rowWidthInElements] != 1)) || ((picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] == 1) && (picture[x - 1 + (y - 1)*rowWidthInElements] != 1)) ||      //Небольшая модификцаия алгоритма для ещё большего утоньшения
+           (( picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y - 1)*rowWidthInElements] != 1)) || ((picture[x + (y - 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y + 1)*rowWidthInElements] != 1))))
+        {
+			picture[x + y*rowWidthInElements] = 0;
+        }
 
 
 	}
