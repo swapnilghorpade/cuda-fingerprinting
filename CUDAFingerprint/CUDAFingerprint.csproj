@@ -48,6 +48,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Debug\CUDAConvexHull.dll">
+      <Link>CUDAConvexHull.dll</Link>
+    </Content>
     <Content Include="..\Debug\CUDAFingercode.dll">
       <Link>CUDAFingercode.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

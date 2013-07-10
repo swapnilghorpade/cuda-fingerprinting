@@ -54,7 +54,9 @@ namespace CUDAFingerprint
         [DllImport("CUDAFingercode.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void sortArrayAndIndexes(float[] arr, int[] arrIndexes, int amount);
 
-        private static void Main(string[] args)
+        [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void BuildHull()
+    private static void Main(string[] args)
         {
             // TestQuality();
             // TestTimings();

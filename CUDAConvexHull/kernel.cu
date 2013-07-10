@@ -4,7 +4,7 @@
 
 int main()
 {
-	int N;
+	/*int N;
 	printf("Enter amount of Minutiae: ");
 	scanf("%d",&N);
 	Point *arr;
@@ -20,7 +20,7 @@ int main()
 	Point *Hull;
 	Hull = (Point*) malloc (N*sizeof(Point));
 	int NHull = 0;
-	Build(arr,N,Hull,&NHull);
+	BuildHull(arr,N,Hull,&NHull);
 	printf("ConvexHull:\n");
 	for (int i = 0 ; i < NHull; i ++ )
 		Hull[i].print();
@@ -50,6 +50,6 @@ int main()
 	free(arr);
 	free(Hull);
 	free(field);
-	system("PAUSE");
+	system("PAUSE");*/
     return 0;
 }

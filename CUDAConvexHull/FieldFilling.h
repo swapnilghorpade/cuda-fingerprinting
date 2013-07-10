@@ -1,6 +1,7 @@
 #include "Point.h"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
+#pragma once
 __global__ void Fill(bool *dev_field,Point *dev_Hull,int NHull) {
 	dev_field[blockIdx.x * blockDim.x + threadIdx.x] = true;
 	for (int i = NHull-1; (i>0) && (dev_field[blockIdx.x * blockDim.x + threadIdx.x]); i--)

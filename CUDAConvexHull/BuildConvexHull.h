@@ -24,7 +24,7 @@ void Sorting(Point *arr, int N) {
 	qsort(arr, N, sizeof(Point), compare);
 }
 
-void Build(Point *arr, int N, Point *Hull, int *NHull) {
+void BuildHull(Point *arr, int N, Point *Hull, int *NHull) {
 	Sorting(arr,N);
 	Hull[0] = arr[0];
 	Hull[1] = arr[1];
