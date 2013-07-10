@@ -19,8 +19,8 @@ public:
 	}
 
 	Point Subtract(Point P) {
-		Point *temp = new Point(X-P.X,Y-P.Y);
-		return *temp;
+		Point temp = Point(X-P.X,Y-P.Y);
+		return temp;
 	}
 
 	int VectorProduct(Point P) {

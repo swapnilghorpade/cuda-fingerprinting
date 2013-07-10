@@ -4,27 +4,23 @@
 
 int main()
 {
-
 	/*int N;
 	printf("Enter amount of Minutiae: ");
 	scanf("%d",&N);
-	Point *arr;
-	arr = (Point*) malloc (N * sizeof(Point));
+	int *arr;
+	arr = (int*) malloc (2*N * sizeof(int));
 	printf("Enter Minutiae:\n");
 	for (int i = 0 ; i < N; i++ ) {
-		int x,y;
-		scanf("%d",&x);
-		scanf("%d",&y);
-		Point *temp = new Point(x,y);
-		arr[i] = *temp;
+		scanf("%d",&arr[2*i]);
+		scanf("%d",&arr[2*i+1]);
 	}
-	Point *Hull;
-	Hull = (Point*) malloc (N*sizeof(Point));
+	int *Hull;
+	Hull = (int*) malloc (2*N*sizeof(int));
 	int NHull = 0;
 	BuildHull(arr,N,Hull,&NHull);
 	printf("ConvexHull:\n");
 	for (int i = 0 ; i < NHull; i ++ )
-		Hull[i].print();
+		printf("%d %d\n",Hull[2*i],Hull[2*i+1]);
 	bool *field;
 	printf("Enter rows and columns:\n");
 	int rows,columns;
