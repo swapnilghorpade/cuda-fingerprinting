@@ -17,7 +17,8 @@ typedef struct
 		int AreaSize;
 		Point* Points;
 	} AreaStruct;
-  			
+  
+/*
 bool IsNearBorder(Point* points, int size, int xBorder, int yBorder)
 {
 	for (int i = 0; i < size; i++)
@@ -261,7 +262,7 @@ CUDAArray<bool> PostProcessing(CUDAArray<bool> mask, int maskX, int maskY, int t
 
 	return mask;
 }
-
+*/
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
 {
 	int row = defaultRow();
