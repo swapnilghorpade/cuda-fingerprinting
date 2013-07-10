@@ -24,14 +24,20 @@ void Sorting(Point *arr, int N) {
 	qsort(arr, N, sizeof(Point), compare);
 }
 
-void BuildHull(Point *arr, int N, Point *Hull, int *NHull) {
-	Sorting(arr,N);
-	Hull[0] = arr[0];
-	Hull[1] = arr[1];
+void BuildHull(int *arr, int N,int *IntHull,int *NHull) {
+	Point *Minutiae;
+	int NoM;
+	NoM = N;
+	Minutiae = (Point*) malloc(NoM * sizeof(Point));
+	Minutiae = (Point*) arr;
+	Sorting(Minutiae,NoM);
+	Point *Hull = (Point*) malloc (NoM *sizeof(Point));
+	Hull[0] = Minutiae[0];
+	Hull[1] = Minutiae[1];
 	int top = 1;
 	int nextToTop = 0;
-    for (int i = 2; i < N; i++)    {
-		while ((arr[i].Subtract(Hull[nextToTop]).VectorProduct(Hull[top].Subtract(Hull[nextToTop])) <=0) && (!Hull[top].Equals(*FirstPoint))) {
+    for (int i = 2; i < NoM; i++)    {
+		while ((Minutiae[i].Subtract(Hull[nextToTop]).VectorProduct(Hull[top].Subtract(Hull[nextToTop])) <=0) && (!Hull[top].Equals(*FirstPoint))) {
 			 top--;
 			 if (Hull[top].Equals(*FirstPoint))
                  nextToTop = top;
@@ -40,7 +46,8 @@ void BuildHull(Point *arr, int N, Point *Hull, int *NHull) {
          }
          top++;
 		 nextToTop = top-1;
-		 Hull[top] = arr[i];
+		 Hull[top] = Minutiae[i];
     }
 	*NHull = top+1;
+	IntHull = (int*)Hull;
 }

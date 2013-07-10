@@ -11,7 +11,9 @@ __global__ void Fill(bool *dev_field,Point *dev_Hull,int NHull) {
 			dev_field[blockIdx.x * blockDim.x + threadIdx.x] = false;
 }
 
-void FieldFilling(bool *field,int rows, int columns,Point *Hull, int NHull) {
+void FieldFilling(bool *field,int rows, int columns,int *arr, int N) {
+	Point *Hull = (Point*) malloc (N * sizeof(Point));
+	int NHull = N;
 	bool *dev_field;
 	cudaMalloc(&dev_field,(rows*columns)*sizeof(bool));
 	Point *dev_Hull;

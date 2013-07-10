@@ -10,7 +10,6 @@
 #include "math_functions.h"
 #include "math_constants.h"
 #include "device_functions.h"
-
 //#include "Point.h"
 extern "C"{
 

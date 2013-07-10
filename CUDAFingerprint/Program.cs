@@ -55,7 +55,13 @@ namespace CUDAFingerprint
         private static extern void sortArrayAndIndexes(float[] arr, int[] arrIndexes, int amount);
 
         [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void BuildHull()
+        private static extern void BuildHull(int[] arr, int NoM, int[] Hull);
+
+        [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void FieldFilling(bool[] field,int rows, int columns,int[] arr, int NoM);
+
+        [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void WorkingArea(bool[] field, int rows, int columns, int radius);
     private static void Main(string[] args)
         {
             // TestQuality();
