@@ -20,13 +20,13 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         {
             int maxY = image.GetLength(0);
             int maxX = image.GetLength(1);
-            var result = new double[maxY, maxX];
+            var result = new double[maxY / W, maxX / W];
             var gradX = GradientHelper.GenerateXGradient(image);
             var gradY = GradientHelper.GenerateYGradient(image);
 
-            for (int i = 0; i < maxY; i++)
+            for (int i = 0; i < maxY / W; i++)
             {
-                for (int j = 0; j < maxX; j++)
+                for (int j = 0; j < maxX / W; j++)
                 {
                     double vx = 0;
                     double vy = 0;
@@ -35,8 +35,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                     {
                         for (int dx = -W / 2; dx <= W / 2; dx++)
                         {
-                            int y = i + dy;
-                            int x = j + dx;
+                            int y = i * W + dy;
+                            int x = j * W + dx;
 
                             if (!(x < 0 || y < 0 || x >= maxX || y >= maxY))
                             {
@@ -152,8 +152,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         // (x, y) pairs of continious vector field
         public static Tuple<double, double>[,] GenerateLowPassFilteredContiniousVectorField(int[,] image)
         {
-            int maxY = image.GetLength(0);
-            int maxX = image.GetLength(1);
+            int maxY = image.GetLength(0) / W;
+            int maxX = image.GetLength(1) / W;
             var cvf = new Tuple<double, double>[maxY, maxX];
             var lsq = GenerateLeastSquareEstimate(image);
 
@@ -164,14 +164,14 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                     cvf[i, j] = new Tuple<double, double>(Math.Cos(2 * lsq[i, j]), Math.Sin(2 * lsq[i, j]));
                 }
             }
-            return KernelHelper.Zip2D(GenerateBlur(cvf.Select2D(x => x.Item1), W), GenerateBlur(cvf.Select2D(x => x.Item2), W), 
+            return KernelHelper.Zip2D(GenerateBlur(cvf.Select2D(x => x.Item1)), GenerateBlur(cvf.Select2D(x => x.Item2)), 
                 (x, y) => new Tuple<double, double>(x, y));
         }
 
         public static double[,] GenerateLocalRidgeOrientation(int[,] image)
         {
-            int maxY = image.GetLength(0);
-            int maxX = image.GetLength(1);
+            int maxY = image.GetLength(0) / W;
+            int maxX = image.GetLength(1) / W;
             double[,] lro = new double[maxX, maxY];
             var cvf = GenerateLowPassFilteredContiniousVectorField(image);
 

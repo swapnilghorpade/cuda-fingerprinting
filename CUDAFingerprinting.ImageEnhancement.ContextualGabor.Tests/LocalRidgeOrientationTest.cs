@@ -37,7 +37,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
             {
                 for (int j = 0; j < maxX; j++)
                 {
-                    g.DrawString(Convert.ToInt32(lro[i * W + W / 2, j * W + W / 2] * 180 / Math.PI).ToString(),
+                    double angle = lro[i, j];
+                    g.DrawString(Convert.ToInt32(angle * 180 / Math.PI).ToString(),
                         new Font("Times New Roman", 8), Brushes.White, new Point(j * W, i * W));
 
                     g.DrawLine(p, new Point(j * W, i * W), new Point(j * W + W, i * W));
@@ -64,7 +65,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
                     // point in the middle of block
                     var middle = new Point(j * W + W / 2, i * W + W / 2);
                     // y = (x - m.x)*tan(a) + y1 
-                    double angle = lro[i * W + W / 2, j * W + W / 2];
+                    double angle = lro[i, j];
                     if (angle < 0)
                         angle += 2 * Math.PI;
 
