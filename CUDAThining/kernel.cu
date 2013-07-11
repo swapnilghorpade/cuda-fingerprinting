@@ -256,11 +256,11 @@ int main()
         fprintf(stderr, "addWithCuda failed!");
         return 1;
     }
-	for(int i = 0; i < size; i++)
+	for(int i = 0; i < width; i++)
 	{
-		for(int j = 0; j < size; j++)
+		for(int j = 0; j < height; j++)
 		{
-			fprintf(out,"%d ",result[i*size + j]);
+			fprintf(out,"%d ",result[j*width + i]);
 		}
 		fprintf(out,"\n");
 	}
