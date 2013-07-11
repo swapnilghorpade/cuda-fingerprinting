@@ -14,19 +14,21 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
         public void ExperimentMethod()
         {
             double[,] img = ImageHelper.LoadImage(Resources._2_2);
-           // double[,] img1 = ImageHelper.LoadImage(Resources._104_6);
-           // double[,] img2 = ImageHelper.LoadImage(Resources._65_8);
-           // double[,] img3 = ImageHelper.LoadImage(Resources._103_7);
+            // double[,] img1 = ImageHelper.LoadImage(Resources._104_6);
+            // double[,] img2 = ImageHelper.LoadImage(Resources._65_8);
+            // double[,] img3 = ImageHelper.LoadImage(Resources._103_7);
             double[,] resultImg1;
-           // double[,] resultImg2;
-           // double[,] resultImg3;
+            // double[,] resultImg2;
+            // double[,] resultImg3;
 
             int windowSize = 12;
             double weight = 0.3;
             int currentThreshold = 5;
 
             resultImg1 = Segmentator.Segmetator(img, windowSize, weight, currentThreshold);
-            ImageHelper.SaveArray(resultImg1, Path.GetTempPath() + "GOOD_IMAGE_2_2_resultImg_" + weight + "_" + currentThreshold + ".png");
+            ImageHelper.SaveArray(resultImg1,
+                                  Path.GetTempPath() + "GOOD_IMAGE_2_2_resultImg_" + weight + "_" + currentThreshold +
+                                  ".png");
 
             //double minValue = 0.3;
             //double maxValue = 0.5;
@@ -45,7 +47,14 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
             //    }
             //}
 
-           
+
+        }
+
+        [TestMethod]
+        public void MakeBinFromImage()
+        {
+            ImageHelper.SaveImageAsBinary("C:\\Users\\Tanya\\Documents\\tests_data\\103_7.tif", 
+                "C:\\Users\\Tanya\\Documents\\tests_data\\103_7.bin");
         }
     }
 }

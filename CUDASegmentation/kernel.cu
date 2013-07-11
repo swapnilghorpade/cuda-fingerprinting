@@ -17,7 +17,7 @@ typedef struct
 		int AreaSize;
 		Point* Points;
 	} AreaStruct;
-/*  			
+  /*			
 bool IsNearBorder(Point* points, int size, int xBorder, int yBorder)
 {
 	for (int i = 0; i < size; i++)
@@ -33,7 +33,8 @@ bool IsNearBorder(Point* points, int size, int xBorder, int yBorder)
 
 	return false;
 }
-
+*/
+/*
 void AddPointToArea(AreaStruct* areas, int areaNumber, Point newPoint)
 {
 	AreaStruct area = areas[areaNumber];
@@ -125,17 +126,15 @@ __global__ void fillArea(CUDAArray<AreaStruct> areas, int areasSize, int maskX, 
 		}
 	}
 }
-
+*/
+/*
 CUDAArray<AreaStruct> GenerateAreas(CUDAArray<bool> cudaMask, int maskX, int maskY, bool isBlack)
 {
 	int areasSize = maskX * maskY + 1;
 	int areaIndex = 0;
-	cudaError_t cudaStatus;
-	bool isLeftImageTopBlack, isLeftBlackTopImage, isLeftBlackTopBlack;
+	bool isLeftImageTopBlack = false, isLeftBlackTopImage = false, isLeftBlackTopBlack = false;
 	bool* mask = cudaMask.GetData();
-	Point* initialPoints;
 	CUDAArray<AreaStruct> cudaAreas = CUDAArray<AreaStruct>(areasSize, 1);
-	AreaStruct* areas;
 
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
 	dim3 gridSize = dim3(ceilMod(maskX,defaultThreadCount), ceilMod(maskY,defaultThreadCount));
@@ -175,7 +174,7 @@ CUDAArray<AreaStruct> GenerateAreas(CUDAArray<bool> cudaMask, int maskX, int mas
                 continue;
             }
 
-			Point newPoint = {i, j};
+			Point* initialPoints;
 			cudaError_t cudaStatus = cudaMalloc(&initialPoints, sizeof(Point) * areasSize);
 
 			if (cudaStatus != cudaSuccess) 
@@ -183,16 +182,20 @@ CUDAArray<AreaStruct> GenerateAreas(CUDAArray<bool> cudaMask, int maskX, int mas
 				printf("cudaMalloc(&initialPoints, sizeof(Point) * areasSize); - ERROR!!!\n");
 			}
 
+			Point newPoint = {i, j};
 			initialPoints[0] =  newPoint;
+
 			AreaStruct newArea = {areaIndex, 1, initialPoints};
-			areas = cudaAreas.GetData();
+			AreaStruct*	areas = cudaAreas.GetData();
 			areas[areaIndex++] = newArea;
 
 			cudaAreas.Dispose();
 			cudaAreas = CUDAArray<AreaStruct>(areas, areasSize, 1);
 			cudaFree(initialPoints);
+			cudaFree(areas);
 		}
 	}
+	
 
 	return cudaAreas;
 } 
@@ -247,17 +250,19 @@ CUDAArray<bool> FillAreas(CUDAArray<AreaStruct> cudaAreas, CUDAArray<bool> cudaM
 
 	return cudaMask;
 }
+*/
 
-CUDAArray<bool> PostProcessing(bool* mask, int maskX, int maskY, int threshold)
+/*
+void PostProcessing(bool* mask, int maskX, int maskY, int threshold)
 {
 	CUDAArray<bool> cudaMask = CUDAArray<bool>(mask, maskX, maskY);
 
 	CUDAArray<AreaStruct> blackAreas = GenerateAreas(cudaMask, maskX, maskY, true);
-	cudaMask = FillAreas(blackAreas, cudaMask, maskX, maskY, threshold);
-	CUDAArray<AreaStruct> imageAreas = GenerateAreas(cudaMask, maskX, maskY, false);
-	cudaMask = FillAreas(imageAreas, cudaMask, maskX, maskY, threshold);
+	//cudaMask = FillAreas(blackAreas, cudaMask, maskX, maskY, threshold);
+	//CUDAArray<AreaStruct> imageAreas = GenerateAreas(cudaMask, maskX, maskY, false);
+	//cudaMask = FillAreas(imageAreas, cudaMask, maskX, maskY, threshold);
 
-	return cudaMask;
+	mask = cudaMask.GetData();
 }
 */
 
@@ -383,20 +388,20 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	fclose(f);
 }
 
-  int getSegmentation( char* pathToImg, float weightConstant, int windowSize, int threshold,//parmeters
-	  bool* mask,int* maskWidth, int* maskHight) //result
+  int main() /*char* pathToImg, float weightConstant, int windowSize, int threshold,//parmeters
+	  bool* mask,int* maskWidth, int* maskHight) //result*/
   {
 	  
-	  ////parameters
-	  //float weightConstant = 0.3; 
-	  //int windowSize = 12;
-	  //int threshold = 5;
+	  //parameters
+	  float weightConstant = 0.3; 
+	  int windowSize = 12;
+	  int threshold = 5;
 
 	  int count = 100500;
 	  
 	  cudaError_t cudaStatus = cudaGetDeviceCount(&count);
 
-	  cudaStatus =cudaSetDevice(0);
+	  cudaStatus = cudaSetDevice(0);
 
 	  
 	  cudaStatus = cudaGetLastError();
@@ -405,8 +410,8 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 		printf("CUDAArray<float> source = loadImage(...) - ERROR!!!\n");
 	  }
 	  //source image
-	  //CUDAArray<float> source = loadImage("C:\\temp\\104_6.bin");
-	  CUDAArray<float> source = loadImage(pathToImg);
+	  CUDAArray<float> source = loadImage("C:\\Users\\Tanya\\Documents\\tests_data\\103_7.bin");
+	  //CUDAArray<float> source = loadImage(pathToImg);
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
 	  {
@@ -515,18 +520,17 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 
 	  magnitude.Dispose();
 
-	  mask = CUDAmask.GetData();
-	  maskWidth = CUDAmask.Width;
-	  maskHight = CUDAmask.Height;
+	  bool* mask = CUDAmask.GetData();
+	 // *maskWidth = (int)(CUDAmask.Width);
+	 // *maskHight = (int)CUDAmask.Height;
 
-	  //mask = PostProcessing(mask, N, M, threshold);
-	 // mask = PostProcessing(mask.GetData(), N, M, threshold);
+	  //PostProcessing(mask, N, M, threshold);
 
 		//save mask
-		//SaveMask(mask, "C:\\temp\\mask.txt");
+	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
 		
 	  CUDAmask.Dispose();
-	  cudaDeviceReset();
+	  cudaDeviceReset(); 
 	  return 0;
 }
 
