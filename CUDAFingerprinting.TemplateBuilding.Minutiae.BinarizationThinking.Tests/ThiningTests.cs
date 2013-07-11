@@ -93,24 +93,27 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
                                      }; 
             //var path = "C:\\Users\\CUDA Fingerprinting2\\" + "thininig.png";
             var thining = Thining.ThiningPicture(img);
+
+            //var img1 = ImageHelper.LoadImage(TestResource.ThiningImageTest3);
+            var img2 = ImageHelper.LoadImageAsInt(TestResource._104_61globalBinarization150); 
             
-            for (int j = 0; j < img.GetLength(0); j++)
+            for (int j = 0; j < img2.GetLength(0); j++)
             {
-                for (int i = 0; i < img.GetLength(1); i++)
+                for (int i = 0; i < img2.GetLength(1); i++)
                 {
-                    Console.Write(img[j, i] + " ");
+                    Console.Write(img2[j, i] + " ");
                 }
                 Console.WriteLine();
             }
             
-            for (int j = 0; j < thining.GetLength(0); j++)
-            {
-                for (int i = 0; i < thining.GetLength(1); i++)
-                {
-                    Console.Write(thining[j, i] + " ");
-                }
-                Console.WriteLine();
-            }
+            //for (int j = 0; j < thining.GetLength(0); j++)
+            //{
+            //    for (int i = 0; i < thining.GetLength(1); i++)
+            //    {
+            //        Console.Write(thining[j, i] + " ");
+            //    }
+            //    Console.WriteLine();
+            //}
             //Process.Start();
         }
         [TestMethod]
