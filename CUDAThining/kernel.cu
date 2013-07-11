@@ -9,7 +9,7 @@
 //#include<MinutiaMatching.h>
 
 //cudaError_t addWithCuda(int *c, const int *a, const int *b, size_t size);
-cudaError_t addWithCuda(int *picture, int size, int *result);
+cudaError_t addWithCuda(int *picture, int width, int height, int *result);
 
 //__global__ void addKernel(int *c, const int *a, const int *b)
 //{
@@ -55,49 +55,68 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	return sourceImage;
 }
 
-
 __device__ int B(int *picture, int x, int y, size_t pitch)        //Ìåòîä Â(Ð) âîçâðàùàåò êîëè÷åñòâî ÷åðíûõ ïèêñåëåé â îêðåñòíîñòè òî÷êè Ð
 {
-	return picture[x + (y - 1)*pitch] + picture[x + 1 + (y - 1)*pitch] + picture[x + 1 + y*pitch] + picture[x + 1 + (y + 1)*pitch] +
-           picture[x * (y + 1)*pitch] + picture[x - 1 + (y + 1)*pitch] + picture[x - 1 + y*pitch] + picture[x - 1 * (y - 1)*pitch];
+	int rowWidthInElements = pitch/sizeof(size_t);
+	//return picture[x + (y - 1)*rowWidthInElements] + picture[x + 1 + (y - 1)*rowWidthInElements] + picture[x + 1 + y*rowWidthInElements] + picture[x + 1 + (y + 1)*rowWidthInElements] +
+ //          picture[x * (y + 1)*rowWidthInElements] + picture[x - 1 + (y + 1)*rowWidthInElements] + picture[x - 1 + y*rowWidthInElements] + picture[x - 1 * (y - 1)*rowWidthInElements];
+
+	return picture[x + (y - 1)*rowWidthInElements] + picture[x + 1 + (y - 1)*rowWidthInElements] + picture[x + 1 + y*rowWidthInElements] + picture[x + 1 + (y + 1)*rowWidthInElements] +
+		   picture[x + (y + 1)*rowWidthInElements] + picture[x - 1 + (y + 1)*rowWidthInElements] + picture[x - 1 + y*rowWidthInElements] + picture[x - 1 + (y - 1)*rowWidthInElements];
+			
 }
 
 __device__ int A(int *picture, int x, int y, size_t pitch)        //Ìåòîä À(Ð) âîçâðàùàåò êîëè÷åñòâî ïîäðÿä èäóùèõ áåëûõ è ÷åðíûõ ïèêñåëåé âîêðóã òî÷êè Ð (..0->1..)
 {
+	int rowWidthInElements = pitch/sizeof(size_t);
 	int counter = 0;
-    if((picture[x + (y - 1)*pitch] == 0) && (picture[x + 1 + (y - 1)*pitch] == 1))
+    if((picture[x + (y - 1)*rowWidthInElements] == 0) && (picture[x + 1 + (y - 1)*rowWidthInElements] == 1))
     {
         counter++;
     }
-    if ((picture[x + 1 + (y - 1)*pitch] == 0) && (picture[x + 1 + y*pitch] == 1))
+    if ((picture[x + 1 + (y - 1)*rowWidthInElements] == 0) && (picture[x + 1 + y*rowWidthInElements] == 1))
     {
         counter++;
     }
-    if ((picture[x + 1 + y*pitch] == 0) && (picture[x + 1 + (y + 1)*pitch] == 1))
+    if ((picture[x + 1 + y*rowWidthInElements] == 0) && (picture[x + 1 + (y + 1)*rowWidthInElements] == 1))
     {
         counter++;
     }
-    if ((picture[x + 1 + (y + 1)*pitch] == 0) && (picture[x + (y + 1)*pitch] == 1))
+    if ((picture[x + 1 + (y + 1)*rowWidthInElements] == 0) && (picture[x + (y + 1)*rowWidthInElements] == 1))
     {
         counter++;
     }
-    if ((picture[x + (y + 1)*pitch] == 0) && (picture[x - 1 + (y + 1)*pitch] == 1))
+    if ((picture[x + (y + 1)*rowWidthInElements] == 0) && (picture[x - 1 + (y + 1)*rowWidthInElements] == 1))
     {
         counter++;
     }
-    if ((picture[x - 1 + (y + 1)*pitch] == 0) && (picture[x - 1 + y*pitch] == 1))
+    if ((picture[x - 1 + (y + 1)*rowWidthInElements] == 0) && (picture[x - 1 + y*rowWidthInElements] == 1))
     {
         counter++;
     }
-    if ((picture[x - 1 + y*pitch] == 0) && (picture[x - 1 + (y - 1)*pitch] == 1))
+    if ((picture[x - 1 + y*rowWidthInElements] == 0) && (picture[x - 1 + (y - 1)*rowWidthInElements] == 1))
     {
         counter++;
     }
-    if ((picture[x - 1 + (y - 1)*pitch] == 0) && (picture[x + (y - 1)*pitch] == 1))
+    if ((picture[x - 1 + (y - 1)*rowWidthInElements] == 0) && (picture[x + (y - 1)*rowWidthInElements] == 1))
     {
         counter++;
     }
     return counter;
+}
+
+__global__ void compare(int* pictureToRemove, int* picture, size_t pitch, int width, int height)
+{
+	int x = threadIdx.x + blockIdx.x*blockDim.x;
+    int y = threadIdx.y + blockIdx.y*blockDim.y;
+	int rowWidthInElements = pitch/sizeof(size_t);
+	
+	if((pictureToRemove[y*rowWidthInElements + x] == 0) && (x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
+	{
+		picture[y*rowWidthInElements + x] = 0;
+		pictureToRemove[y*rowWidthInElements + x] = 1;
+	}
+
 }
 
 __global__ void ThiningImgWithCUDA(CUDAArray<int> thinnedPicture, int width, int height)
@@ -118,7 +137,7 @@ __global__ void ThiningImgWithCUDA(CUDAArray<int> thinnedPicture, int width, int
 }
 
 
-__global__ void ThiningPictureWithCUDA(int* newPicture, int *picture ,size_t pitch, int width, int height)
+__global__ void ThiningPictureWithCUDA(int* newPicture, int *picture ,size_t pitch, int width, int height,bool* hasChanged)
 {
 	int x = threadIdx.x + blockIdx.x*blockDim.x;
     int y = threadIdx.y + blockIdx.y*blockDim.y;
@@ -126,82 +145,77 @@ __global__ void ThiningPictureWithCUDA(int* newPicture, int *picture ,size_t pit
     //if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
 	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
 	{             
-		if ((picture[x + y*rowWidthInElements] == 1) && (2 <= B(picture, x, y, rowWidthInElements)) && (B(picture, x, y, rowWidthInElements) <= 6) && (A(picture, x, y, rowWidthInElements) == 1) &&     //Íåïîñðåäñòâåííîå óäàëåíèå òî÷êè, ñì. Zhang-Suen thinning algorithm, http://www-prima.inrialpes.fr/perso/Tran/Draft/gateway.cfm.pdf
-            (picture[x + (y - 1)*rowWidthInElements]*picture[x + 1 + y*rowWidthInElements]*picture[x + (y + 1)*rowWidthInElements] == 0) &&
-            (picture[x + 1 + y*rowWidthInElements]*picture[x + (y + 1)*rowWidthInElements]*picture[x - 1 + y*rowWidthInElements] == 0))
-        {
-            picture[x + y*rowWidthInElements] = 0;
-			//thinnedPicture[x + y*rowWidthInElements] = 0;
-        }
+		if ((picture[x + y*rowWidthInElements] == 1) && (2 <= B(picture, x, y, pitch)) && (B(picture, x, y, pitch) <= 6) && (A(picture, x, y, pitch) == 1) &&                         
+			 (picture[x + (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] == 0) &&
+             (picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 0))
+         {
+				newPicture[x + y*rowWidthInElements] = 0;
+                hasChanged[0] = true;
+		 }	
 		
-		//if ((picture[x + y*pitch] == 1) && (2 <= B(picture, x, y, pitch)) && (B(picture, x, y, pitch) <= 6) && (A(picture, x, y, pitch) == 1) &&
-		//	(picture[x + (y - 1)*pitch] * picture[x + 1 + y*pitch] * picture[x - 1 + y*pitch] == 0) &&
-		//	(picture[x * (y - 1)*pitch] * picture[x + (y + 1)*pitch] * picture[x - 1 + y*pitch] == 0))
-		//{
-		//	picture[x + y*pitch] = 0;
-		//	//thinnedPicture[x + y*pitch] = 0;
-		//} 
 	}
-	newPicture[x+rowWidthInElements*y] = picture[x+rowWidthInElements*y];
+	//newPicture[x+rowWidthInElements*y] = picture[x+rowWidthInElements*y];
 }
 
-__global__ void ThiningPictureWithCUDA2(int* newPicture, int *picture ,size_t pitch, int width, int height)
+__global__ void ThiningPictureWithCUDA2(int* newPicture, int *picture ,size_t pitch, int width, int height, bool* hasChanged)
 {
 	//int *picture = newPicture;
 	int x = threadIdx.x + blockIdx.x*blockDim.x;
     int y = threadIdx.y + blockIdx.y*blockDim.y;
 	int rowWidthInElements = pitch/sizeof(size_t);
-    //if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
 	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
 	{             
-		//if ((picture[x + y*pitch] == 1) && (2 <= B(picture, x, y, pitch)) && (B(picture, x, y, pitch) <= 6) && (A(picture, x, y, pitch) == 1) &&     //Íåïîñðåäñòâåííîå óäàëåíèå òî÷êè, ñì. Zhang-Suen thinning algorithm, http://www-prima.inrialpes.fr/perso/Tran/Draft/gateway.cfm.pdf
-  //          (picture[x + (y - 1)*pitch]*picture[x + 1 + y*pitch]*picture[x + (y + 1)*pitch] == 0) &&
-  //          (picture[x + 1 + y*pitch]*picture[x + (y + 1)*pitch]*picture[x - 1 + y*pitch] == 0))
-  //      {
-  //          picture[x + y*pitch] = 0;
-		//	//thinnedPicture[x + y*pitch] = 0;
-  //      }
-		
-		if ((picture[x + y*rowWidthInElements] == 1) && (2 <= B(picture, x, y, rowWidthInElements)) && (B(picture, x, y, rowWidthInElements) <= 6) && (A(picture, x, y, rowWidthInElements) == 1) &&
+		if ((picture[x + y*rowWidthInElements] == 1) && (2 <= B(picture, x, y, pitch)) && (B(picture, x, y, pitch) <= 6) && (A(picture, x, y, pitch) == 1) &&
 			(picture[x + (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 0) &&
-			(picture[x * (y - 1)*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 0))
+			(picture[x + (y - 1)*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 0))
 		{
-			picture[x + y*rowWidthInElements] = 0;
+			newPicture[x + y*rowWidthInElements] = 0;
+			hasChanged[0] = true;
 		} 
 	}
-	newPicture[x+rowWidthInElements*y] = picture[x+rowWidthInElements*y];
+	//newPicture[x+rowWidthInElements*y] = picture[x+rowWidthInElements*y];
 
 }
 
+//Doesn't work correctly with parallel method
+//__global__ void ThiningPictureWithCUDA3(int* newPicture, int *picture ,size_t pitch, int width, int height)
+//{
+//	int x = threadIdx.x + blockIdx.x*blockDim.x;
+//    int y = threadIdx.y + blockIdx.y*blockDim.y;
+//	int rowWidthInElements = pitch/sizeof(size_t);
+//	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
+//	{           
+//		if ((picture[x + y*rowWidthInElements] == 1) &&
+//		   (((picture[x + (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] == 1) && (picture[x - 1 + (y + 1)*rowWidthInElements] != 1)) || ((picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] == 1) && (picture[x - 1 + (y - 1)*rowWidthInElements] != 1)) ||      //Небольшая модификцаия алгоритма для ещё большего утоньшения
+//           (( picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y - 1)*rowWidthInElements] != 1)) || ((picture[x + (y - 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y + 1)*rowWidthInElements] != 1))))
+//        {
+//			newPicture[x + y*rowWidthInElements] = 0;
+//        }
+//	}else
+//	{
+//		newPicture[x+rowWidthInElements*y] = picture[x+rowWidthInElements*y];
+//	}
+//}
 
-__global__ void ThiningPictureWithCUDA3(int* newPicture, int *picture ,size_t pitch, int width, int height)
+void DeleteCorners(int *picture, int width, int height)
 {
-	int x = threadIdx.x + blockIdx.x*blockDim.x;
-    int y = threadIdx.y + blockIdx.y*blockDim.y;
-	int rowWidthInElements = pitch/sizeof(size_t);
-    //if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
-	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
-	{           
-		//if ((picture[x + y*rowWidthInElements] == 1) &&
-  //          (((picture[x, (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] == 1) && (picture[x - 1 + (y + 1)*rowWidthInElements] != 1)) || ((picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] == 1) && (picture[x - 1 + (y - 1)*rowWidthInElements] != 1)) ||      //Íåáîëüøàÿ ìîäèôèêöàèÿ àëãîðèòìà äëÿ åù¸ áîëüøåãî óòîíüøåíèÿ
-  //          ((picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y - 1)*rowWidthInElements] != 1)) || ((picture[x + (y - 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y + 1)*rowWidthInElements] != 1))))
-  //      {
-  //          picture[x + y*rowWidthInElements] = 0;
-  //      }
-
-
-		if ((picture[x + y*rowWidthInElements] == 1) &&
-		   (((picture[x + (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] == 1) && (picture[x - 1 + (y + 1)*rowWidthInElements] != 1)) || ((picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] == 1) && (picture[x - 1 + (y - 1)*rowWidthInElements] != 1)) ||      //Небольшая модификцаия алгоритма для ещё большего утоньшения
-           (( picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y - 1)*rowWidthInElements] != 1)) || ((picture[x + (y - 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y + 1)*rowWidthInElements] != 1))))
-        {
-			picture[x + y*rowWidthInElements] = 0;
-        }
-
-
+	
+	//int x = threadIdx.x + blockIdx.x*blockDim.x;
+    //int y = threadIdx.y + blockIdx.y*blockDim.y;
+	int rowWidthInElements = width;
+	for(int x = 1; x < width - 1; x++)
+	{
+		for(int y = 1; y < height - 1; y++)
+		{
+			if ((picture[x + y*rowWidthInElements] == 1) &&
+				(((picture[x + (y - 1)*rowWidthInElements] * picture[x + 1 + y*rowWidthInElements] == 1) && (picture[x - 1 + (y + 1)*rowWidthInElements] != 1)) || ((picture[x + 1 + y*rowWidthInElements] * picture[x + (y + 1)*rowWidthInElements] == 1) && (picture[x - 1 + (y - 1)*rowWidthInElements] != 1)) ||      //Небольшая модификцаия алгоритма для ещё большего утоньшения
+				(( picture[x + (y + 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y - 1)*rowWidthInElements] != 1)) || ((picture[x + (y - 1)*rowWidthInElements] * picture[x - 1 + y*rowWidthInElements] == 1) && (picture[x + 1 + (y + 1)*rowWidthInElements] != 1))))
+			{
+				picture[x + y*rowWidthInElements] = 0;
+			}
+		}
 	}
-	newPicture[x+rowWidthInElements*y] = picture[x+rowWidthInElements*y];
 }
-
 
 
 
@@ -213,29 +227,31 @@ __global__ void ThiningPictureWithCUDA3(int* newPicture, int *picture ,size_t pi
 int main()
 {
 	int size = 32;
-	int *picture = (int*)malloc(size*size*sizeof(int));
-
-	int *result = (int*)malloc(size*size*sizeof(int));
+	int width = size;
+	int	height = size;
+	int *picture = (int*)malloc(width*height*sizeof(int));
+	int *result = (int*)malloc(width*height*sizeof(int));
 	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.in","r");
 	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
-	for(int i = 0; i < size; i++)
+	for(int i = 0; i < width; i++)
 	{
-		for(int j = 0; j < size; j++)
+		for(int j = 0; j < height; j++)
 		{
-			fscanf(in,"%d",&picture[i*size + j]);
+			fscanf(in,"%d",&picture[j*size + i]);
 		}
 	}
 
-	for(int i = 0; i < size; i++)
+	for(int i = 0; i < width; i++)
 	{
-		for(int j = 0; j < size; j++)
+		for(int j = 0; j < height; j++)
 		{
-			printf("%d ",picture[i*size + j]);
+			printf("%d ",picture[j*size + i]);
 		}
 		printf("\n");
 	}
+	printf("\n");
 
-    cudaError_t cudaStatus = addWithCuda(picture, size, result); // todo: width, height
+    cudaError_t cudaStatus = addWithCuda(picture, width, height, result); 
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addWithCuda failed!");
         return 1;
@@ -265,20 +281,39 @@ int main()
 }
 
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(int *picture, int size, int *result)
+cudaError_t addWithCuda(int *picture, int width, int height, int *result)
 {
-	int* dev_picture;
+	int* dev_picture; 
 	int* dev_pictureThinned;
-	int width, height;
-	width = size;
-	height = size;
-
+	int* dev_pictureToRemove;
+	bool hasChanged;
+	bool* dev_hasChanged;
+	int *pictureToRemove = (int*)malloc(width*height*sizeof(int));
+	for(int i = 0; i < width; i++)
+	{
+		for(int j = 0; j < height; j++)
+		{
+			pictureToRemove[j*width + i] = 1;
+		}
+	}
 	//CUDAArray<int> img = CUDAArray<int>(picture, width, height);
 	//CUDAArray<int> imgout = CUDAArray<int>(dev_pictureThinned, width, height);
 //	img.
     cudaError_t cudaStatus;
 	size_t pitch;
     size_t pitch1;
+	size_t pitch2;
+	
+	cudaStatus = cudaMallocPitch((void**)&dev_pictureToRemove, &pitch2, width*sizeof(int), height);
+	if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMallocPitch");
+        goto Error;
+    }
+	cudaStatus = cudaMemcpy2D(dev_pictureToRemove, pitch2, pictureToRemove, width*sizeof(int), width*sizeof(int), height, cudaMemcpyHostToDevice);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMemcpy!");
+        goto Error;
+    }
 	// Choose which GPU to run on, change this on a multi-GPU system.
     cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
@@ -291,7 +326,12 @@ cudaError_t addWithCuda(int *picture, int size, int *result)
         fprintf(stderr, "cudaMallocPitch!");
         goto Error;
     }
-	
+	cudaStatus = cudaMalloc((void**)&dev_hasChanged, sizeof(bool));
+	if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMalloc!");
+        goto Error;
+    }
+
 	cudaStatus = cudaMallocPitch((void**)&dev_pictureThinned, &pitch1, width*sizeof(int), height);
 	if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMallocPitch!");
@@ -302,20 +342,88 @@ cudaError_t addWithCuda(int *picture, int size, int *result)
 
     cudaStatus = cudaMemcpy2D(dev_picture, pitch, picture, width*sizeof(int), width*sizeof(int), height, cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMalloc failed!");
+        fprintf(stderr, "cudaMemcpy!");
         goto Error;
     }
 
     // Launch a kernel on the GPU with one thread for each element.
-    int dimA = size*size;
+    int dimA = width*height;
     int numThreadsPerBlock = 16;
     int numBlocks = dimA / numThreadsPerBlock;
     
     dim3 dimGrid(numBlocks);
     dim3 dimBlock(numThreadsPerBlock);
-	ThiningPictureWithCUDA3<<<dim3(ceilMod(size,16),ceilMod(size,16)),dim3(16,16)>>>(dev_pictureThinned, dev_picture, pitch, width, height);
-    //ThiningPictureWithCUDA2<<<dim3(ceilMod(size,16),ceilMod(size,16)),dim3(16,16)>>>(dev_pictureThinned, dev_picture, pitch, width, height);
-	//ThiningPictureWithCUDA3<<<dim3(ceilMod(size,16),ceilMod(size,16)),dim3(16,16)>>>(dev_pictureThinned, dev_picture, pitch, width, height);
+
+	//for(int i = 0; i < pitch1/sizeof(size_t); i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{	
+
+	//			dev_pictureThinned[i*(pitch1/sizeof(size_t)) + j] = 1;
+
+	//	}
+	//}
+
+	do{
+		hasChanged = false;
+		cudaStatus = cudaMemcpy(dev_hasChanged, &hasChanged, sizeof(bool), cudaMemcpyHostToDevice);
+		if (cudaStatus != cudaSuccess) {
+			fprintf(stderr, "cudaMemcpy failed!");
+			goto Error;
+		}
+
+		ThiningPictureWithCUDA<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_pictureToRemove, dev_picture, pitch, width, height, dev_hasChanged);
+
+		compare<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_pictureToRemove, dev_picture, pitch, width, height);
+
+		
+		cudaStatus = cudaMemcpy2D(result, width*sizeof(int), dev_picture, pitch, width*sizeof(int), height, cudaMemcpyDeviceToHost);
+		if (cudaStatus != cudaSuccess) {
+			fprintf(stderr, "cudaMemcpy failed!");
+			goto Error;
+		}
+
+		for(int i = 0; i < width; i++)
+		{
+			for(int j = 0; j < height; j++)
+			{
+				printf("%d ",result[j*width + i]);
+			}
+			printf("\n");
+		}
+		printf("\n");
+		
+		ThiningPictureWithCUDA2<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_pictureToRemove, dev_picture, pitch, width, height, dev_hasChanged);
+
+		compare<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_pictureToRemove, dev_picture, pitch, width, height);
+
+
+		cudaStatus = cudaMemcpy2D(result, width*sizeof(int), dev_picture, pitch, width*sizeof(int), height, cudaMemcpyDeviceToHost);
+		if (cudaStatus != cudaSuccess) {
+			fprintf(stderr, "cudaMemcpy failed!");
+			goto Error;
+		}
+
+		for(int i = 0; i < width; i++)
+		{
+			for(int j = 0; j < height; j++)
+			{
+				printf("%d ",result[j*width + i]);
+			}
+			printf("\n");
+		}
+		printf("\n");
+
+		cudaStatus = cudaMemcpy(&hasChanged, dev_hasChanged, sizeof(bool), cudaMemcpyDeviceToHost);
+		if (cudaStatus != cudaSuccess) {
+			fprintf(stderr, "cudaMemcpy failed!");
+			goto Error;
+		}
+
+	}while(hasChanged);
+	
+
+	
 	/*ThiningPictureWithCUDA2<<<dim3(2,2),dim3(16,16)>>>(dev_picture, dev_pictureThinned, pitch1, width, height);
 	ThiningPictureWithCUDA<<<dim3(2,2),dim3(16,16)>>>(dev_picture, dev_pictureThinned, pitch1, width, height);
 	ThiningPictureWithCUDA3<<<dim3(2,2),dim3(16,16)>>>(dev_pictureThinned, dev_picture, pitch, width, height);*/
@@ -331,19 +439,22 @@ cudaError_t addWithCuda(int *picture, int size, int *result)
         goto Error;
     }
 	
-
-    // Copy output vector from GPU buffer to host memory.
 	cudaStatus = cudaMemcpy2D(result, width*sizeof(int), dev_picture, pitch, width*sizeof(int), height, cudaMemcpyDeviceToHost);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy failed!");
         goto Error;
     }
 
-	for(int i = 0; i < size; i++)
+	
+	DeleteCorners(result, width, height);
+
+    // Copy output vector from GPU buffer to host memory.
+
+	for(int i = 0; i < width; i++)
 	{
-		for(int j = 0; j < size; j++)
+		for(int j = 0; j < height; j++)
 		{
-			printf("%d ",result[i*size + j]);
+			printf("%d ",result[j*width + i]);
 		}
 		printf("\n");
 	}
@@ -351,6 +462,9 @@ cudaError_t addWithCuda(int *picture, int size, int *result)
 Error:
     cudaFree(dev_picture);
     cudaFree(dev_pictureThinned);
+	cudaFree(dev_pictureToRemove);
+	cudaFree(dev_hasChanged);
+	free(pictureToRemove);
 	//img.Dispose();
     //cudaFree(dev_b);
     
