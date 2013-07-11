@@ -9,7 +9,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
     {
         public static int[,] GenerateXGradient(int[,] image)
         {
-            int[,] sobelFilter = { { 1, 0, -1 }, { 2, 0, -2 }, { 1, 0, -1 } };
+            int[,] sobelFilter = { { -1, 0, 1 }, { -2, 0, 2 }, { -1, 0, 1 } };
             int maxY = image.GetLength(0);
             int maxX = image.GetLength(1);
             int[,] gradient = new int[maxY, maxX];
