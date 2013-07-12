@@ -20,52 +20,41 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
 
 __device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch) 
     {                                               
-        int result; // 1 - ending, >2 - branching,                     
+        // 1 - ending, >2 - branching,                     
         int counter = 0;
 		int rowWidthInElements = pitch/sizeof(size_t);
         for (int i = x - 1; i <= x + 1; i++)
         {
             for (int j = y - 1; j <= y + 1 ; j++)
             {
-                if ((picture[i + j*rowWidthInElements] == 0) && (i != x) && (j != y)) 
+                if ((picture[i + j*rowWidthInElements] == 1) && ((i != x) || (j != y))) 
 				{
 					counter++;
 				}
             }
         }
-        if (counter == 1)
-        {
-            return result = 1;
-        }
-        else
-        {
-            if (counter > 2)
-            {
-                return result = counter;
-            }
-            else
-            {
-                return result = 0;
-            }
-        }
+		//return counter;
+		return counter == 2?0:counter;
     }
 
-__global__  void FindMinutiae(int* picture, size_t pitch, int width, int height, Minutiae *result, int* minutiaeCounter)
+__global__  void FindMinutiae(int* picture, size_t pitch, int width, int height, Minutiae *result, int* minutiaeCounter, int* test)
 {
 	int x = threadIdx.x + blockIdx.x*blockDim.x;
     int y = threadIdx.y + blockIdx.y*blockDim.y;
 	int rowWidthInElements = pitch/sizeof(size_t);
-	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)))
+	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)) && (picture[x + y*rowWidthInElements] == 1))
 	{
-		if(CheckMinutiae(picture, x, y, pitch) > 0)
+		int value = CheckMinutiae(picture, x, y, pitch);
+		test[x + y*rowWidthInElements] = value;
+		if(value > 0)
 		{
-			Minutiae newMinutia;
-			newMinutia.x = x;
-			newMinutia.y = y;
-			result[minutiaeCounter[0]] = newMinutia;
-			minutiaeCounter[0]++;
+			int counter = atomicAdd(minutiaeCounter, 1);
+			result[counter].x =x;
+			result[counter].y =y;
 		}
+			
 	}
+	else{test[x + y*rowWidthInElements] = 0;};
 }
 
 
@@ -80,13 +69,13 @@ int main()
 	int *picture = (int*)malloc(width*height*sizeof(int));
 	int *minutiaeCounter = (int*)malloc(sizeof(int));
 	Minutiae *result = (Minutiae*)malloc(width*height*sizeof(Minutiae));
-	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.in","r");
+	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture2.in","r");
 	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
 	for(int i = 0; i < width; i++)
 	{
 		for(int j = 0; j < height; j++)
 		{
-			fscanf(in,"%d",&picture[j*size + i]);
+			fscanf(in,"%d",&picture[j*width + i]);
 		}
 	}
 
@@ -94,7 +83,7 @@ int main()
 	{
 		for(int j = 0; j < height; j++)
 		{
-			printf("%d ",picture[j*size + i]);
+			printf("%d ",picture[j*width + i]);
 		}
 		printf("\n");
 	}
@@ -107,7 +96,7 @@ int main()
     }
 	for(int j = 0; j < minutiaeCounter[0]; j++)
 	{
-			fprintf(out,"%d %d ",result[j].x, result[j]);
+		fprintf(out,"%d %d \n",result[j].x, result[j].y);
 	}
 
 
@@ -130,14 +119,29 @@ int main()
 cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter)
 {
 	cudaError_t cudaStatus;
-	size_t pitch;
+	size_t pitch, pitch1;
 	int* dev_picture;
+	int *dev_test;
+	int* test = (int*)malloc(width*height*sizeof(int));
 	Minutiae* dev_result;
 	minutiaeCounter[0] = 0;
 	int* dev_minutiaeCounter;
     
 
+	// Choose which GPU to run on, change this on a multi-GPU system.
+    cudaStatus = cudaSetDevice(0);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+        goto Error;
+    }
+
 	cudaStatus = cudaMallocPitch((void**)&dev_picture, &pitch, width*sizeof(int), height);
+	if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaMallocPitch!");
+        goto Error;
+    }
+	
+	cudaStatus = cudaMallocPitch((void**)&dev_test, &pitch1, width*sizeof(int), height);
 	if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMallocPitch!");
         goto Error;
@@ -155,7 +159,7 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
         goto Error;
     }
 
-	cudaStatus = cudaMemcpy(dev_minutiaeCounter, &minutiaeCounter, sizeof(int), cudaMemcpyHostToDevice);
+	cudaStatus = cudaMemset(dev_minutiaeCounter, 0, sizeof(int));
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy!");
         goto Error;
@@ -167,16 +171,11 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
         goto Error;
     }
 	
-    // Choose which GPU to run on, change this on a multi-GPU system.
-    cudaStatus = cudaSetDevice(0);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        goto Error;
-    }
+
 
 
     // Launch a kernel on the GPU with one thread for each element.
-    FindMinutiae<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_picture, pitch, width, height, dev_result, dev_minutiaeCounter);
+    FindMinutiae<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_picture, pitch, width, height, dev_result, dev_minutiaeCounter, dev_test);
 
     // cudaDeviceSynchronize waits for the kernel to finish, and returns
     // any errors encountered during the launch.
@@ -187,21 +186,45 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
     }
 
 	cudaStatus = cudaMemcpy(minutiaeCounter, dev_minutiaeCounter, sizeof(int), cudaMemcpyDeviceToHost);
+	   if (cudaStatus != cudaSuccess) {
+	       fprintf(stderr, "cudaMemcpy failed!");
+	       goto Error;
+	   }
+	   // Copy output vector from GPU buffer to host memory.
+	   cudaStatus = cudaMemcpy(result, dev_result, minutiaeCounter[0]*sizeof(Minutiae), cudaMemcpyDeviceToHost);
+	   if (cudaStatus != cudaSuccess) {
+	       fprintf(stderr, "cudaMemcpy failed!");
+	       goto Error;
+	   }
+	
+	cudaStatus = cudaMemcpy2D(test, width*sizeof(int), dev_test, pitch1, width*sizeof(int), height, cudaMemcpyDeviceToHost);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy failed!");
         goto Error;
     }
-    // Copy output vector from GPU buffer to host memory.
-    cudaStatus = cudaMemcpy(result, dev_result, minutiaeCounter[0]*sizeof(int), cudaMemcpyDeviceToHost);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy failed!");
-        goto Error;
-    }
+	for(int i = 0; i < width; i++)
+	{
+		for(int j = 0; j < height; j++)
+		{
+			printf("%d ",test[j*width + i]);
+		}
+		printf("\n");
+	}
+
+	printf("minutiaeCounter[0] = %d \n", minutiaeCounter[0]);
+	for(int j = 0; j < minutiaeCounter[0]; j++)
+	{
+		printf("%d %d \n",result[j].x, result[j].y);
+	}
+
 
 Error:
     cudaFree(dev_picture);
     cudaFree(dev_result);
     cudaFree(dev_minutiaeCounter);
+	cudaFree(dev_test);
+	free(test);
+
 
     return cudaStatus;
 }
