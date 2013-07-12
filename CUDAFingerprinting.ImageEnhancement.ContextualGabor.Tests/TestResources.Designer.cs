@@ -63,6 +63,16 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap Bikesgray {
+            get {
+                object obj = ResourceManager.GetObject("Bikesgray", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap goodFP {
             get {
                 object obj = ResourceManager.GetObject("goodFP", resourceCulture);

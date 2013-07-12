@@ -17,41 +17,18 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
         [TestMethod]
         public void LROTest()
         {
-            var img = ImageHelper.LoadImageAsInt(TestResources.sample1);
+            var img = ImageHelper.LoadImageAsInt(TestResources.goodFP);
             Normalizer.Normalize(100, 500, img);
             var path = Path.GetTempPath() + "numbers.png";
             var lro = OrientationFieldGenerator.GenerateLocalRidgeOrientation(img);
             var image = ImageHelper.SaveArrayToBitmap(img.Select2D(x => (double)x));
 
-            const int W = 17;
+            const int W = OrientationFieldGenerator.W;
             int maxY = img.GetLength(0) / W;
             int maxX = img.GetLength(1) / W;
             var p = new Pen(Color.White);
             var g = Graphics.FromImage(image);
                       
-
-            #region new field
-            g = Graphics.FromImage(image);
-            // Drawing grid and angle's values 
-            for (int i = 0; i < maxY; i++)
-            {
-                for (int j = 0; j < maxX; j++)
-                {
-                    double angle = lro[i, j];
-                    g.DrawString(Convert.ToInt32(angle * 180 / Math.PI).ToString(),
-                        new Font("Times New Roman", 8), Brushes.White, new Point(j * W, i * W));
-
-                    g.DrawLine(p, new Point(j * W, i * W), new Point(j * W + W, i * W));
-                    g.DrawLine(p, new Point(j * W, i * W), new Point(j * W, i * W + W));
-                    g.DrawLine(p, new Point(j * W + W, i * W + W), new Point(j * W, i * W + W));
-                    g.DrawLine(p, new Point(j * W + W, i * W + W), new Point(j * W + W, i * W));
-                }
-            }
-            g.Save();
-            g.Dispose();
-            var res = ImageHelper.LoadImageAsInt(image);
-            ImageHelper.SaveIntArray(res, path);
-            Process.Start(path);
 
             path = Path.GetTempPath() + "lines.png";
             image = ImageHelper.SaveArrayToBitmap(img.Select2D(x => (double)x));
@@ -66,6 +43,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
                     var middle = new Point(j * W + W / 2, i * W + W / 2);
                     // y = (x - m.x)*tan(a) + y1 
                     double angle = lro[i, j];
+
                     if (angle < 0)
                         angle += 2 * Math.PI;
 
@@ -91,20 +69,12 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
                         Point e = new Point(Convert.ToInt32((i * W - middle.Y) / Math.Tan(angle) + middle.X), i * W);
                         g.DrawLine(p, b, e);
                     }
-
-
-                    g.DrawLine(p, new Point(j * W, i * W), new Point(j * W + W, i * W));
-                    g.DrawLine(p, new Point(j * W, i * W), new Point(j * W, i * W + W));
-                    g.DrawLine(p, new Point(j * W + W, i * W + W), new Point(j * W, i * W + W));
-                    g.DrawLine(p, new Point(j * W + W, i * W + W), new Point(j * W + W, i * W));
                 }
             }
             g.Save();
-            res = ImageHelper.LoadImageAsInt(image);
+            var res = ImageHelper.LoadImageAsInt(image);
             ImageHelper.SaveIntArray(res, path);
             Process.Start(path);
-            #endregion new field
-
         }
     }
 }

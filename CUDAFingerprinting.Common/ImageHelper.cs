@@ -202,7 +202,8 @@ namespace CUDAFingerprinting.Common
             var bmp = new Bitmap(x, y);
             data.Select2D((value, row, column) =>
             {
-                value = Math.Abs(value % 256);
+                value = Math.Abs(value);
+                value = (value < 0) ? 0 : (value > 255 ? 255 : value);
                 bmp.SetPixel(column, row, Color.FromArgb(value, value, value));
                 return value;
             });

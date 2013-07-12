@@ -79,9 +79,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\lrotest.png" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\sample.png" />
   </ItemGroup>
   <ItemGroup>
@@ -89,6 +86,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\104_6.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Bikesgray.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

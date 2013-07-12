@@ -9,10 +9,10 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
     public static class OrientationFieldGenerator
     {
         // frame's size for square estimate
-        private const int W = 17;
+        public const int W = 11;
         // Sigma of Gaussian's blur
         // from 0.34 to 0.65 for recommended size of low-pass filter
-        private const double sigma = 3; 
+        private const double sigma = 0.7;
 
 
 
@@ -23,33 +23,59 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             var result = new double[maxY / W, maxX / W];
             var gradX = GradientHelper.GenerateXGradient(image);
             var gradY = GradientHelper.GenerateYGradient(image);
+            double[,] vx = new double[maxY / W, maxX / W];
+            double[,] vy = new double[maxY / W, maxX / W];
 
             for (int i = 0; i < maxY / W; i++)
             {
                 for (int j = 0; j < maxX / W; j++)
                 {
-                    double vx = 0;
-                    double vy = 0;
+                    vx[i, j] = 0;
+                    vy[i, j] = 0;
 
-                    for (int dy = -W / 2; dy < W / 2; dy++)
+                    for (int dy = -W / 2; dy <= W / 2; dy++)
                     {
                         for (int dx = -W / 2; dx <= W / 2; dx++)
                         {
-                            int y = i * W + dy;
-                            int x = j * W + dx;
+                            // Middle of the block with specified offset
+                            int y = i * W + W / 2 + dy;
+                            int x = j * W + W / 2 + dx;
 
-                            if (!(x < 0 || y < 0 || x >= maxX || y >= maxY))
+                            if (x >= 0 && y >= 0 && x < maxX && y < maxY)
                             {
-                                vx += 2 * gradX[y, x] * gradY[y, x];
-                                vy += Math.Pow(gradX[y, x], 2) - Math.Pow(gradY[y, x], 2);
+                                vx[i, j] += 2 * gradX[y, x] * gradY[y, x];
+                                vy[i, j] += -gradX[y, x] * gradX[y, x] + gradY[y, x] * gradY[y, x];
                             }
                         }
                     }
-                   // result[i, j] = (0.5 * Math.Atan2(vy, vx) >= 0) ? 0.5 * Math.Atan2(vy, vx) : 0.5 * Math.Atan2(vy, vx) + 2 * Math.PI;
-                    result[i, j] = 0.5 * Math.Atan2(vy, vx);
+
+                    result[i, j] = 0.5 * Math.Atan2(vy[i, j], vx[i, j]);
+                    result[i, j] = (result[i, j] < 0) ? result[i, j] + Math.PI : (result[i, j] > Math.PI ? result[i, j] - Math.PI : result[i, j]);
                 }
             }
 
+            for (int x = 0; x < maxX / W; x++)
+            {
+                for (int y = 0; y < maxY / W; y++)
+                {
+                    double resultX = 0, resultY = 0;
+                    int count = 0;
+                    for (int i = -1; i < 2; i++)
+                    {
+                        if (y + i < 0 || y + i >= maxY / W) continue;
+                        for (int j = -1; j < 2; j++)
+                        {
+                            if (x + j < 0 || x + j >= maxX / W) continue;
+                            resultX += vx[y + i, x + j];
+                            resultY += vy[y + i, x + j];
+                            count++;
+                        }
+                    }
+                    var xx = resultY / count;
+                    var yy = resultX / count;
+                    result[y, x] = Math.Atan2(yy, xx) / 2;
+                }
+            }
             return result;
         }
 
@@ -89,19 +115,6 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                         {
                             int x = j + dx;
                             int y = i + dy;
-                            /*
-                            if (x < 0 || x >= maxX || y < 0 || y >= maxY)
-                            {
-                                if ((x < 0 && y < 0) || (x >= maxX && y >= maxY) || (x >= maxX && y < 0) || (x < 0 && y >= maxY))
-                                    value = smth[y - 2 * dy, x - 2 * dx];
-                                else if (x < 0 || x >= maxX)
-                                    value = smth[y, x - 2 * dx];
-                                else
-                                    value = smth[y - 2 * dy, x];
-                            }
-                            else
-                                value = smth[y, x];
-                            result[i, j] += value * gKernel[dy + size, dx + size];*/
                             if (x >= 0 && x < maxX && y >= 0 && y < maxY)
                             {
                                 double value = smth[y, x];
@@ -137,7 +150,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         {
             int maxY = image.GetLength(0) / W;
             int maxX = image.GetLength(1) / W;
-            double[,] lro = new double[maxX, maxY];
+            double[,] lro = new double[maxY, maxX];
             var cvf = GenerateLowPassFilteredContiniousVectorField(image);
 
             for (int i = 0; i < maxY; i++)

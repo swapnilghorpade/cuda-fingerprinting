@@ -21,7 +21,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
             Normalizer.Normalize(100, 500, img);
             var path = Path.GetTempPath() + "oldnumbers.png";
             var image = ImageHelper.SaveArrayToBitmap(img.Select2D(x => (double)x));            
-            const int W = 24;
+            const int W = 15;
             int maxY = img.GetLength(0) / W;
             int maxX = img.GetLength(1) / W;
             var p = new Pen(Color.White);
@@ -55,6 +55,9 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
                 {
                     // point in the middle of block
                     var middle = new Point(j * W + W / 2, i * W + W / 2);
+
+                    if (lro[i, j] < 0)
+                        lro[i, j] += 2 * Math.PI;
 
                     // y = (x - m.x) * tan(a) + m.y: through point 'm' with specified angle
 
