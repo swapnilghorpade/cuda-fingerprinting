@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #define ceilMod(x, y) (x+y-1)/y
-
+/*
 typedef struct 
 	{
 		int X;
@@ -19,7 +19,7 @@ typedef struct
 		Point* Points;
 		AreaStruct* Next;
 	} AreaStruct;
-/*  			
+  		
 bool IsNearBorder(Point* points, int size, int xBorder, int yBorder)
 {
 	for (int i = 0; i < size; i++)
@@ -224,6 +224,28 @@ AreaStruct* GenerateAreas(bool* mask, int maskX, int maskY, bool isBlack)
 				}
 				//cudaStatus = cudaDeviceSynchronize();
 				//cudaStatus = cudaGetLastError();
+
+
+
+
+				for (int i = 0; i < area.AreaSize; i++)
+//	{
+//		if (area.Points[i].X == iSearch && area.Points[i].Y == jSearch)
+//		{
+//			// 
+//			area.Points[area.AreaSize + 1].X = i;
+//			area.Points[area.AreaSize + 1].Y = j;
+//			area.AreaNumber++;
+//			toSetArea = areas.At(columnX*maskX + rowY, 1);
+//			toSetArea.Points = area.Points;
+//			areas.SetAt(columnX*maskX + rowY, 1, toSetArea);
+//			return;
+//		}
+//	}
+
+
+
+
                 continue;
             }
 			
@@ -321,7 +343,6 @@ void PostProcessing(bool* mask, int maskX, int maskY, int threshold)
 	cudaMask = FillAreas(imageAreas, mask, maskX, maskY, threshold);
 }
 */
-
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
 {
 	int row = defaultRow();
@@ -458,7 +479,6 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	  cudaError_t cudaStatus = cudaGetDeviceCount(&count);
 
 	  cudaStatus = cudaSetDevice(0);
-
 	  
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
