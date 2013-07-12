@@ -352,7 +352,7 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	return sourceImage;
 }
 
-/*void SaveMask(bool* mask,int width, int height, const char* name)
+void SaveMask(bool* mask,int width, int height, const char* name)
 {
 	FILE* f = fopen(name,"wb");
 	
@@ -373,7 +373,7 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	fwrite(ar, sizeof(char), (width*2+2)*height,f);
 	fclose(f);
 }
-*/
+
 
   int main() 
 /*void CUDASegmentator(int* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight);*/
@@ -510,10 +510,10 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	 // *maskWidth = (int)(CUDAmask.Width);
 	 // *maskHight = (int)CUDAmask.Height;
 
-	 // PostProcessing(mask, N, M, threshold);
+	  PostProcessing(mask, N, M, threshold);
 
 		//save mask
-	  //SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
+	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
 		
 	  CUDAmask.Dispose();
 	  cudaDeviceReset(); 
