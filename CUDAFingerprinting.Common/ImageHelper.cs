@@ -167,7 +167,27 @@ namespace CUDAFingerprinting.Common
                     }
                 }
             }
+        }
 
+        public static void SaveImageAsBinaryFloat(string pathFrom, string pathTo)
+        {
+            var bmp = new Bitmap(pathFrom);
+            using (var fs = new FileStream(pathTo, FileMode.Create, FileAccess.Write))
+            {
+                using (BinaryWriter bw = new BinaryWriter(fs))
+                {
+                    bw.Write(bmp.Width);
+                    bw.Write(bmp.Height);
+                    for (int row = 0; row < bmp.Height; row++)
+                    {
+                        for (int column = 0; column < bmp.Width; column++)
+                        {
+                            var value = (float)bmp.GetPixel(column, row).R;
+                            bw.Write(value);
+                        }
+                    }
+                }
+            }
         }
 
         public static void SaveIntArray(int[,] data, string path)

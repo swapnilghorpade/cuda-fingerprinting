@@ -6,7 +6,7 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{F2CF4953-53C3-4BDD-BAD5-C93D65E3F47C}</ProjectGuid>
+    <ProjectGuid>{668CC13B-4839-4CC7-887E-82AC9D95DC7A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests</RootNamespace>
