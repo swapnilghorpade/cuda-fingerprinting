@@ -12,7 +12,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         private const int W = 17;
         // Sigma of Gaussian's blur
         // from 0.34 to 0.65 for recommended size of low-pass filter
-        private const double sigma = 0.65; 
+        private const double sigma = 3; 
 
 
 
@@ -89,7 +89,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                         {
                             int x = j + dx;
                             int y = i + dy;
-                            double value = 0;
+                            /*
                             if (x < 0 || x >= maxX || y < 0 || y >= maxY)
                             {
                                 if ((x < 0 && y < 0) || (x >= maxX && y >= maxY) || (x >= maxX && y < 0) || (x < 0 && y >= maxY))
@@ -101,53 +101,18 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                             }
                             else
                                 value = smth[y, x];
-                            result[i, j] += value * gKernel[dy + size, dx + size];
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-
-        // Blur with some fixed step (use for frame's blur)
-        public static double[,] GenerateBlur(double[,] smth, int step)
-        {
-            int maxY = smth.GetLength(0);
-            int maxX = smth.GetLength(1);
-            var result = new double[maxY, maxX];
-            var gKernel = GenerateGaussianKernel(sigma);
-            int size = gKernel.GetLength(0) / 2;
-
-            for (int i = 0; i < maxY; i++)
-            {
-                for (int j = 0; j < maxX; j++)
-                {
-                    for (int dy = -size; dy <= size; dy++)
-                    {
-                        for (int dx = -size; dx <= size; dx++)
-                        {
-                            int x = j + dx * step;
-                            int y = i + dy * step;
-                            double value = 0;
-                            if (x < 0 || x >= maxX || y < 0 || y >= maxY)
+                            result[i, j] += value * gKernel[dy + size, dx + size];*/
+                            if (x >= 0 && x < maxX && y >= 0 && y < maxY)
                             {
-                                if ((x < 0 && y < 0) || (x >= maxX && y >= maxY) || (x >= maxX && y < 0) || (x < 0 && y >= maxY))
-                                    value = smth[y - 2 * dy * step, x - 2 * dx * step];
-                                else if (x < 0 || x >= maxX)
-                                    value = smth[y, x - 2 * dx * step];
-                                else
-                                    value = smth[y - 2 * dy * step, x];
+                                double value = smth[y, x];
+                                result[i, j] += value * gKernel[dy + size, dx + size];
                             }
-                            else
-                                value = smth[y, x];
-                            result[i, j] += value * gKernel[dy + size, dx + size];
                         }
                     }
                 }
             }
             return result;
         }
-
 
         // (x, y) pairs of continious vector field
         public static Tuple<double, double>[,] GenerateLowPassFilteredContiniousVectorField(int[,] image)

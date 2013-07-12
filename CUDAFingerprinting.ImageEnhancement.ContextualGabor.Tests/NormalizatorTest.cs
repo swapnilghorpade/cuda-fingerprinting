@@ -16,7 +16,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
         [TestMethod]
         public void NormalizeTest()
         {
-            var img = ImageHelper.LoadImageAsInt(TestResources.sample);
+            var img = ImageHelper.LoadImageAsInt(TestResources.goodFP);
             Normalizer.Normalize(100, 5000, img);
             Normalizer.LinearNormalize(0, 255, img);
             var path = Path.GetTempPath() + "normalizied.png";

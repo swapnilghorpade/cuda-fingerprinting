@@ -69,12 +69,12 @@ namespace CUDAFingerprinting.Common
 
         public static double[,] LoadImage(Bitmap bmp)
         {
-            double[,] imgBytes = new double[bmp.Width, bmp.Height];
+            double[,] imgBytes = new double[bmp.Height, bmp.Width];
             for (int x = 0; x < bmp.Width; x++)
             {
                 for (int y = 0; y < bmp.Height; y++)
                 {
-                    imgBytes[x, y] = bmp.GetPixel(x, y).R;
+                    imgBytes[y, x] = bmp.GetPixel(x, y).R;
                 }
             }
             return imgBytes;
@@ -82,12 +82,12 @@ namespace CUDAFingerprinting.Common
 
         public static int[,] LoadImageAsInt(Bitmap bmp)
         {
-            int[,] imgBytes = new int[bmp.Width, bmp.Height];
+            int[,] imgBytes = new int[bmp.Height, bmp.Width];
             for (int x = 0; x < bmp.Width; x++)
             {
                 for (int y = 0; y < bmp.Height; y++)
                 {
-                    imgBytes[x, y] = bmp.GetPixel(x, y).R;
+                    imgBytes[y, x] = bmp.GetPixel(x, y).R;
                 }
             }
             return imgBytes;
@@ -100,14 +100,14 @@ namespace CUDAFingerprinting.Common
 
         public static void SaveComplexArrayAsHSV(Complex[,] data, string path)
         {
-            int X = data.GetLength(0);
-            int Y = data.GetLength(1);
+            int X = data.GetLength(1);
+            int Y = data.GetLength(0);
             var bmp = new Bitmap(X, Y);
             for (int x = 0; x < X; x++)
             {
                 for (int y = 0; y < Y; y++)
                 {
-                    var HV = data[x, y];
+                    var HV = data[y, x];
                     var V = Math.Round(HV.Magnitude * 100);
                     var H = (int)(HV.Phase * 180 / Math.PI);
                     if (H < 0) H += 360;
@@ -197,13 +197,13 @@ namespace CUDAFingerprinting.Common
 
         public static Bitmap SaveArrayToBitmap(int[,] data)
         {
-            int x = data.GetLength(0);
-            int y = data.GetLength(1);
+            int x = data.GetLength(1);
+            int y = data.GetLength(0);
             var bmp = new Bitmap(x, y);
             data.Select2D((value, row, column) =>
             {
                 value = Math.Abs(value % 256);
-                bmp.SetPixel(row, column, Color.FromArgb(value, value, value));
+                bmp.SetPixel(column, row, Color.FromArgb(value, value, value));
                 return value;
             });
             return bmp;
@@ -211,8 +211,8 @@ namespace CUDAFingerprinting.Common
 
         public static Bitmap SaveArrayToBitmap(double[,] data)
         {
-            int x = data.GetLength(0);
-            int y = data.GetLength(1);
+            int x = data.GetLength(1);
+            int y = data.GetLength(0);
             var max = double.NegativeInfinity;
             var min = double.PositiveInfinity;
             foreach (var num in data)
@@ -224,7 +224,7 @@ namespace CUDAFingerprinting.Common
             data.Select2D((value, row, column) =>
             {
                 var gray = (int)((value - min) / (max - min) * 255);
-                bmp.SetPixel(row, column, Color.FromArgb(gray, gray, gray));
+                bmp.SetPixel(column, row, Color.FromArgb(gray, gray, gray));
                 return value;
             });
             return bmp;
@@ -328,8 +328,8 @@ namespace CUDAFingerprinting.Common
 
         public static void SaveArrayAsBinary(int[,] grid, string path)
         {
-            int X = grid.GetLength(0);
-            int Y = grid.GetLength(1);
+            int X = grid.GetLength(1);
+            int Y = grid.GetLength(0);
             using (var fs = new FileStream(path, FileMode.Create, FileAccess.Write))
             {
                 using (BinaryWriter bw = new BinaryWriter(fs))
@@ -341,7 +341,7 @@ namespace CUDAFingerprinting.Common
                     {
                         for (int x = 0; x < X; x++)
                         {
-                            bw.Write(grid[x,y]);
+                            bw.Write(grid[y, x]);
                         }
                     }
                 }
