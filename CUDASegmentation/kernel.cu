@@ -3,7 +3,15 @@
 #include "ConvolutionHelper.h"
 #include <stdio.h>
 
+extern "C"{
+
+__declspec(dllexport) void CUDASegmentator(int* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight);
+__declspec(dllexport) void PostProcessing(bool* mask, int maskX, int maskY, int threshold);
+
+}
+
 #define ceilMod(x, y) (x+y-1)/y
+
 /*
 typedef struct 
 	{
@@ -424,7 +432,7 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	return sourceImage;
 }
 
-void SaveMask(bool* mask,int width, int height, const char* name)
+/*void SaveMask(bool* mask,int width, int height, const char* name)
 {
 	FILE* f = fopen(name,"wb");
 	
@@ -445,11 +453,11 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	fwrite(ar, sizeof(char), (width*2+2)*height,f);
 	fclose(f);
 }
+*/
 
-  int main() /*char* pathToImg, float weightConstant, int windowSize, int threshold,//parmeters
-	  bool* mask,int* maskWidth, int* maskHight) //result*/
+  int main() 
+/*void CUDASegmentator(int* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight);*/
   {
-	  
 	  //parameters
 	  float weightConstant = 0.3; 
 	  int windowSize = 12;
@@ -468,13 +476,14 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	  }
 	  //source image
 	  CUDAArray<float> source = loadImage("C:\\temp\\104_6.bin");
-	  //CUDAArray<float> source = loadImage(pathToImg);
+	// CUDAArray<int> source = CUDAArray<int>(img, imgwidth, imgHeight);
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
 	  {
 		printf("CUDAArray<float> source = loadImage(...) - ERROR!!!\n");
 	  }
 
+	  // imgWidth, imgHeight
 	  int xSizeImg = source.Width;		  
 	  int ySizeImg = source.Height;
 
@@ -584,7 +593,7 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	 // PostProcessing(mask, N, M, threshold);
 
 		//save mask
-	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
+	  //SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
 		
 	  CUDAmask.Dispose();
 	  cudaDeviceReset(); 
