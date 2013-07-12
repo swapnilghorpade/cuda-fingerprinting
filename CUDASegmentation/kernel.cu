@@ -49,9 +49,11 @@ AreaStruct* FindAreaWithPoint(AreaStruct* areas, int i, int j)
 {
 	AreaStruct* result = 0;
 	AreaStruct* currentArea = areas;
-	Point* currentPoint = currentArea->Points;
+    Point* currentPoint = currentArea->Points;
+	
 	while(currentArea!=0)
 	{
+		currentPoint = currentArea->Points;
 		while(currentPoint!=0)
 		{
 			if(currentPoint->X ==i && currentPoint->Y ==j)
@@ -81,7 +83,7 @@ Point* findLastPoint(Point* points)
 	return lastPoint;
 }
 
-void MergeAreas(AreaStruct* areas, int maskX, int areasSize, int i, int j)
+void MergeAreas(AreaStruct* areas/*, int maskX , int areasSize*/, int i, int j)
 {
 	AreaStruct* firstArea = FindAreaWithPoint(areas, i-1, j);
 	AreaStruct* secondArea = FindAreaWithPoint(areas, i, j-1);
@@ -99,43 +101,30 @@ void MergeAreas(AreaStruct* areas, int maskX, int areasSize, int i, int j)
 	Point* lastPoint = findLastPoint(firstArea->Points);
 	
 	lastPoint->Next = newPoint;
+	firstArea->AreaSize +=1;
 
-	//remove secondArea
-	AreaStruct* prevArea = areas;
-	if(areas == secondArea)
+	if(firstArea!=secondArea)
 	{
-		areas = secondArea->Next;
-	}
-	else
-	{
-		while(prevArea->Next != secondArea)
+		//remove secondArea
+		AreaStruct* prevArea = areas;
+		if(areas == secondArea)
 		{
-			prevArea= prevArea->Next;
+			areas = secondArea->Next;	
 		}
-		prevArea->Next = secondArea->Next;
+		else
+		{
+			while(prevArea->Next != secondArea)
+			{
+				prevArea= prevArea->Next;
+			}
+			prevArea->Next = secondArea->Next;
+		}
+		free(secondArea);
 	}
-	free(secondArea);
 }
 
-bool IsLeftImageTopBlack(int i, int j, bool topValue, bool leftValue, bool isBlack) 
-{
-	return (j - 1 >= 0 && (topValue || isBlack) && !(topValue && isBlack) &&					//top block is black 
-           (i - 1 >= 0 && (leftValue || !isBlack) && !(leftValue && !isBlack)) || i - 1 < 0);	//left block is not black or not exist
-}
 
-bool IsLeftBlackTopImage(int i, int j, bool topValue, bool leftValue, bool isBlack) 
-{
-	return (i - 1 >= 0 && (leftValue || isBlack) && !(leftValue && isBlack) &&					//left block is black
-           (j - 1 >= 0 && (topValue || !isBlack) && !(topValue && !isBlack)) || j - 1 < 0);	    //top block is not black or not exist
-}
-
-bool IsLeftBlackTopBlack(int i, int j, bool topValue, bool leftValue, bool isBlack)
-{
-	return (j - 1 >= 0 && (topValue || isBlack) && !(topValue && isBlack) &&					//top block is black 
-            i - 1 >= 0 && (leftValue || isBlack) && !(leftValue && isBlack));					//left block is black
-}
-
-void fillArea(AreaStruct* areas, int iSearch, int jSearch, int i, int j)
+void AddPointToArea(AreaStruct* areas, int iSearch, int jSearch, int i, int j)
 {
 	AreaStruct* areaToAddPoint = FindAreaWithPoint(areas,iSearch,jSearch);
 	
@@ -145,51 +134,66 @@ void fillArea(AreaStruct* areas, int iSearch, int jSearch, int i, int j)
 	newPoint->X = i;
 	newPoint->Y = j;
 	newPoint->Next =0;
-
 	lastPoint->Next = newPoint;	
+	areaToAddPoint->AreaSize +=1;
 }
 
 AreaStruct* GenerateAreas(bool* mask, int maskX, int maskY, bool isBlack)
 {
-	int areaIndex = 0;
-	bool isLeftImageTopBlack = false, isLeftBlackTopImage = false, isLeftBlackTopBlack = false;
+	//int areaIndex = 0;
+	//bool isLeftImageTopBlack = false, isLeftBlackTopImage = false, isLeftBlackTopBlack = false;
 
 	AreaStruct* areas =0; 
 
-	for (int i = 0; i < maskX; i++)
+	for (int i = 0; i < maskY; i++)
     {
-		for (int j = 0; j < maskY; j++)
+		for (int j = 0; j <maskX; j++)
         {
-			if (!mask[i, j] && isBlack || mask[i, j] && !isBlack)
+			if (mask[i*maskX + j] && isBlack || !mask[i*maskX + j] && !isBlack)
             {
 				continue;
             }
 			
-			isLeftBlackTopImage = IsLeftBlackTopImage(i, j, mask[i, j - 1], mask[i - 1, j], isBlack);
-			isLeftImageTopBlack = IsLeftImageTopBlack(i, j, mask[i, j - 1], mask[i - 1, j], isBlack);
-			isLeftBlackTopBlack = IsLeftBlackTopBlack(i, j, mask[i, j - 1], mask[i - 1, j], isBlack);
-
-			if (isLeftBlackTopBlack)
-            {
-				MergeAreas(areas, maskX, i, j, areaIndex);
-				areaIndex--;
-				continue;
-            }
-			if (isLeftBlackTopImage || isLeftImageTopBlack)
-            {
-				
-				if (isLeftBlackTopImage)
+			if(isBlack)
+			{
+				if (j - 1 >= 0 && !mask[i*maskX + j - 1]&& i - 1 >= 0 && !mask[(i - 1)*maskX + j])
 				{
-
-					fillArea(areas,i-1, j, i, j);
+					MergeAreas(areas, i, j);
+					//areaIndex--;
+					continue;
 				}
-				else
+				if (j - 1 >= 0 && !mask[i*maskX + j - 1]&& (i - 1 >= 0 && mask[(i - 1)*maskX + j] || i - 1 < 0))
 				{
-					fillArea(areas, i, j-1, i, j);
+					AddPointToArea(areas, i, j-1, i, j);
+					continue;
 				}
-			   continue;
-            }
-			
+				if (i - 1 >= 0 && !mask[(i - 1)*maskX + j]&& (j - 1 >= 0 && mask[i*maskX + j - 1] || j - 1 < 0))
+				{
+					AddPointToArea(areas,i-1, j, i, j);
+					continue;
+				}
+			}
+			else
+			{
+				if (j - 1 >= 0 && mask[i*maskX + j - 1] && i - 1 >= 0 && mask[(i - 1)*maskX + j])
+				{					
+					MergeAreas(areas, i, j);
+					//areaIndex--;
+					continue;
+				}
+				if (j - 1 >= 0 && mask[i*maskX + j - 1] && (i - 1 >= 0 && !mask[(i - 1)*maskX + j] || i - 1 < 0))
+				{
+					AddPointToArea(areas, i, j-1, i, j);
+					continue;
+				}
+				if (i - 1 >= 0 && mask[i - 1, j] && (j - 1 >= 0 && !mask[i, j - 1] || j - 1 < 0))
+				{
+					AddPointToArea(areas,i-1, j, i, j);
+					continue;
+				}
+			}
+
+			   			
 			//create new area
 
 			Point* newPoint = (Point*) malloc (sizeof(Point));
@@ -198,25 +202,26 @@ AreaStruct* GenerateAreas(bool* mask, int maskX, int maskY, bool isBlack)
 			newPoint->Next =0;
 
 			AreaStruct* newArea = (AreaStruct*) malloc (sizeof(AreaStruct));
-			newArea->AreaNumber = areaIndex;
+			newArea->AreaNumber = 0;
 			newArea->AreaSize =1;
 			newArea->Points = newPoint;
 			newArea->Next = 0;
 
-			AreaStruct* currentArea = areas;
-			while(currentArea!=0&&currentArea->Next!=0)
+			
+			if(areas==0)
 			{
-				if(currentArea ==0)
-				{
-					currentArea = newArea;
-				}
-				else
-				{
-					currentArea->Next = newArea;
-				}
+				areas=newArea;
 			}
-
-			areaIndex++;
+			else
+			{
+				AreaStruct* currentArea = areas;
+				while(currentArea->Next!=0)
+				{
+					currentArea = currentArea->Next;
+				}
+				currentArea->Next = newArea;			
+			}			
+			//areaIndex++;
 		}
 	}
 	return areas;
@@ -224,11 +229,11 @@ AreaStruct* GenerateAreas(bool* mask, int maskX, int maskY, bool isBlack)
 
 bool* FillAreas(AreaStruct* areas, bool* mask, int maskX, int maskY, int threshold, bool isBlack)
 {
-	for(int i = 0; i < maskX; i++)
+	for(int i = 0; i < maskY; i++)
 	{
-		for(int j = 0; j < maskY; j++)
+		for(int j = 0; j < maskX; j++)
 		{
-			if(mask[i, j] && isBlack || !mask[i, j] && !isBlack)
+			if(mask[i*maskX+ j] && isBlack || !mask[i*maskX+ j] && !isBlack)
 			{
 				break;		
 			}
@@ -238,7 +243,7 @@ bool* FillAreas(AreaStruct* areas, bool* mask, int maskX, int maskY, int thresho
 			if( isBlack && ((currentArea->AreaSize) < threshold) && !IsNearBorder(currentArea->Points, maskX, maskY)
 				|| !isBlack &&((currentArea->AreaSize) < threshold))
 			{
-				mask[i, j]= !mask[i, j];
+				mask[i*maskX+ j]= !mask[i*maskX+ j];
 			}
 		}
 	}
@@ -301,6 +306,7 @@ __global__ void cudaGetMask(CUDAArray<float> initialArray, CUDAArray<bool> mask,
 		mask.SetAt(defaultRow(),defaultColumn(),result);
 	}
 }
+
 float GetAverageFromArray(CUDAArray<float> arrayToAverage)
 {
 	float sum = 0;
@@ -395,7 +401,7 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 		printf("CUDAArray<float> source = loadImage(...) - ERROR!!!\n");
 	  }
 	  //source image
-	  CUDAArray<float> source = loadImage("C:\\temp\\104_6.bin");
+	  CUDAArray<float> source = loadImage("C:\\temp\\1_7.bin");
 	// CUDAArray<int> source = CUDAArray<int>(img, imgwidth, imgHeight);
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
@@ -448,8 +454,8 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 
 	  Convolve(xGradient, source, xKernel);
 	  Convolve(yGradient, source, yKernel);
-	  SaveArray(xGradient,"C:\\temp\\xGradient.bin");
-	  SaveArray(yGradient,"C:\\temp\\yGradient.bin");
+	  //SaveArray(xGradient,"C:\\temp\\xGradient.bin");
+	  //SaveArray(yGradient,"C:\\temp\\yGradient.bin");
 
 	  //magnitude of gradient
 	  CUDAArray<float> magnitude = CUDAArray<float>(xSizeImg,ySizeImg);
@@ -466,7 +472,7 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 		printf("cudaGetMask - ERROR!!!\n");
 	  }
 
-	  SaveArray(magnitude,"C:\\temp\\magnitude.bin");
+	  //SaveArray(magnitude,"C:\\temp\\magnitude.bin");
 	  xGradient.Dispose();
 	  yGradient.Dispose();
 	  xKernel.Dispose();
@@ -509,11 +515,11 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	  bool* mask = CUDAmask.GetData();
 	 // *maskWidth = (int)(CUDAmask.Width);
 	 // *maskHight = (int)CUDAmask.Height;
-
+	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
 	  PostProcessing(mask, N, M, threshold);
 
 		//save mask
-	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
+	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\maskPost.txt");
 		
 	  CUDAmask.Dispose();
 	  cudaDeviceReset(); 
