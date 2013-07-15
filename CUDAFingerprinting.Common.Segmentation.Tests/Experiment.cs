@@ -64,6 +64,8 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
         public void GpuTest()
         {
             string pathToSave = Path.GetTempPath() + "mask.txt";
+            string pathToSave1 = Path.GetTempPath() + "mask1.txt";
+
             int maskX = CeilMod(img.GetLength(0), windowSize);
             int maskY = CeilMod(img.GetLength(1), windowSize);
             bool[] mask = new bool[maskX * maskY + 1];
@@ -76,11 +78,15 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
                     oneDimensionalBinaryImg[j * binaryImg.GetLength(0) + i] = binaryImg[i, j];
                 }
             }
-
+            mask[2] = true;
+            //mask[] = true;
             CUDASegmentator(oneDimensionalBinaryImg, binaryImg.GetLength(0), binaryImg.GetLength(1), (float)weight, windowSize, mask, maskX, maskY);
-            PostProcessing(mask, maskX, maskY, threshold);
 
-            SaveMask(mask, binaryImg.GetLength(0), binaryImg.GetLength(1), pathToSave);
+            SaveMask(mask, maskX, maskY, pathToSave);
+            
+           // PostProcessing(mask, maskX, maskY, threshold);
+
+           // SaveMask(mask, maskX, maskY, pathToSave1);
         }
 
         private int CeilMod(int x, int y)
@@ -96,7 +102,7 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
             {
                 for(int j = 0; j < height; j++)
                 {
-                    writer.Write(mask[j*width + i]);
+                    writer.Write(mask[j*width + i] ? 1 : 0);
                 }
 
                writer.WriteLine(" ");

@@ -83,7 +83,7 @@ Point* findLastPoint(Point* points)
 	return lastPoint;
 }
 
-void MergeAreas(AreaStruct* areas/*, int maskX , int areasSize*/, int i, int j)
+void MergeAreas(AreaStruct* areas, int i, int j)
 {
 	AreaStruct* firstArea = FindAreaWithPoint(areas, i-1, j);
 	AreaStruct* secondArea = FindAreaWithPoint(areas, i, j-1);
@@ -255,6 +255,8 @@ void PostProcessing(bool* mask, int maskX, int maskY, int threshold)
 	mask = FillAreas(blackAreas, mask, maskX, maskY, threshold, true);
 	AreaStruct* imageAreas = GenerateAreas(mask, maskX, maskY, false);
 	mask = FillAreas(imageAreas, mask, maskX, maskY, threshold, false);
+
+	//return mask;
 }
 
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
@@ -318,7 +320,7 @@ float GetAverageFromArray(CUDAArray<float> arrayToAverage)
 	return sum/(arrayToAverage.Height*arrayToAverage.Width);
 	
 }
-
+/*
 CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 {
 	FILE* f = fopen(name,"rb");
@@ -378,26 +380,22 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	fwrite(ar, sizeof(char), (width*2+2)*height,f);
 	fclose(f);
 }
-
+*/
 void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight)
   {
+	  mask[0] = true;
+	  return;
 	  //parameters
 	 // float weightConstant = 0.3; 
 	 // int windowSize = 12;
 	 // int threshold = 5;
 
-	  int count = 100500;
+	 // int count = 100500;
 	  
-	  cudaError_t cudaStatus = cudaGetDeviceCount(&count);
+	 // cudaError_t cudaStatus = cudaGetDeviceCount(&count);
 
-	  cudaStatus = cudaSetDevice(0);
+	  cudaError_t cudaStatus = cudaSetDevice(0);
 	  
-	  cudaStatus = cudaGetLastError();
-
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("CUDAArray<float> source = loadImage(...) - ERROR!!!\n");
-	  }
 	  //source image
 	  //CUDAArray<float> source = loadImage("C:\\temp\\1_7.bin");
 	 CUDAArray<float> source = CUDAArray<float>(img, imgWidth, imgHeight);
@@ -408,11 +406,11 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 	  }
 
 	  // imgWidth, imgHeight
-	  int xSizeImg = source.Width;		  
-	  int ySizeImg = source.Height;
+	 // int imgWidth = source.Width;		  
+	  //int ySizeImg = source.Height;
 
 	  // Sobel:	  
-	  CUDAArray<float> xGradient = CUDAArray<float>(xSizeImg,ySizeImg);
+	  CUDAArray<float> xGradient = CUDAArray<float>(imgWidth,imgHeight);
 	  //SaveArray(xGradient,"C:\\temp\\xGradientEmpty.bin");
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
@@ -420,7 +418,7 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 		printf("Create xGradient[] - ERROR!!!\n");
 	  }
 
-	  CUDAArray<float> yGradient = CUDAArray<float>(xSizeImg,ySizeImg);
+	  CUDAArray<float> yGradient = CUDAArray<float>(imgWidth,imgHeight);
 
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
@@ -456,7 +454,7 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 	  //SaveArray(yGradient,"C:\\temp\\yGradient.bin");
 
 	  //magnitude of gradient
-	  CUDAArray<float> magnitude = CUDAArray<float>(xSizeImg,ySizeImg);
+	  CUDAArray<float> magnitude = CUDAArray<float>(imgWidth,imgHeight);
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
 	  {
@@ -510,17 +508,23 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 
 	  magnitude.Dispose();
 
-	  mask = CUDAmask.GetData();
-	 // *maskWidth = (int)(CUDAmask.Width);
-	 // *maskHight = (int)CUDAmask.Height;
-	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
-	//  PostProcessing(mask, N, M, threshold);
+	// mask =  CUDAmask.GetData();
+
+	  bool* maskToReturn = CUDAmask.cudaPtr;
+
+	 cudaStatus = cudaMemcpy(mask, maskToReturn, N*M*sizeof(bool),cudaMemcpyDeviceToHost); 
+
+	 //  PostProcessing(mask, N, M, threshold);
 
 		//save mask
-	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\maskPost.txt");
+	//  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\maskPost.txt");
 		
 	  CUDAmask.Dispose();
-	  cudaDeviceReset(); 
+	  cudaDeviceReset();
+
+	  mask[0] = true;
+
+	 // return mask;
 }
 
 

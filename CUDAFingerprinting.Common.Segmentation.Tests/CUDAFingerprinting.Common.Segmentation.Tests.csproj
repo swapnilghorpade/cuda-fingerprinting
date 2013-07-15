@@ -84,7 +84,8 @@
     <None Include="Resources\2_2_.tif" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CUDASegmentation.dll">
+    <Content Include="..\Debug\CUDASegmentation.dll">
+      <Link>CUDASegmentation.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
