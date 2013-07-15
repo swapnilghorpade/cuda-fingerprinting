@@ -82,12 +82,12 @@ namespace CUDAFingerprinting.Common
 
         public static int[,] LoadImageAsInt(Bitmap bmp)
         {
-            int[,] imgBytes = new int[bmp.Height, bmp.Width];
+            int[,] imgBytes = new int[bmp.Width, bmp.Height];
             for (int x = 0; x < bmp.Width; x++)
             {
                 for (int y = 0; y < bmp.Height; y++)
                 {
-                    imgBytes[y, x] = bmp.GetPixel(x, y).R;
+                    imgBytes[x, y] = bmp.GetPixel(x, y).R;
                 }
             }
             return imgBytes;

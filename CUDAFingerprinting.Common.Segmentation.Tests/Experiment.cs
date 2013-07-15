@@ -13,13 +13,13 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
     {
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "CUDASegmentator")]
         private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant, 
-                                                int windowSize, bool[] mask, int maskWidth, int maskHight);
+                                                int windowSize, int[] mask, int maskWidth, int maskHight);
 
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "PostProcessing")]
-        private static extern void PostProcessing(bool[] mask, int maskX, int maskY, int threshold);
-
+        private static extern void PostProcessing(int[] mask, int maskX, int maskY, int threshold);
+        
         private double[,] img = ImageHelper.LoadImage(Resources._2_2);
-        private int[,] binaryImg = ImageHelper.LoadImageAsInt(Resources._104_6);
+        private int[,] binaryImg = ImageHelper.LoadImageAsInt(Resources._2_2);
         private int windowSize = 12;
         private double weight = 0.3;
         private int threshold = 5;
@@ -56,8 +56,11 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
         [TestMethod]
         public void MakeBinFromImage()
         {
-            ImageHelper.SaveImageAsBinary("C:\\Users\\Tanya\\Documents\\tests_data\\103_7.tif",
-                "C:\\Users\\Tanya\\Documents\\tests_data\\103_7.bin");
+            //ImageHelper.SaveImageAsBinary("C:\\temp\\104_6.png",
+            //    "C:\\temp\\104_6.bin");
+
+            ImageHelper.SaveImageAsBinary("C:\\temp\\2_2_.tif",
+                "C:\\temp\\2_2.bin");
         }
 
         [TestMethod]
@@ -66,10 +69,10 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
             string pathToSave = Path.GetTempPath() + "mask.txt";
             string pathToSave1 = Path.GetTempPath() + "mask1.txt";
 
-            int maskX = CeilMod(img.GetLength(0), windowSize);
-            int maskY = CeilMod(img.GetLength(1), windowSize);
-            bool[] mask = new bool[maskX * maskY + 1];
-            float[] oneDimensionalBinaryImg = new float[binaryImg.GetLength(0) * binaryImg.GetLength(1) + 1];
+            int maskX = (int)Math.Ceiling((double)binaryImg.GetLength(0)/ windowSize);
+            int maskY = (int)Math.Ceiling((double)binaryImg.GetLength(1)/ windowSize);
+            int[] mask = new int[maskX * maskY];
+            float[] oneDimensionalBinaryImg = new float[binaryImg.GetLength(0) * binaryImg.GetLength(1)];
 
             for (int i = 0; i < binaryImg.GetLength(0); i++)
             {
@@ -78,23 +81,17 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
                     oneDimensionalBinaryImg[j * binaryImg.GetLength(0) + i] = binaryImg[i, j];
                 }
             }
-            mask[2] = true;
-            //mask[] = true;
+            
             CUDASegmentator(oneDimensionalBinaryImg, binaryImg.GetLength(0), binaryImg.GetLength(1), (float)weight, windowSize, mask, maskX, maskY);
 
             SaveMask(mask, maskX, maskY, pathToSave);
             
-           // PostProcessing(mask, maskX, maskY, threshold);
+            PostProcessing(mask, maskX, maskY, threshold);
 
-           // SaveMask(mask, maskX, maskY, pathToSave1);
+            SaveMask(mask, maskX, maskY, pathToSave1);
         }
 
-        private int CeilMod(int x, int y)
-        {
-            return (x + y - 1) / y;
-        }
-
-        private void SaveMask(bool[] mask, int width, int height, string path)
+        private void SaveMask(int[] mask, int width, int height, string path)
         {
             StreamWriter writer = new StreamWriter(path, false);
 
@@ -102,7 +99,7 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
             {
                 for(int j = 0; j < height; j++)
                 {
-                    writer.Write(mask[j*width + i] ? 1 : 0);
+                    writer.Write(mask[j*width + i]);
                 }
 
                writer.WriteLine(" ");

@@ -5,9 +5,8 @@
 
 extern "C"{
 
-__declspec(dllexport) void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight);
-__declspec(dllexport) void PostProcessing(bool* mask, int maskX, int maskY, int threshold);
-
+__declspec(dllexport) void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, int* mask, int maskWidth, int maskHight);
+__declspec(dllexport) void PostProcessing(int* mask, int maskX, int maskY, int threshold);
 }
 
 #define ceilMod(x, y) (x+y-1)/y
@@ -21,25 +20,26 @@ struct Point
 
 struct AreaStruct
 	{
-		int AreaNumber;
 		int AreaSize;
 		Point* Points;
 		AreaStruct* Next;
 	} ;
 
-
 bool IsNearBorder(Point* points, int xBorder, int yBorder)
 {
 	Point* current = points;
-	while(current!=0)
+
+	while(current != 0)
     {
 		if (current->X == 0 || 
 			current->Y == 0 ||
-			current->X == xBorder-1 || 
-			current->Y == yBorder-1)
+			current->X == xBorder - 1 || 
+			current->Y == yBorder - 1)
 		{
 			return true;
 		}
+
+		current = current->Next;
 	}
 
 	return false;
@@ -49,61 +49,63 @@ AreaStruct* FindAreaWithPoint(AreaStruct* areas, int i, int j)
 {
 	AreaStruct* result = 0;
 	AreaStruct* currentArea = areas;
-    Point* currentPoint = currentArea->Points;
+    Point* currentPoint;
 	
-	while(currentArea!=0)
+	while(currentArea != 0)
 	{
+		
 		currentPoint = currentArea->Points;
-		while(currentPoint!=0)
+
+		while(currentPoint != 0)
 		{
-			if(currentPoint->X ==i && currentPoint->Y ==j)
+			if(currentPoint->X == i && currentPoint->Y == j)
 			{
-				result = currentArea;
-				break;
+				return currentArea;
 			}
+
 			currentPoint = currentPoint->Next;
 		}
-		if(result !=0)
-		{
-			break;
-		}
+
 		currentArea = currentArea->Next;
 	}
+
 	return result;
 }
 
 Point* findLastPoint(Point* points)
 {
-	Point* lastPoint =0;
-	lastPoint = points;
-	while(lastPoint->Next!=0)
+	Point* lastPoint = points;
+
+	while(lastPoint->Next != 0)
 	{
 		lastPoint = lastPoint->Next;
-	}
+	} 
+
 	return lastPoint;
 }
 
 void MergeAreas(AreaStruct* areas, int i, int j)
 {
-	AreaStruct* firstArea = FindAreaWithPoint(areas, i-1, j);
-	AreaStruct* secondArea = FindAreaWithPoint(areas, i, j-1);
+	AreaStruct* firstArea = FindAreaWithPoint(areas, i - 1, j);
+	AreaStruct* secondArea = FindAreaWithPoint(areas, i, j - 1);
                        
 	if (firstArea != secondArea)
 	{
 		Point* lastPoint = findLastPoint(firstArea->Points);
 		lastPoint->Next = secondArea->Points;
+		firstArea->AreaSize += secondArea->AreaSize;
 	}
     	
-	Point* newPoint = (Point*) malloc (sizeof(Point));	
+	Point* newPoint = (Point*)malloc(sizeof(Point));	
 	newPoint->X = i;
 	newPoint->Y = j;
-	newPoint->Next =0;
+	newPoint->Next = 0;
 	Point* lastPoint = findLastPoint(firstArea->Points);
 	
 	lastPoint->Next = newPoint;
 	firstArea->AreaSize +=1;
 
-	if(firstArea!=secondArea)
+	if(firstArea != secondArea)
 	{
 		//remove secondArea
 		AreaStruct* prevArea = areas;
@@ -115,38 +117,37 @@ void MergeAreas(AreaStruct* areas, int i, int j)
 		{
 			while(prevArea->Next != secondArea)
 			{
-				prevArea= prevArea->Next;
+				prevArea = prevArea->Next;
 			}
+
 			prevArea->Next = secondArea->Next;
 		}
+
 		free(secondArea);
 	}
 }
 
 void AddPointToArea(AreaStruct* areas, int iSearch, int jSearch, int i, int j)
 {
-	AreaStruct* areaToAddPoint = FindAreaWithPoint(areas,iSearch,jSearch);
+	AreaStruct* areaToAddPoint = FindAreaWithPoint(areas, iSearch, jSearch);
 	
 	Point* lastPoint = findLastPoint(areaToAddPoint->Points);
 	
-	Point* newPoint = (Point*) malloc (sizeof(Point));	
+	Point* newPoint = (Point*)malloc(sizeof(Point));	
 	newPoint->X = i;
 	newPoint->Y = j;
-	newPoint->Next =0;
+	newPoint->Next = 0;
 	lastPoint->Next = newPoint;	
-	areaToAddPoint->AreaSize +=1;
+	areaToAddPoint->AreaSize += 1;
 }
 
-AreaStruct* GenerateAreas(bool* mask, int maskX, int maskY, bool isBlack)
+AreaStruct* GenerateAreas(int* mask, int maskX, int maskY, bool isBlack)
 {
-	//int areaIndex = 0;
-	//bool isLeftImageTopBlack = false, isLeftBlackTopImage = false, isLeftBlackTopBlack = false;
-
-	AreaStruct* areas =0; 
+	AreaStruct* areas = 0; 
 
 	for (int i = 0; i < maskY; i++)
     {
-		for (int j = 0; j <maskX; j++)
+		for (int j = 0; j < maskX; j++)
         {
 			if (mask[i*maskX + j] && isBlack || !mask[i*maskX + j] && !isBlack)
             {
@@ -155,108 +156,101 @@ AreaStruct* GenerateAreas(bool* mask, int maskX, int maskY, bool isBlack)
 			
 			if(isBlack)
 			{
-				if (j - 1 >= 0 && !mask[i*maskX + j - 1]&& i - 1 >= 0 && !mask[(i - 1)*maskX + j])
+				if (j - 1 >= 0 && i - 1 >= 0 && !mask[i*maskX + j - 1] && !mask[(i - 1)*maskX + j])
 				{
 					MergeAreas(areas, i, j);
-					//areaIndex--;
 					continue;
 				}
-				if (j - 1 >= 0 && !mask[i*maskX + j - 1]&& (i - 1 >= 0 && mask[(i - 1)*maskX + j] || i - 1 < 0))
+				if (j - 1 >= 0 && !mask[i*maskX + j - 1] && (i - 1 < 0 || i - 1 >= 0 && mask[(i - 1) * maskX + j]))
 				{
 					AddPointToArea(areas, i, j-1, i, j);
 					continue;
 				}
-				if (i - 1 >= 0 && !mask[(i - 1)*maskX + j]&& (j - 1 >= 0 && mask[i*maskX + j - 1] || j - 1 < 0))
+				if (i - 1 >= 0 && !mask[(i - 1) * maskX + j] && (j - 1 < 0 || j - 1 >= 0 && mask[i * maskX + j - 1]))
 				{
-					AddPointToArea(areas,i-1, j, i, j);
+					AddPointToArea(areas, i-1, j, i, j);
 					continue;
 				}
 			}
 			else
 			{
-				if (j - 1 >= 0 && mask[i*maskX + j - 1] && i - 1 >= 0 && mask[(i - 1)*maskX + j])
+				if (j - 1 >= 0 && i - 1 >= 0 && mask[i * maskX + j - 1] && mask[(i - 1) * maskX + j])
 				{					
 					MergeAreas(areas, i, j);
-					//areaIndex--;
 					continue;
 				}
-				if (j - 1 >= 0 && mask[i*maskX + j - 1] && (i - 1 >= 0 && !mask[(i - 1)*maskX + j] || i - 1 < 0))
+				if (j - 1 >= 0 && mask[i * maskX + j - 1] && (i - 1 < 0 || i - 1 >= 0 && !mask[(i - 1) * maskX + j]))
 				{
-					AddPointToArea(areas, i, j-1, i, j);
+					AddPointToArea(areas, i, j - 1, i, j);
 					continue;
 				}
-				if (i - 1 >= 0 && mask[i - 1, j] && (j - 1 >= 0 && !mask[i, j - 1] || j - 1 < 0))
+				if (i - 1 >= 0 && mask[(i - 1) * maskX + j] && (j - 1 < 0 || j - 1 >= 0 && !mask[i * maskX + j - 1]))
 				{
-					AddPointToArea(areas,i-1, j, i, j);
+					AddPointToArea(areas, i - 1, j, i, j);
 					continue;
 				}
 			}
 
-			   			
 			//create new area
 
-			Point* newPoint = (Point*) malloc (sizeof(Point));
+			Point* newPoint = (Point*)malloc(sizeof(Point));
 			newPoint->X = i;
 			newPoint->Y = j;
-			newPoint->Next =0;
+			newPoint->Next = 0;
 
-			AreaStruct* newArea = (AreaStruct*) malloc (sizeof(AreaStruct));
-			newArea->AreaNumber = 0;
-			newArea->AreaSize =1;
+			AreaStruct* newArea = (AreaStruct*)malloc(sizeof(AreaStruct));
+			newArea->AreaSize = 1;
 			newArea->Points = newPoint;
 			newArea->Next = 0;
 
 			
-			if(areas==0)
+			if(areas == 0)
 			{
 				areas=newArea;
 			}
 			else
 			{
 				AreaStruct* currentArea = areas;
-				while(currentArea->Next!=0)
+				while(currentArea->Next != 0)
 				{
 					currentArea = currentArea->Next;
 				}
 				currentArea->Next = newArea;			
 			}			
-			//areaIndex++;
 		}
 	}
 	return areas;
 }
 
-bool* FillAreas(AreaStruct* areas, bool* mask, int maskX, int maskY, int threshold, bool isBlack)
+int* FillAreas(AreaStruct* areas, int* mask, int maskX, int maskY, int threshold, bool isBlack)
 {
 	for(int i = 0; i < maskY; i++)
 	{
 		for(int j = 0; j < maskX; j++)
 		{
-			if(mask[i*maskX+ j] && isBlack || !mask[i*maskX+ j] && !isBlack)
+			if(mask[i * maskX + j] && isBlack || !mask[i * maskX + j] && !isBlack)
 			{
-				break;		
+				continue;		
 			}
 
-			AreaStruct* currentArea = FindAreaWithPoint(areas, i,j); 
+			AreaStruct* currentArea = FindAreaWithPoint(areas, i, j); 
 
 			if( isBlack && ((currentArea->AreaSize) < threshold) && !IsNearBorder(currentArea->Points, maskX, maskY)
 				|| !isBlack &&((currentArea->AreaSize) < threshold))
 			{
-				mask[i*maskX+ j]= !mask[i*maskX+ j];
+				mask[i * maskX + j]= mask[i * maskX + j] ? 0 : 1;
 			}
 		}
 	}
 	return mask;
 }
 
-void PostProcessing(bool* mask, int maskX, int maskY, int threshold)
+void PostProcessing(int* mask, int maskX, int maskY, int threshold)
 {
 	AreaStruct* blackAreas = GenerateAreas(mask, maskX, maskY, true);
 	mask = FillAreas(blackAreas, mask, maskX, maskY, threshold, true);
 	AreaStruct* imageAreas = GenerateAreas(mask, maskX, maskY, false);
 	mask = FillAreas(imageAreas, mask, maskX, maskY, threshold, false);
-
-	//return mask;
 }
 
 __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
@@ -278,7 +272,7 @@ void GetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAAr
 	cudaError_t error = cudaDeviceSynchronize();
 }
 
-__global__ void cudaGetMask(CUDAArray<float> initialArray, CUDAArray<bool> mask, int blockSize, float average)
+__global__ void cudaGetMask(CUDAArray<float> initialArray, CUDAArray<int> mask, int blockSize, float average)
 {
 	if(defaultRow()<mask.Height&&defaultColumn()<mask.Width)
 	{
@@ -303,7 +297,7 @@ __global__ void cudaGetMask(CUDAArray<float> initialArray, CUDAArray<bool> mask,
 			
 		}
 		float avg = sum/(blockSize*blockSize);
-		bool result = !(avg < average);
+		int result = (int)(!(avg < average));
 		mask.SetAt(defaultRow(),defaultColumn(),result);
 	}
 }
@@ -320,7 +314,7 @@ float GetAverageFromArray(CUDAArray<float> arrayToAverage)
 	return sum/(arrayToAverage.Height*arrayToAverage.Width);
 	
 }
-/*
+
 CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 {
 	FILE* f = fopen(name,"rb");
@@ -359,18 +353,18 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	return sourceImage;
 }
 
-void SaveMask(bool* mask,int width, int height, const char* name)
+void SaveMask(int* mask,int width, int height, const char* name)
 {
 	FILE* f = fopen(name,"wb");
 	
 	char* ar = (char*)malloc(sizeof(char)*(width*2+2)*height);
-	int k =0;
-	for(int i =0; i<height; i++)
-	{
-		for(int j =0; j<width; j++)
-		{
+	int k = 0;
 
-			ar[k++] = mask[j+i*width]?49:48;
+	for(int i = 0; i < height; i++)
+	{
+		for(int j = 0; j < width; j++)
+		{
+			ar[k++] = mask[j + i * width] ? 49 : 48;
 			ar[k++] = ' ';
 		}
 		ar[k++] = 10;
@@ -380,34 +374,24 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	fwrite(ar, sizeof(char), (width*2+2)*height,f);
 	fclose(f);
 }
-*/
-void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight)
+
+void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, int* mask, int maskWidth, int maskHight)
   {
-	  mask[0] = true;
-	  return;
-	  //parameters
-	 // float weightConstant = 0.3; 
-	 // int windowSize = 12;
-	 // int threshold = 5;
-
-	 // int count = 100500;
-	  
-	 // cudaError_t cudaStatus = cudaGetDeviceCount(&count);
-
+	 
 	  cudaError_t cudaStatus = cudaSetDevice(0);
 	  
 	  //source image
-	  //CUDAArray<float> source = loadImage("C:\\temp\\1_7.bin");
+
+	/*  CUDAArray<float> source = loadImage("C:\\temp\\2_2.bin");
+	  int imgWidth = source.Width;
+	  int imgHeight = source.Height;*/
+
 	 CUDAArray<float> source = CUDAArray<float>(img, imgWidth, imgHeight);
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
 	  {
 		printf("CUDAArray<float> source = loadImage(...) - ERROR!!!\n");
 	  }
-
-	  // imgWidth, imgHeight
-	 // int imgWidth = source.Width;		  
-	  //int ySizeImg = source.Height;
 
 	  // Sobel:	  
 	  CUDAArray<float> xGradient = CUDAArray<float>(imgWidth,imgHeight);
@@ -478,16 +462,21 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 	  float average = GetAverageFromArray(magnitude);
 
 	  //dementions of mask
-	  int N = (int)ceil(((double)source.Width) / windowSize);
-	  int M = (int)ceil(((double)source.Height) / windowSize);
+	//  int N = (int)ceil(((double)source.Width) / windowSize);
+	 // int M = (int)ceil(((double)source.Height) / windowSize);
 	  
 	  //thread configuration in CUDA
+	  /*	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+		dim3 gridSize = dim3(ceilMod(N,defaultThreadCount),
+							ceilMod(M,defaultThreadCount));*/
+
 	  	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
-		dim3 gridSize =dim3(ceilMod(N,defaultThreadCount),
-							ceilMod(M,defaultThreadCount));
+		dim3 gridSize = dim3(ceilMod(maskWidth, defaultThreadCount),
+							ceilMod(maskHight, defaultThreadCount));
 
 		//mask creation
-		CUDAArray<bool> CUDAmask = CUDAArray<bool>(mask, N, M);
+		CUDAArray<int> CUDAmask = CUDAArray<int>(mask, maskWidth, maskHight);
+		//CUDAArray<int> CUDAmask = CUDAArray<int>(N, M);
 		 if (cudaStatus != cudaSuccess) 
 	  {
 		printf("create Mask - ERROR!!!\n");
@@ -508,23 +497,45 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 
 	  magnitude.Dispose();
 
-	// mask =  CUDAmask.GetData();
+	 CUDAmask.GetData(mask);
+	 //int* mask = CUDAmask.GetData();
+	// SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
+	 
+	 //int threshold = 5;
+	// PostProcessing(mask, N, M, threshold);
 
-	  bool* maskToReturn = CUDAmask.cudaPtr;
-
-	 cudaStatus = cudaMemcpy(mask, maskToReturn, N*M*sizeof(bool),cudaMemcpyDeviceToHost); 
-
-	 //  PostProcessing(mask, N, M, threshold);
-
-		//save mask
+	//save mask
 	//  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\maskPost.txt");
 		
 	  CUDAmask.Dispose();
 	  cudaDeviceReset();
 
-	  mask[0] = true;
-
-	 // return mask;
+	 // return 0;
 }
 
+void main()
+{
+	 CUDAArray<float> source = loadImage("C:\\temp\\2_2.bin");
+	 float* sourceFloat = source.GetData();
 
+	 int imgWidth = source.Width;
+	 int imgHeight = source.Height;
+
+	 float weightConstant = 0.3; 
+	 int windowSize = 12;
+	 int threshold = 5;
+
+	 int maskX = (int)ceil(((double)imgWidth) / windowSize);
+	 int maskY = (int)ceil(((double)imgHeight) / windowSize);
+
+	 int* mask = 0;
+	 mask = (int*)malloc(maskX*maskY*sizeof(int));
+
+	 CUDASegmentator(sourceFloat, imgWidth, imgHeight, weightConstant, windowSize, mask, maskX, maskY);
+	 SaveMask(mask, maskX, maskY, "C:\\temp\\maskCUDASegmentator.txt");
+
+	 PostProcessing(mask, maskX, maskY, threshold);
+	 SaveMask(mask,maskX, maskY, "C:\\temp\\maskPostProcessing.txt");
+
+	 free(mask);
+}
