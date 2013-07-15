@@ -7,16 +7,16 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
 {
     public static class LSA
     {
-        private static double FindMax(bool[] usedRows, bool[] usedColumns, double[,] arr)
+        private static double FindMin(bool[] usedRows, bool[] usedColumns, double[,] arr)
         {
             int dim = arr.GetLength(0);
-            double max = 0;
+            double min = 5001;
             for (int i = 0; i < dim; i++)
                 for (int j = 0; j < dim; j++)
                     if ((!usedRows[i]) && (!usedColumns[j]))
-                        if (arr[i, j] > max)
-                            max = arr[i, j];
-            return max;
+                        if (arr[i, j] <min)
+                            min = arr[i, j];
+            return min;
         }
         private static void ReduceMatrix(double[,] arr)
         {
@@ -47,8 +47,9 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
             for (int i = 0; i < dim; i++)
                 for (int j = 0; j < dim; j++)
                     if ((!usedRows[i]) && (!usedColumns[j]))
-                        arr[i, j] -= value;
+                        arr[i, j] = arr[i, j] - value;
         }
+
         private static bool FindWay(int FirstPoint, int[] tempUsedRows, int[] tempUsedColumns, bool[] usedRows,
                                     bool[] usedColumns, double[,] arr)
         {
@@ -59,68 +60,64 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
                 for (int i = 0; (i < dim) && (!Find); i++)
                     if ((!usedRows[i]) && (tempUsedRows[i] < 0))
                         for (int j = 0; (j < dim) && (!Find); j++)
-                            if ((!usedColumns[j]) && (tempUsedColumns[j] < 0))
+                            if (!usedColumns[j])
                                 if (arr[i, j] == 0)
-                                {
-                                    Find = true;
-                                    tempUsedRows[i] = j;
-                                    tempUsedColumns[j] = i;
-                                }
-                if (!Find)
-                    for (int i = 0; (i < dim) && (!Find); i++)
-                        if ((!usedRows[i]) && (tempUsedRows[i] < 0))
-                            for (int j = 0; (j < dim) && (!Find); j++)
-                                if (!usedColumns[j])
-                                    if (arr[i, j] == 0)
-                                        for (int k = 0; (k < dim) && (!Find); k++)
-                                            if ((!usedRows[k]) && (arr[k, j] == 0) && (tempUsedRows[k] == j))
-                                            {
-                                                tempUsedRows[i] = j;
-                                                tempUsedColumns[j] = i;
-                                                tempUsedRows[k] = -1;
-                                                if (
-                                                    !FindWay(k, tempUsedRows, tempUsedColumns, usedRows, usedColumns,
-                                                             arr))
-                                                {
-                                                    tempUsedRows[k] = j;
-                                                    tempUsedRows[i] = -1;
-                                                    tempUsedColumns[j] = k;
-                                                }
-                                                else
-                                                    Find = true;
-                                            }
-            }
-            else
-            {
-                for (int j = 0; (j < dim) && (!Find); j++)
-                    if ((!usedColumns[j]) && (tempUsedColumns[j] < 0))
-                        if (arr[FirstPoint, j] == 0)
-                        {
-                            Find = true;
-                            tempUsedRows[FirstPoint] = j;
-                            tempUsedColumns[j] = FirstPoint;
-                        }
-                if (!Find)
-                    for (int j = 0; (j < dim) && (!Find); j++)
-                        if (!usedColumns[j])
-                            if (arr[FirstPoint, j] == 0)
-                                for (int k = 0; (k < dim) && (!Find); k++)
-                                    if ((!usedRows[k]) && (arr[k, j] == 0) && (tempUsedRows[k] == j))
+                                    if (tempUsedColumns[j] < 0)
                                     {
-                                        tempUsedRows[FirstPoint] = j;
-                                        tempUsedColumns[j] = FirstPoint;
+                                        tempUsedRows[i] = j;
+                                        tempUsedColumns[j] = i;
+                                        Find = true;
+                                    }
+                                    else
+                                    {
+                                        int k = tempUsedColumns[j];
+                                        tempUsedRows[i] = j;
+                                        tempUsedColumns[j] = i;
                                         tempUsedRows[k] = -1;
+                                        arr[k, j] = 1;
                                         if (
-                                           !FindWay(k, tempUsedRows, tempUsedColumns, usedRows, usedColumns,
-                                                              arr))
+                                            !FindWay(k, tempUsedRows, tempUsedColumns, usedRows, usedColumns,
+                                                     arr))
                                         {
                                             tempUsedRows[k] = j;
-                                            tempUsedRows[FirstPoint] = -1;
+                                            tempUsedRows[i] = -1;
                                             tempUsedColumns[j] = k;
                                         }
                                         else
                                             Find = true;
+                                        arr[k, j] = 0;
                                     }
+            }
+            else
+            {
+                for (int j = 0; (j < dim) && (!Find); j++)
+                    if (!usedColumns[j])
+                        if (arr[FirstPoint, j] == 0)
+                            if (tempUsedColumns[j] < 0)
+                            {
+                                tempUsedRows[FirstPoint] = j;
+                                tempUsedColumns[j] = FirstPoint;
+                                Find = true;
+                            }
+                            else
+                            {
+                                int k = tempUsedColumns[j];
+                                tempUsedRows[FirstPoint] = j;
+                                tempUsedColumns[j] = FirstPoint;
+                                tempUsedRows[k] = -1;
+                                arr[k, j] = 1;
+                                if (
+                                    !FindWay(k, tempUsedRows, tempUsedColumns, usedRows, usedColumns,
+                                             arr))
+                                {
+                                    tempUsedRows[k] = j;
+                                    tempUsedRows[FirstPoint] = -1;
+                                    tempUsedColumns[j] = k;
+                                }
+                                else
+                                    Find = true;
+                                arr[k, j] = 0;
+                            }
             }
             return Find;
         }
@@ -144,7 +141,7 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
                     if ((i < Gamma.GetLength(0)) && (tempUsedRows[i] < Gamma.GetLength(1)))
                         Result.Add(Gamma[i, tempUsedRows[i]]);
                     usedRows[i] = true;
-                    usedColumns[i] = true;
+                    usedColumns[tempUsedRows[i]] = true;
                 }
         }
 
@@ -183,7 +180,8 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
             double min = Math.Min(Gamma.GetLength(0), Gamma.GetLength(1));
             while (Result.Count < min)
             {
-                ReduceMatrixBy(arr, usedRows, usedColumns, FindMax(usedRows, usedColumns, arr));
+                double minValue = FindMin(usedRows, usedColumns, arr);
+                ReduceMatrixBy(arr, usedRows, usedColumns, minValue);
                 BuildMatching(Result, usedRows, usedColumns, arr, Gamma);
             }
             Result.Sort();

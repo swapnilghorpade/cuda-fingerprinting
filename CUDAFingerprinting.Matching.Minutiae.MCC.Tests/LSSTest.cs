@@ -1,4 +1,5 @@
-﻿using CUDAFingerprinting.Matching.Minutiae.MCC;
+﻿using CUDAFingerprinting.Common.SerializationHelper;
+using CUDAFingerprinting.Matching.Minutiae.MCC;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 
@@ -70,13 +71,12 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC.Tests
         [TestMethod()]
         public void GetScoreTest()
         {
-            /*double[,] Gamma = null; // TODO: инициализация подходящего значения
-            int np = 0; // TODO: инициализация подходящего значения
-            double expected = 0; // TODO: инициализация подходящего значения
-            double actual;
-            actual = LSS.GetScore(Gamma, np);
+            Random R = new Random();
+            double[,] Gamma = BinarySerializationHelper.DeserializeObject<double[,]>(Resources.Sample3);
+            int np = 8;
+            double expected = Double.Parse(Resources.LSSAnswer3);
+            double actual = LSS.GetScore(Gamma, np);
             Assert.AreEqual(expected, actual);
-            Assert.Inconclusive("Проверьте правильность этого метода теста.");*/
         }
     }
 }
