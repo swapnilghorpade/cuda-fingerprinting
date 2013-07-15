@@ -5,7 +5,7 @@
 
 extern "C"{
 
-__declspec(dllexport) void CUDASegmentator(int* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight);
+__declspec(dllexport) void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight);
 __declspec(dllexport) void PostProcessing(bool* mask, int maskX, int maskY, int threshold);
 
 }
@@ -122,7 +122,6 @@ void MergeAreas(AreaStruct* areas/*, int maskX , int areasSize*/, int i, int j)
 		free(secondArea);
 	}
 }
-
 
 void AddPointToArea(AreaStruct* areas, int iSearch, int jSearch, int i, int j)
 {
@@ -380,14 +379,12 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	fclose(f);
 }
 
-
-  int main() 
-/*void CUDASegmentator(int* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight);*/
+void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConstant, int windowSize, bool* mask, int maskWidth, int maskHight)
   {
 	  //parameters
-	  float weightConstant = 0.3; 
-	  int windowSize = 12;
-	  int threshold = 5;
+	 // float weightConstant = 0.3; 
+	 // int windowSize = 12;
+	 // int threshold = 5;
 
 	  int count = 100500;
 	  
@@ -396,13 +393,14 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 	  cudaStatus = cudaSetDevice(0);
 	  
 	  cudaStatus = cudaGetLastError();
+
 	  if (cudaStatus != cudaSuccess) 
 	  {
 		printf("CUDAArray<float> source = loadImage(...) - ERROR!!!\n");
 	  }
 	  //source image
-	  CUDAArray<float> source = loadImage("C:\\temp\\1_7.bin");
-	// CUDAArray<int> source = CUDAArray<int>(img, imgwidth, imgHeight);
+	  //CUDAArray<float> source = loadImage("C:\\temp\\1_7.bin");
+	 CUDAArray<float> source = CUDAArray<float>(img, imgWidth, imgHeight);
 	  cudaStatus = cudaGetLastError();
 	  if (cudaStatus != cudaSuccess) 
 	  {
@@ -491,7 +489,7 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 							ceilMod(M,defaultThreadCount));
 
 		//mask creation
-		CUDAArray<bool> CUDAmask = CUDAArray<bool>(N,M);
+		CUDAArray<bool> CUDAmask = CUDAArray<bool>(mask, N, M);
 		 if (cudaStatus != cudaSuccess) 
 	  {
 		printf("create Mask - ERROR!!!\n");
@@ -512,18 +510,17 @@ void SaveMask(bool* mask,int width, int height, const char* name)
 
 	  magnitude.Dispose();
 
-	  bool* mask = CUDAmask.GetData();
+	  mask = CUDAmask.GetData();
 	 // *maskWidth = (int)(CUDAmask.Width);
 	 // *maskHight = (int)CUDAmask.Height;
 	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\mask.txt");
-	  PostProcessing(mask, N, M, threshold);
+	//  PostProcessing(mask, N, M, threshold);
 
 		//save mask
 	  SaveMask(mask, (int)(CUDAmask.Width), (int)(CUDAmask.Height), "C:\\temp\\maskPost.txt");
 		
 	  CUDAmask.Dispose();
 	  cudaDeviceReset(); 
-	  return 0;
 }
 
 

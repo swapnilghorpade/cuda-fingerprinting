@@ -11,12 +11,12 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
     [TestClass]
     public class Experiment
     {
-        [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void CUDASegmentator(int[] img, int imgWidth, int imgHeight, float weightConstant, 
-                                                int windowSize, ref bool[] mask, int maskWidth, int maskHight);
+        [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "CUDASegmentator")]
+        private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant, 
+                                                int windowSize, bool[] mask, int maskWidth, int maskHight);
 
-        [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void PostProcessing(ref bool[] mask, int maskX, int maskY, int threshold);
+        [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "PostProcessing")]
+        private static extern void PostProcessing(bool[] mask, int maskX, int maskY, int threshold);
 
         private double[,] img = ImageHelper.LoadImage(Resources._2_2);
         private int[,] binaryImg = ImageHelper.LoadImageAsInt(Resources._104_6);
@@ -61,13 +61,13 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
         }
 
         [TestMethod]
-        public void GPUTest()
+        public void GpuTest()
         {
             string pathToSave = Path.GetTempPath() + "mask.txt";
             int maskX = CeilMod(img.GetLength(0), windowSize);
             int maskY = CeilMod(img.GetLength(1), windowSize);
             bool[] mask = new bool[maskX * maskY + 1];
-            int[] oneDimensionalBinaryImg = new int[binaryImg.GetLength(0) * binaryImg.GetLength(1) + 1];
+            float[] oneDimensionalBinaryImg = new float[binaryImg.GetLength(0) * binaryImg.GetLength(1) + 1];
 
             for (int i = 0; i < binaryImg.GetLength(0); i++)
             {
@@ -77,8 +77,8 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
                 }
             }
 
-            CUDASegmentator(oneDimensionalBinaryImg, binaryImg.GetLength(0), binaryImg.GetLength(1), (float)weight, windowSize, ref mask, maskX, maskY);
-            PostProcessing(ref mask, maskX, maskY, threshold);
+            CUDASegmentator(oneDimensionalBinaryImg, binaryImg.GetLength(0), binaryImg.GetLength(1), (float)weight, windowSize, mask, maskX, maskY);
+            PostProcessing(mask, maskX, maskY, threshold);
 
             SaveMask(mask, binaryImg.GetLength(0), binaryImg.GetLength(1), pathToSave);
         }
