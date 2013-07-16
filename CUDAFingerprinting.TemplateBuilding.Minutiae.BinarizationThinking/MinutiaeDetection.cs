@@ -81,7 +81,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                         {
                             Minutia newMinutiae = new Minutia();                 //Если да, то добавляем минуцию в стек
                             newMinutiae.X = j;
-                            newMinutiae.Y = i;
+                            newMinutiae.Y = i - 1;
                             minutiae.Add(newMinutiae);
                         }
                     }
@@ -90,9 +90,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             return minutiae;
         }
 
-        public class SpecialComparer : IComparer<List<MinutiaSpecial>>
+        public class SpecialComparer : IComparer<List<Minutia>>
         {
-            public int Compare(List<MinutiaSpecial> list1, List<MinutiaSpecial> list2)
+            public int Compare(List<Minutia> list1, List<Minutia> list2)
             {
                 int result = 1;
                 if (list1.Count > list2.Count)
@@ -105,23 +105,21 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 
         public static List<Minutia> FindBigMinutiae(List<Minutia> listMinutiae)
         {
-            List<MinutiaSpecial> listMinutiaSpecial = new List<MinutiaSpecial>();
+            List<Minutia> listMinutiaSpecial = new List<Minutia>();
             foreach (var minutia in listMinutiae)
             {
-                MinutiaSpecial minutiaS = new MinutiaSpecial();
+                Minutia minutiaS = new Minutia();
                 minutiaS.X = minutia.X;
                 minutiaS.Y = minutia.Y;
-                minutiaS.belongToBig = false;
-                minutiaS.numberMinutiaeInCircle = 0;
                 listMinutiaSpecial.Add(minutiaS);
             }
             int dY;
             int dX;
-            int Radius = 60;
-            List<List<MinutiaSpecial>> listBigMinutiae = new List<List<MinutiaSpecial>>();
+            int Radius = 70;
+            List<List<Minutia>> listBigMinutiae = new List<List<Minutia>>();
             for (int i = 0; i < listMinutiaSpecial.Count; i++)
             {
-                List<MinutiaSpecial> listSmallMinutiae = new List<MinutiaSpecial>();
+                List<Minutia> listSmallMinutiae = new List<Minutia>();
                 for (int j = 0; j < listMinutiaSpecial.Count; j++)
                 {
                     dX = listMinutiaSpecial[i].X - listMinutiaSpecial[j].X;
@@ -145,24 +143,49 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             List<Minutia> newListMinutiae = new List<Minutia>();
             for (int i = 0; i < listBigMinutiae.Count; i++)
             {
-                Minutia newMinutia = new Minutia();
-                newMinutia.X = 0;
-                newMinutia.Y = 0;
-
-                for (int j = 0; j < listBigMinutiae[i].Count; j++)
+                if (listBigMinutiae[i].Any())
                 {
-                    if (listBigMinutiae[i][j].belongToBig == false)
+                    Minutia newMinutia = new Minutia();
+                    newMinutia.X = 0;
+                    newMinutia.Y = 0;
+
+                    for (int j = 0; j < listBigMinutiae[i].Count; j++)
                     {
-                        newMinutia.X += listBigMinutiae[i][j].X;
-                        newMinutia.Y += listBigMinutiae[i][j].Y;
-                        var temp = listBigMinutiae[i][j];
-                        temp.belongToBig = true;
-                        listBigMinutiae[i][j] = temp;
+                            newMinutia.X += listBigMinutiae[i][j].X;
+                            newMinutia.Y += listBigMinutiae[i][j].Y;
+                            foreach (var target in listBigMinutiae[i])
+                            {
+                                for (int k = i + 1; k < listBigMinutiae.Count; k++)
+                                {
+                                    var toCheck = listBigMinutiae[k].Where(x => listBigMinutiae[k].Contains(target));
+                                    listBigMinutiae[k] = listBigMinutiae[k].Except(toCheck).ToList();
+                                }
+                            }
                     }
+                    newMinutia.X = (newMinutia.X + listBigMinutiae[i].Count - 1)/listBigMinutiae[i].Count;
+                    newMinutia.Y = (newMinutia.Y + listBigMinutiae[i].Count - 1)/listBigMinutiae[i].Count;
+
+                    dX = newMinutia.X - listBigMinutiae[i][0].X;
+                    dY = newMinutia.Y - listBigMinutiae[i][0].Y;
+                    int min = dX*dX + dY*dY;
+                    Minutia newMinutia1 = new Minutia();
+                    newMinutia1.X = listBigMinutiae[i][0].X;
+                    newMinutia1.Y = listBigMinutiae[i][0].Y;
+                    for (int j = 0; j < listBigMinutiae[i].Count; j++)
+                    {
+                        dX = newMinutia.X - listBigMinutiae[i][j].X;
+                        dY = newMinutia.Y - listBigMinutiae[i][j].Y;
+                        int locmin = dX*dX + dY*dY;
+                        if (min > locmin)
+                        {
+                            min = locmin;
+                            newMinutia1.X = listBigMinutiae[i][j].X;
+                            newMinutia1.Y = listBigMinutiae[i][j].Y;
+                        }
+
+                    }
+                    newListMinutiae.Add(newMinutia1);
                 }
-                newMinutia.X = (newMinutia.X + listBigMinutiae[i].Count - 1) / listBigMinutiae[i].Count;
-                newMinutia.Y = (newMinutia.Y + listBigMinutiae[i].Count - 1) / listBigMinutiae[i].Count;
-                newListMinutiae.Add(newMinutia);
             }
             return newListMinutiae;
         }
