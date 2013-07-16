@@ -30,7 +30,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         {
             //var img = ImageHelper.LoadImage(TestResource._104_6);
             var img = ImageHelper.LoadImage(TestResource._104_6);
-            double board = 150;
+            double board = 5;
             var thining = Thining.ThiningPicture(GlobalBinarization.Binarization(img, board));
             var path = Path.GetTempPath() + "MinutiaeMarkedThinnedBinarizated"+ board +".png";
 
