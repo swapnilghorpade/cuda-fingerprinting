@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using CUDAFingerprinting.Common;
+
 namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 {
     public static class MinutiaeDirection
     {
-        public static double[] FindDirection(double[,] OrientationField, int dim, Point[] Minutiae, int[,] BinaryImage)
+        public static void FindDirection(double[,] OrientationField, int dim, List<Minutia> Minutiae , int[,] BinaryImage)
         {
-            double[] Directions = new double[Minutiae.Count()];
             for (int cur = 0; cur < Minutiae.Count(); cur++)
             {
                 int curX = Minutiae[cur].X;
@@ -18,24 +19,34 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                 int count = 0;
                 for (int i = -1; i < 2; i++)
                     for (int j = -1; j < 2; j++)
-                        if (BinaryImage[curX + i, curY + j] == 1)
-                            count++;
+                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))   
+                            if (BinaryImage[curX + i, curY + j] == 0)
+                                count++;
                 if (count == 2) //Ending of Line
                 {
                     double angle = 0;
                     for (int i = -1; i < 2; i++)
                         for (int j = -1; j < 2; j++)
-                            if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 1))
-                            {
-                                if (j == 0)
-                                    angle = Math.PI + i*Math.PI/2;
-                                else
-                                    angle = Math.Atan((double) i/j);
-                            }
+                            if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
+                                if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 0))
+                                {
+                                    if (j == 0)
+                                        angle = Math.PI + i*Math.PI/2;
+                                    else
+                                         angle = Math.Atan((double) i/j);
+                                }
                     if ((Teta - angle < Math.PI/2) && (angle - Teta < Math.PI/2))
-                        Directions[cur] = Teta + Math.PI;
+                    {
+                        var temp = Minutiae[cur];
+                        temp.Angle = Teta + Math.PI;
+                        Minutiae[cur]=temp;
+                    }
                     else
-                        Directions[cur] = Teta;
+                    {
+                        var temp = Minutiae[cur];
+                        temp.Angle = Teta;
+                        Minutiae[cur] = temp;
+                    }
                 }
                 else //Bifurcation
                 {
@@ -48,8 +59,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                     {
                         for (int i = 0; i <= radius; i++) //Check Quadrant III
                             for (int j = 0; j >= (-1)*radius; j--)
+                                if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
                                 if ((i != 0) || (j != 0))
-                                    if (BinaryImage[curX + i, curY + j] == 1)
+                                    if (BinaryImage[curX + i, curY + j] == 0)
                                         if ((minX == 0) && (minY == 0))
                                         {
                                             minX = i;
@@ -75,8 +87,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                                         }
                         for (int i = 0; i >= (-1)*radius; i--) //Check Quadrant I
                             for (int j = 0; j <= radius; j++)
+                                if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
                                 if ((i != 0) || (j != 0))
-                                    if (BinaryImage[curX + i, curY + j] == 1)
+                                    if (BinaryImage[curX + i, curY + j] == 0)
                                         if ((minX == 0) && (minY == 0))
                                         {
                                             minX = i;
@@ -101,17 +114,26 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                                             }
                                         }
                         if ((minX >= 0) && (minY <= 0))
-                            Directions[cur] = Teta + Math.PI;
+                        {
+                            var temp = Minutiae[cur];
+                            temp.Angle = Teta + Math.PI;
+                            Minutiae[cur] = temp;
+                        }
                         else
-                            Directions[cur] = Teta;
+                        {
+                            var temp = Minutiae[cur];
+                            temp.Angle = Teta;
+                            Minutiae[cur] = temp;
+                        }
 
                     }
                     else //Quadrant II or IV
                     {
                         for (int i = 0; i <= radius; i++) //Check Quadrant  IV
                             for (int j = 0; j <= radius; j++)
+                                if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
                                 if ((i != 0) || (j != 0))
-                                    if (BinaryImage[curX + i, curY + j] == 1)
+                                    if (BinaryImage[curX + i, curY + j] == 0)
                                         if ((minX == 0) && (minY == 0))
                                         {
                                             minX = i;
@@ -137,8 +159,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                                         }
                         for (int i = 0; i >= (-1)*radius; i--) //Check Quadrant  II
                             for (int j = 0; j >= (-1)*radius; j--)
+                                if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
                                 if ((i != 0) || (j != 0))
-                                    if (BinaryImage[curX + i, curY + j] == 1)
+                                    if (BinaryImage[curX + i, curY + j] == 0)
                                         if ((minX == 0) && (minY == 0))
                                         {
                                             minX = i;
@@ -163,13 +186,20 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                                             }
                                         }
                         if ((minX >= 0) && (minY >= 0))
-                            Directions[cur] = Teta + Math.PI;
+                        {
+                            var temp = Minutiae[cur];
+                            temp.Angle = Teta + Math.PI;
+                            Minutiae[cur] = temp;
+                        }
                         else
-                            Directions[cur] = Teta;
+                        {
+                            var temp = Minutiae[cur];
+                            temp.Angle = Teta;
+                            Minutiae[cur] = temp;
+                        }
                     }
                 }
             }
-            return Directions;
         }
     }
 }
