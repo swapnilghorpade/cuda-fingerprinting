@@ -95,7 +95,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             public int Compare(List<MinutiaSpecial> list1, List<MinutiaSpecial> list2)
             {
                 int result = 1;
-                if (list1.Count < list2.Count)
+                if (list1.Count > list2.Count)
                     result = -1;
                 if (list1.Count == list2.Count)
                     result = 0;
@@ -131,9 +131,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                         //var temp = listMinutiaSpecial[j];
                         //temp.belongToBig = true;
                         //listMinutiaSpecial[j] = temp;
-                        var temp = listMinutiaSpecial[j];
-                        temp.belongToBig = true;
-                        listMinutiaSpecial[j] = temp;
+                        //var temp = listMinutiaSpecial[j];
+                        //temp.belongToBig = true;
+                        //listMinutiaSpecial[j] = temp;
 
                         listSmallMinutiae.Add(listMinutiaSpecial[j]);
                     }
