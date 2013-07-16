@@ -92,6 +92,7 @@ namespace CUDAFingerprinting.Common.OrientationField
             double[,] result = new double[maxResultY,maxResultX];
             double[,] vx = new double[maxResultY,maxResultX];
             double[,] vy = new double[maxResultY,maxResultX];
+
             for (int x = 0; x < maxResultX; x++)
             {
                 for (int y = 0; y < maxResultY; y++)
@@ -111,7 +112,7 @@ namespace CUDAFingerprinting.Common.OrientationField
                     }
 
                     var hypotenuse = Math.Sqrt(vy[y, x] * vy[y, x] + vx[y, x] * vx[y, x]);
-                        vx[y, x] = vx[y, x] / hypotenuse;
+                    vx[y, x] = vx[y, x] / hypotenuse;
                     vy[y, x] = vy[y, x] / hypotenuse;
 
                 }                 
@@ -134,20 +135,11 @@ namespace CUDAFingerprinting.Common.OrientationField
                             count++;
                         }
                     }
-                    //var xx = vy[x, y];
-                    //var yy = vx[x, y];
                     var xx = resultY / count;
                     var yy = resultX / count;
-                    if (vy[y, x] == 0 && vx[y, x] == 0) result[y, x] = double.NaN;
-                    else
-                    {
-                        result[y, x] = 0.5 * Math.Atan2(yy, xx);                  
-                    }                                       
+                    result[y, x] = 0.5 * Math.Atan2(yy, xx);              
                 }
             }
-                
-            //result = SmoothOrientationField(result);
-            //SaveField(result,"C:\\temp\\orfield.bmp");
             return result;
         }
 

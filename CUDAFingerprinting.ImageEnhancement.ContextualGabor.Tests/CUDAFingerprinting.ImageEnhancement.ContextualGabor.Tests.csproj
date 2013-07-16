@@ -49,9 +49,8 @@
     <Compile Include="GaussianBlurTest.cs" />
     <Compile Include="GradientTest.cs" />
     <Compile Include="LocalRidgeOrientationTest.cs" />
-    <Compile Include="OldLROTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="NormalizatorTest.cs" />
+    <Compile Include="RidgeFrequencyTests.cs" />
     <Compile Include="TestResources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

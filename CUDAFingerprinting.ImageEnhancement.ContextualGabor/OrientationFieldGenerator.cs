@@ -49,6 +49,10 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                         }
                     }
 
+                   var hypotenuse = Math.Sqrt(vy[i, j] * vy[i, j] + vx[i, j] * vx[i, j]);
+                    vx[i, j] = vx[i, j] / hypotenuse;
+                    vy[i, j] = vy[i, j] / hypotenuse;
+
                     result[i, j] = 0.5 * Math.Atan2(vy[i, j], vx[i, j]);
                     result[i, j] = (result[i, j] < 0) ? result[i, j] + Math.PI : (result[i, j] > Math.PI ? result[i, j] - Math.PI : result[i, j]);
                 }
@@ -79,7 +83,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             return result;
         }
 
-        private static double[,] GenerateGaussianKernel(double sigma)
+        public static double[,] GenerateGaussianKernel(double sigma)
         {
             int size = 1 + 2 * (int)Math.Ceiling(3 * sigma);
             var result = new double[size, size];

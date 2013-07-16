@@ -18,7 +18,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
         {
             var img = ImageHelper.LoadImageAsInt(TestResources.Bikesgray);
             Normalizer.Normalize(100, 500, img);
-            var grad = GradientHelper.GenerateXGradient(img);
+            var grad = GradientHelper.GenerateGradient(img);
             var path = Path.GetTempPath() + "grad.png";
             var x = OrientationFieldGenerator.GenerateLeastSquareEstimate(img);
             ImageHelper.SaveIntArray(grad, path);
