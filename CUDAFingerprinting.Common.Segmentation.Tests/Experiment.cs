@@ -19,7 +19,16 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
         private static extern void PostProcessing(int[] mask, int maskX, int maskY, int threshold);
         
         private double[,] img = ImageHelper.LoadImage(Resources._2_2);
-        private int[,] binaryImg = ImageHelper.LoadImageAsInt(Resources._2_2);
+
+        private List<int[,]> binaryImgList = new List<int[,]>
+            {
+                ImageHelper.LoadImageAsInt(Resources._2_2),
+                ImageHelper.LoadImageAsInt(Resources._103_7),
+                ImageHelper.LoadImageAsInt(Resources._65_8),
+                ImageHelper.LoadImageAsInt(Resources._104_6),
+                ImageHelper.LoadImageAsInt(Resources._103_4),
+                ImageHelper.LoadImageAsInt(Resources._105_4)
+            };
         private int windowSize = 12;
         private double weight = 0.3;
         private int threshold = 5;
@@ -59,36 +68,38 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
             //ImageHelper.SaveImageAsBinary("C:\\temp\\104_6.png",
             //    "C:\\temp\\104_6.bin");
 
-            ImageHelper.SaveImageAsBinary("C:\\temp\\2_2_.tif",
-                "C:\\temp\\2_2.bin");
+            ImageHelper.SaveImageAsBinary("C:\\MyOwnFingerprinting\\CUDAFingerprinting.Common.Segmentation.Tests\\Resources\\103_4.tif",
+                "C:\\temp\\103_4.bin");
         }
 
         [TestMethod]
         public void GpuTest()
         {
-            string pathToSave = Path.GetTempPath() + "mask.txt";
-            string pathToSave1 = Path.GetTempPath() + "mask1.txt";
+            string pathToSave = Path.GetTempPath() + "mask_";
+            string pathToSave1 = Path.GetTempPath() + "maskP_";
 
-            int maskX = (int)Math.Ceiling((double)binaryImg.GetLength(0)/ windowSize);
-            int maskY = (int)Math.Ceiling((double)binaryImg.GetLength(1)/ windowSize);
-            int[] mask = new int[maskX * maskY];
-            float[] oneDimensionalBinaryImg = new float[binaryImg.GetLength(0) * binaryImg.GetLength(1)];
-
-            for (int i = 0; i < binaryImg.GetLength(0); i++)
+            for (int k = 0; k < binaryImgList.Count; k++)
             {
-                for (int j = 0; j < binaryImg.GetLength(1); j++)
+                int maskX = (int)Math.Ceiling((double)binaryImgList[k].GetLength(0) / windowSize);
+                int maskY = (int)Math.Ceiling((double)binaryImgList[k].GetLength(1) / windowSize);
+                int[] mask = new int[maskX*maskY];
+                float[] oneDimensionalBinaryImg = new float[binaryImgList[k].GetLength(0) * binaryImgList[k].GetLength(1)];
+
+                for (int i = 0; i < binaryImgList[k].GetLength(0); i++)
                 {
-                    oneDimensionalBinaryImg[j * binaryImg.GetLength(0) + i] = binaryImg[i, j];
+                    for (int j = 0; j < binaryImgList[k].GetLength(1); j++)
+                    {
+                        oneDimensionalBinaryImg[j * binaryImgList[k].GetLength(0) + i] = binaryImgList[k][i, j];
+                    }
                 }
+
+                CUDASegmentator(oneDimensionalBinaryImg, binaryImgList[k].GetLength(0), binaryImgList[k].GetLength(1), 
+                                (float)weight, windowSize, mask, maskX, maskY);
+                SaveMask(mask, maskX, maskY, pathToSave + k + ".txt");
+
+                PostProcessing(mask, maskX, maskY, threshold);
+                SaveMask(mask, maskX, maskY, pathToSave1 + k + ".txt");
             }
-            
-            CUDASegmentator(oneDimensionalBinaryImg, binaryImg.GetLength(0), binaryImg.GetLength(1), (float)weight, windowSize, mask, maskX, maskY);
-
-            SaveMask(mask, maskX, maskY, pathToSave);
-            
-            PostProcessing(mask, maskX, maskY, threshold);
-
-            SaveMask(mask, maskX, maskY, pathToSave1);
         }
 
         private void SaveMask(int[] mask, int width, int height, string path)

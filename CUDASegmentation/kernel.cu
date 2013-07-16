@@ -25,6 +25,11 @@ struct AreaStruct
 		AreaStruct* Next;
 	} ;
 
+struct AreasList
+{
+	AreaStruct* First;
+};
+
 bool IsNearBorder(Point* points, int xBorder, int yBorder)
 {
 	Point* current = points;
@@ -47,13 +52,12 @@ bool IsNearBorder(Point* points, int xBorder, int yBorder)
 
 AreaStruct* FindAreaWithPoint(AreaStruct* areas, int i, int j)
 {
-	AreaStruct* result = 0;
+	//AreaStruct* result = 0;
 	AreaStruct* currentArea = areas;
-    Point* currentPoint;
+    Point* currentPoint = 0;
 	
 	while(currentArea != 0)
 	{
-		
 		currentPoint = currentArea->Points;
 
 		while(currentPoint != 0)
@@ -69,7 +73,7 @@ AreaStruct* FindAreaWithPoint(AreaStruct* areas, int i, int j)
 		currentArea = currentArea->Next;
 	}
 
-	return result;
+	return 0;
 }
 
 Point* findLastPoint(Point* points)
@@ -84,10 +88,10 @@ Point* findLastPoint(Point* points)
 	return lastPoint;
 }
 
-void MergeAreas(AreaStruct* areas, int i, int j)
+void MergeAreas(AreasList* areas, int i, int j)
 {
-	AreaStruct* firstArea = FindAreaWithPoint(areas, i - 1, j);
-	AreaStruct* secondArea = FindAreaWithPoint(areas, i, j - 1);
+	AreaStruct* firstArea = FindAreaWithPoint(areas->First, i - 1, j);
+	AreaStruct* secondArea = FindAreaWithPoint(areas->First, i, j - 1);
                        
 	if (firstArea != secondArea)
 	{
@@ -108,10 +112,11 @@ void MergeAreas(AreaStruct* areas, int i, int j)
 	if(firstArea != secondArea)
 	{
 		//remove secondArea
-		AreaStruct* prevArea = areas;
-		if(areas == secondArea)
+		AreaStruct* prevArea = areas->First;
+		if(prevArea == secondArea)
 		{
-			areas = secondArea->Next;	
+
+			areas->First = prevArea->Next;	
 		}
 		else
 		{
@@ -127,9 +132,9 @@ void MergeAreas(AreaStruct* areas, int i, int j)
 	}
 }
 
-void AddPointToArea(AreaStruct* areas, int iSearch, int jSearch, int i, int j)
+void AddPointToArea(AreasList* areas, int iSearch, int jSearch, int i, int j)
 {
-	AreaStruct* areaToAddPoint = FindAreaWithPoint(areas, iSearch, jSearch);
+	AreaStruct* areaToAddPoint = FindAreaWithPoint(areas->First, iSearch, jSearch);
 	
 	Point* lastPoint = findLastPoint(areaToAddPoint->Points);
 	
@@ -141,9 +146,9 @@ void AddPointToArea(AreaStruct* areas, int iSearch, int jSearch, int i, int j)
 	areaToAddPoint->AreaSize += 1;
 }
 
-AreaStruct* GenerateAreas(int* mask, int maskX, int maskY, bool isBlack)
+AreasList* GenerateAreas(int* mask, int maskX, int maskY, bool isBlack)
 {
-	AreaStruct* areas = 0; 
+	AreasList* areas = 0; 
 
 	for (int i = 0; i < maskY; i++)
     {
@@ -204,13 +209,15 @@ AreaStruct* GenerateAreas(int* mask, int maskX, int maskY, bool isBlack)
 			newArea->Next = 0;
 
 			
+			
 			if(areas == 0)
 			{
-				areas=newArea;
+				areas =(AreasList*)malloc(sizeof(AreasList));
+				areas->First = newArea;
 			}
 			else
 			{
-				AreaStruct* currentArea = areas;
+				AreaStruct* currentArea = areas->First;
 				while(currentArea->Next != 0)
 				{
 					currentArea = currentArea->Next;
@@ -222,7 +229,7 @@ AreaStruct* GenerateAreas(int* mask, int maskX, int maskY, bool isBlack)
 	return areas;
 }
 
-int* FillAreas(AreaStruct* areas, int* mask, int maskX, int maskY, int threshold, bool isBlack)
+int* FillAreas(AreasList* areas, int* mask, int maskX, int maskY, int threshold, bool isBlack)
 {
 	for(int i = 0; i < maskY; i++)
 	{
@@ -233,7 +240,7 @@ int* FillAreas(AreaStruct* areas, int* mask, int maskX, int maskY, int threshold
 				continue;		
 			}
 
-			AreaStruct* currentArea = FindAreaWithPoint(areas, i, j); 
+			AreaStruct* currentArea = FindAreaWithPoint(areas->First, i, j); 
 
 			if( isBlack && ((currentArea->AreaSize) < threshold) && !IsNearBorder(currentArea->Points, maskX, maskY)
 				|| !isBlack &&((currentArea->AreaSize) < threshold))
@@ -247,9 +254,9 @@ int* FillAreas(AreaStruct* areas, int* mask, int maskX, int maskY, int threshold
 
 void PostProcessing(int* mask, int maskX, int maskY, int threshold)
 {
-	AreaStruct* blackAreas = GenerateAreas(mask, maskX, maskY, true);
+	AreasList* blackAreas = GenerateAreas(mask, maskX, maskY, true);
 	mask = FillAreas(blackAreas, mask, maskX, maskY, threshold, true);
-	AreaStruct* imageAreas = GenerateAreas(mask, maskX, maskY, false);
+	AreasList* imageAreas = GenerateAreas(mask, maskX, maskY, false);
 	mask = FillAreas(imageAreas, mask, maskX, maskY, threshold, false);
 }
 
@@ -515,7 +522,7 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 
 //void main()
 //{
-//	 CUDAArray<float> source = loadImage("C:\\temp\\2_2.bin");
+//	 CUDAArray<float> source = loadImage("C:\\temp\\103_4.bin");
 //	 float* sourceFloat = source.GetData();
 //
 //	 int imgWidth = source.Width;
