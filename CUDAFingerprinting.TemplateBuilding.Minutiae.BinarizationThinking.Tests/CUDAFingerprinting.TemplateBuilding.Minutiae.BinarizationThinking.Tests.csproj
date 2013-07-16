@@ -112,13 +112,13 @@
     <None Include="Resources\104_61globalBinarization150.png" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\Valve_original_%281%29.PNG" />
+  </ItemGroup>
+  <ItemGroup>
     <None Include="Resources\104_61globalBinarization150Thinned.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\104_61globalBinarization150ThinnedMinutuaeFinded.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Valve_original_%281%29.PNG" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
