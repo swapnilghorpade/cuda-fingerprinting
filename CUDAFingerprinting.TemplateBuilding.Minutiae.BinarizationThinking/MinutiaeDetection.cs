@@ -115,7 +115,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             }
             int dY;
             int dX;
-            int Radius = 70;
+            int Radius = 5;
             List<List<Minutia>> listBigMinutiae = new List<List<Minutia>>();
             for (int i = 0; i < listMinutiaSpecial.Count; i++)
             {
