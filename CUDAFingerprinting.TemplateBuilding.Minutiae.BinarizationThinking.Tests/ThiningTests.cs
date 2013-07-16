@@ -116,15 +116,15 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //}
             //Process.Start();
         }
-        [TestMethod]
-        public void TestMethod6()
-        {
-            //var img = ImageHelper.LoadImage(TestResource._104_6);
-            var img = ImageHelper.LoadImage(TestResource.TestCUDA);
-            var path = Path.GetTempPath() + "thininig.png";
-            var thining = Thining.ThiningPicture(img);
-            ImageHelper.SaveArray(thining, path);
-            Process.Start(path);
-        }
+        //[TestMethod]
+        //public void TestMethod6()
+        //{
+        //    //var img = ImageHelper.LoadImage(TestResource._104_6);
+        //    var img = ImageHelper.LoadImage(TestResource.TestCUDA);
+        //    var path = Path.GetTempPath() + "thininig.png";
+        //    var thining = Thining.ThiningPicture(img);
+        //    ImageHelper.SaveArray(thining, path);
+        //    Process.Start(path);
+        //}
     }
 }
