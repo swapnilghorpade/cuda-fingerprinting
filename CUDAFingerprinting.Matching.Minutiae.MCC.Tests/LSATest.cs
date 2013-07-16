@@ -68,7 +68,25 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC.Tests
         ///Тест для GetScore
         ///</summary>
         [TestMethod()]
-        public void GetScoreTest()
+        public void GetScoreTestForLSA1()
+        {
+            double[,] Gamma = BinarySerializationHelper.DeserializeObject<double[,]>(Resources.Sample1);
+            int np = 8;
+            double expected = Double.Parse(Resources.LSAAnswer1);
+            double actual = LSA.GetScore(Gamma, np);
+            Assert.AreEqual(expected, actual);
+        }
+        [TestMethod()]
+        public void GetScoreTestForLSA2()
+        {
+            double[,] Gamma = BinarySerializationHelper.DeserializeObject<double[,]>(Resources.Sample2);
+            int np = 8;
+            double expected = Double.Parse(Resources.LSAAnswer2);
+            double actual = LSA.GetScore(Gamma, np);
+            Assert.AreEqual(expected, actual);
+        }
+        [TestMethod()]
+        public void GetScoreTestForLSA3()
         {
             double[,] Gamma = BinarySerializationHelper.DeserializeObject<double[,]>(Resources.Sample3);
             int np = 8;

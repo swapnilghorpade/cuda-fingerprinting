@@ -50,6 +50,7 @@ __declspec(dllexport) void BuildHull(int *arr, int N,int *IntHull,int *NHull);
 __declspec(dllexport) void FieldFilling(bool *field,int rows, int columns,int *arr, int N);
 
 __declspec(dllexport) void BuildWorkingArea(bool *field,int rows,int columns,int radius);
+
 }
 
 __global__ void bitonicSort(float* arr, int* indexArr, int amount, int comparatorBase, int comparatorShift)

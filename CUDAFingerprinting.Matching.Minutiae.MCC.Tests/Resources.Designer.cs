@@ -88,7 +88,7 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC.Tests {
         }
         
         /// <summary>
-        ///   Ищет локализованную строку, похожую на 0,96375.
+        ///   Ищет локализованную строку, похожую на 0,97374999999999989.
         /// </summary>
         internal static string LSSAnswer1 {
             get {
