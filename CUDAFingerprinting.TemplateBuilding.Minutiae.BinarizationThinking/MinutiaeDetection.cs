@@ -80,7 +80,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                         if (CheckMinutiae(area) > 0)
                         {
                             Minutia newMinutiae = new Minutia();                 //Если да, то добавляем минуцию в стек
-                            newMinutiae.X = j;
+                            newMinutiae.X = j - 1;
                             newMinutiae.Y = i - 1;
                             minutiae.Add(newMinutiae);
                         }
