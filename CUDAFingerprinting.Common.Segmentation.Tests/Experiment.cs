@@ -95,11 +95,11 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
         {
             StreamWriter writer = new StreamWriter(path, false);
 
-            for(int i = 0; i < width; i++)
+            for(int i = 0; i < height; i++)
             {
-                for(int j = 0; j < height; j++)
+                for (int j = 0; j < width; j++)
                 {
-                    writer.Write(mask[j*width + i]);
+                    writer.Write(mask[i*width + j]);
                 }
 
                writer.WriteLine(" ");

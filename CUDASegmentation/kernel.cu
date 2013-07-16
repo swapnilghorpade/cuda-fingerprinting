@@ -513,29 +513,29 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 	 // return 0;
 }
 
-void main()
-{
-	 CUDAArray<float> source = loadImage("C:\\temp\\2_2.bin");
-	 float* sourceFloat = source.GetData();
-
-	 int imgWidth = source.Width;
-	 int imgHeight = source.Height;
-
-	 float weightConstant = 0.3; 
-	 int windowSize = 12;
-	 int threshold = 5;
-
-	 int maskX = (int)ceil(((double)imgWidth) / windowSize);
-	 int maskY = (int)ceil(((double)imgHeight) / windowSize);
-
-	 int* mask = 0;
-	 mask = (int*)malloc(maskX*maskY*sizeof(int));
-
-	 CUDASegmentator(sourceFloat, imgWidth, imgHeight, weightConstant, windowSize, mask, maskX, maskY);
-	 SaveMask(mask, maskX, maskY, "C:\\temp\\maskCUDASegmentator.txt");
-
-	 PostProcessing(mask, maskX, maskY, threshold);
-	 SaveMask(mask,maskX, maskY, "C:\\temp\\maskPostProcessing.txt");
-
-	 free(mask);
-}
+//void main()
+//{
+//	 CUDAArray<float> source = loadImage("C:\\temp\\2_2.bin");
+//	 float* sourceFloat = source.GetData();
+//
+//	 int imgWidth = source.Width;
+//	 int imgHeight = source.Height;
+//
+//	 float weightConstant = 0.3; 
+//	 int windowSize = 12;
+//	 int threshold = 5;
+//
+//	 int maskX = (int)ceil(((double)imgWidth) / windowSize);
+//	 int maskY = (int)ceil(((double)imgHeight) / windowSize);
+//
+//	 int* mask = 0;
+//	 mask = (int*)malloc(maskX*maskY*sizeof(int));
+//
+//	 CUDASegmentator(sourceFloat, imgWidth, imgHeight, weightConstant, windowSize, mask, maskX, maskY);
+//	 SaveMask(mask, maskX, maskY, "C:\\temp\\maskCUDASegmentator.txt");
+//
+//	 PostProcessing(mask, maskX, maskY, threshold);
+//	 SaveMask(mask,maskX, maskY, "C:\\temp\\maskPostProcessing.txt");
+//
+//	 free(mask);
+//}
