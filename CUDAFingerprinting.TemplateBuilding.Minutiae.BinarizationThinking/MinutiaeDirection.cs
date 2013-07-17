@@ -51,12 +51,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                                     {
                                         minX = i;
                                         minY = j;
-                                        angle = Math.Acos(((double)j) / ((double)(i * i + j * j)));
+                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
                                         minAngle = Math.Abs(angle - Teta);
                                     }
                                     else
                                     {
-                                        angle = Math.Acos(((double)j) / ((double)(i * i + j * j)));
+                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
                                         if (Math.Abs(angle - Teta) < minAngle)
                                         {
                                             minAngle = Math.Abs(angle - Teta);
@@ -89,12 +89,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                                     {
                                         minX = i;
                                         minY = j;
-                                        angle = Math.Acos(((double)j) / ((double)(i * i + j * j)));
+                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
                                         minAngle = Math.Abs(angle - Teta);
                                     }
                                     else
                                     {
-                                        angle = Math.Acos(((double)j) / ((double)(i * i + j * j)));
+                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
                                         if (Math.Abs(angle - Teta) < minAngle)
                                         {
                                             minAngle = Math.Abs(angle - Teta);
@@ -111,12 +111,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                                     {
                                         minX = i;
                                         minY = j;
-                                        angle = Math.Acos(((double)j) / ((double)(i * i + j * j)));
+                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
                                         minAngle = Math.Abs(angle - Teta);
                                     }
                                     else
                                     {
-                                        angle = Math.Acos(((double)j) / ((double)(i * i + j * j)));
+                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
                                         if (Math.Abs(angle - Teta) < minAngle)
                                         {
                                             minAngle = Math.Abs(angle - Teta);
