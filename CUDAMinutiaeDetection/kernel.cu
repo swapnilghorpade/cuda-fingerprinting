@@ -11,7 +11,8 @@
 struct Minutiae{
 	int x;
 	int y;
-	bool belongToBig;
+	int numMinutiaeAround;
+	float angle;
 };
 
 cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter);
@@ -54,7 +55,10 @@ __global__  void FindMinutiae(int* picture, size_t pitch, int width, int height,
 		}
 			
 	}
-	else{test[x + y*rowWidthInElements] = 0;};
+	else
+	{
+		test[x + y*rowWidthInElements] = 0;
+	};
 }
 
 
