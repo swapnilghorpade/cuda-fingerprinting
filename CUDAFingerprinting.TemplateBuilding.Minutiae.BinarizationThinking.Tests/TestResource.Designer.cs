@@ -134,6 +134,16 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap miniTest {
+            get {
+                object obj = ResourceManager.GetObject("miniTest", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap MinutiaBigDetection {
             get {
                 object obj = ResourceManager.GetObject("MinutiaBigDetection", resourceCulture);
