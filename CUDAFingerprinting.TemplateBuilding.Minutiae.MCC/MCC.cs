@@ -77,5 +77,11 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         {
             return Math.PI + (k - 1 / 2) * deltaD;
         }
+
+        private double GetDistance(Tuple<int, int> point1, Tuple<int, int> point2)
+        {
+            return Math.Sqrt((point1.Item1 - point2.Item1)*(point1.Item1 - point2.Item1) +(point1.Item2 - point2.Item2)*(point1.Item2 - point2.Item2));
+        }
+
     }
 }
