@@ -36,6 +36,34 @@ namespace CUDAFingerprinting.Common
             MarkMinutiae(new Bitmap(sourcePath), minutiae, path);
         }
 
+        public static void MarkMinutiaeWithDirections(Bitmap source, List<Minutia> minutiae, string path)
+        {
+            var bmp2 = new Bitmap(source.Width, source.Height);
+            for (int x = 0; x < bmp2.Width; x++)
+            {
+                for (int y = 0; y < bmp2.Height; y++)
+                {
+                    bmp2.SetPixel(x, y, source.GetPixel(x, y));
+                }
+            }
+            var gfx = Graphics.FromImage(bmp2);
+
+            foreach (var pt in minutiae)
+            {
+                gfx.DrawEllipse(Pens.Red, pt.X - 2, pt.Y - 2, 5, 5);
+                gfx.FillEllipse(Brushes.Red, pt.X - 2, pt.Y - 2, 5, 5);
+                gfx.DrawLine(Pens.Blue, (float)pt.X, (float)pt.Y, (float)(pt.X + Math.Cos(pt.Angle)*6), (float)(pt.Y - Math.Sin(pt.Angle)*6));
+            }
+
+            gfx.Save();
+
+            bmp2.Save(path, ImageFormat.Png);
+        }
+        public static void MarkMinutiaeWithDirections(string sourcePath, List<Minutia> minutiae, string path)
+        {
+            MarkMinutiaeWithDirections(new Bitmap(sourcePath), minutiae, path);
+        }
+
         public static void MarkMinutiae(string sourcePath, List<Minutia> minutiae, List<Minutia> minutiae2, string path)
         {
             var bmp = new Bitmap(sourcePath);
