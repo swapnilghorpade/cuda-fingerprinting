@@ -139,7 +139,11 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             }
         }
         
-        
+        private static void FindDirectionOfBifurcationUsingAverageValues(int cur, double Teta, List<Minutia> Minutiae,
+                                                                         int[,] BinaryImage)
+        {
+            
+        }
         
         public static void FindDirectionVersion1(double[,] OrientationField, int dim, List<Minutia> Minutiae , int[,] BinaryImage)
         {
@@ -162,7 +166,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                             if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
                                 if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 0))
                                 {
-                                    angle = Math.Asin(((double)j) / ((double)(i * i + j * j)));
+                                    angle = Math.Acos(((double)j) / Math.Sqrt((double)(i * i + j * j)));
                                     if (i > 0)
                                         angle += Math.PI;
                                 }
