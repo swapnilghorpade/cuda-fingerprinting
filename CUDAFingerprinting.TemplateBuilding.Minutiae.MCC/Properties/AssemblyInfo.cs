@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("CDAFingerprinting.TemplateBuilding.Minutiae.MCC")]
+[assembly: AssemblyTitle("CUDAFingerprinting.TemplateBuilding.Minutiae.MCC")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("CDAFingerprinting.TemplateBuilding.Minutiae.MCC")]
+[assembly: AssemblyProduct("CUDAFingerprinting.TemplateBuilding.Minutiae.MCC")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("4d835016-db0d-4faf-85ba-0fa59e027af5")]
+[assembly: Guid("34e8daec-b46d-4bd6-90dc-8422c981e22c")]
 
 // Version information for an assembly consists of the following four values:
 //

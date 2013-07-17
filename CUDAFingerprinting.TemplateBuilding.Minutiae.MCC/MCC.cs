@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using CUDAFingerprinting.Common;
 
-namespace CUDAFingerprinting.Common.MCC
+namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 {
     public class MCC
     {
@@ -12,7 +12,7 @@ namespace CUDAFingerprinting.Common.MCC
         private double deltaS;
         private double deltaD;
 
-        public void MCC(Minutia[] minutiae)
+        public void MCCMethod(Minutia[] minutiae)
         {
             for (int index = 0; index < minutiae.GetLength(0); index++)
             {
