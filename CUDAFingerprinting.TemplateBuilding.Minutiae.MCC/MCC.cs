@@ -72,5 +72,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
            // double param = GetDifferenceAngles()
             return 0;
         }
+
+        private double GetAngleFromLevel(int k)
+        {
+            return Math.PI + (k - 1 / 2) * deltaD;
+        }
     }
 }
