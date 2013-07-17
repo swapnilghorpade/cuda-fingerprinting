@@ -67,7 +67,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethodCudaToImg()
         {
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_2.bin", "C:\\temp\\104_6_2.png", true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_2.bin", "C:\\temp\\104_6_localBinar60.png", true);
         }
     }
 }

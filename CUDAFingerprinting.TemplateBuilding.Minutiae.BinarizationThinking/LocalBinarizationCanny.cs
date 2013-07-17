@@ -52,7 +52,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                     }
                     else
                     {
-                        theta[i, j] = Math.Atan(newY / newX);
+                        theta[i, j] = Math.Atan(newY/newX)*(180/3.14159265359); //Math.PI);
                     }
                 }
             return sobData;
@@ -430,7 +430,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 
                     //ищем мин и макс на границах изображения ?
 
-                    // ищем самый тёмный пиесель на границах
+                    // ищем самый тёмный пиксель на границах
                     double darkestColor = FindDarkestColorBorder(curWinImg, curborderWinImg);
 
                     //копируем текущее окно и осветляем всё что > 153
