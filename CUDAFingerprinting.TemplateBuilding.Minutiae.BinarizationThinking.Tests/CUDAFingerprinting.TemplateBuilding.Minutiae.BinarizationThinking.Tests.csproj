@@ -54,7 +54,6 @@
     <Compile Include="GlobalBinarizationTest.cs" />
     <Compile Include="LocalBinarizationTest.cs" />
     <Compile Include="MinutiaDetectionTests.cs" />
-    <Compile Include="MinutiaeDirectionTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -143,10 +142,10 @@
     <None Include="Resources\104_61globalBinarization150ThinnedMinutuaeFinded.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\MinutiaeBigTest.png" />
+    <None Include="Resources\miniTest.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\miniTest.png" />
+    <None Include="Resources\MinutiaeBigTest.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
