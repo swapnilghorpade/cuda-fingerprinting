@@ -2,7 +2,7 @@
 using System.Drawing;
 namespace CUDAFingerprinting.Common.ConvexHull
 {
-    class WorkingArea
+    public class WorkingArea
     {
         public static bool[,] BuildWorkingArea(List<Minutia> Minutiae, int radius, int rows, int columns)
         {
