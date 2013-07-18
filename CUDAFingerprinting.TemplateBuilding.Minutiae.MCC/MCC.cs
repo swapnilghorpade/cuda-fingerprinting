@@ -15,6 +15,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
         public static void MCCMethod(Minutia[] minutiae)
         {
+            bool[,] mask = new bool[Constants.Ns,Constants.Ns];
+
             deltaS = 2 * Constants.R / Constants.Ns;
             deltaD = 2 * Math.PI / Constants.Nd;
             MakeDictionary();
@@ -27,6 +29,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                 {
                     for (int j = 0; j < Constants.Ns; j++)
                     {
+                        mask[i, j] = CalculateMaskValue(minutiae[index].X, minutiae[index].Y, i, j);
+
                         for (int k = 0; k < Constants.Nd; k++)
                         {
                             //value[i, j, k] = ... ;
@@ -117,6 +121,14 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             {
                 integralValues.Add(i, GetIntegral(i));
             }
+        }
+
+        private static bool CalculateMaskValue(int iMinutia, int jMinutia, int i, int j)
+        {
+          /*  return (GetDistance(iMinutia, jMinutia, i, j) <= Constants.R) &&
+                   IsBelongsToConvexHull(i, j); */
+
+            return true;
         }
     }
 }
