@@ -10,7 +10,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
     public static class MCC
     {
         private static int[, ,] value;
-        private static int[,] mask = new int[Constants.Ns, Constants.Ns];
+        private static int[, ,] mask;
+        private static int[,] mask2D = new int[Constants.Ns, Constants.Ns];
         private static Dictionary<double, double> integralValues = new Dictionary<double, double>();
         private static double deltaS;
         private static double deltaD;
@@ -21,7 +22,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             get { return value; }
         }
 
-        public static int[,] Mask
+        public static int[,,] Mask
         {
             get { return mask; }
         }
@@ -41,10 +42,11 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                 {
                     for (int j = 0; j < Constants.Ns; j++)
                     {
-                        mask[i, j] = CalculateMaskValue(minutiae[index].X, minutiae[index].Y, i, j);
-
+                        int maskValue = CalculateMaskValue(minutiae[index].X, minutiae[index].Y, i, j);
+                        
                         for (int k = 0; k < Constants.Nd; k++)
                         {
+                            mask[i, j, k] = maskValue;
                             value[i, j, k] = Psi(GetValue(minutiae, minutiae[index], i, j, k));
                         }
                     }

@@ -100,7 +100,7 @@ namespace CUDAFingerprinting.Common
             double[,] imgBytes = new double[bmp.Height, bmp.Width];
             for (int x = 0; x < bmp.Width; x++)
             {
-                for (int y = 0; y < bmp.Height; y++)
+                  for (int y = 0; y < bmp.Height; y++)
                 {
                     imgBytes[y, x] = bmp.GetPixel(x, y).R;
                 }

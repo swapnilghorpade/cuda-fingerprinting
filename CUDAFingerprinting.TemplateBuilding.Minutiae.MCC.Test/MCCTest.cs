@@ -2,6 +2,7 @@
 using System.Text;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using CUDAFingerprinting.Common;
 using CUDAFingerprinting.Common.Segmentation;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
@@ -24,7 +25,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
             double board = 150;
             var thining = Thining.ThiningPicture(GlobalBinarization.Binarization(img, board));
             List<Minutia> minutiaList = MinutiaeDetection.FindMinutiae(thining);
-            MCC.MCCMethod(minutiaList, thining.GetLength(1), thining.GetLength(0)); // is it right?
+            MCC.MCCMethod(minutiaList, thining.GetLength(1), thining.GetLength(0)); // is it right?]
+
+            int[,,] value = MCC.Value;
+            int[,,] mask3d = MCC.Mask;
+            Img3DHelper.Save3DAs2D(value, Path.GetTempPath() + "value");
+            Img3DHelper.Save3DAs2D(mask3d, Path.GetTempPath() + "mask");
         }
     }
 }
