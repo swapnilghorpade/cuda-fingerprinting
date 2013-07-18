@@ -1,9 +1,10 @@
-
+//CUDAMinutiaeDetection
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "CUDAArray.cuh"
 
 #define ceilMod(x, y) (x+y-1)/y
 
@@ -19,6 +20,64 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
 
 
 
+CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
+{
+	FILE* f = fopen(name,"rb");
+			
+	int width;
+	int height;
+	
+	fread(&width,sizeof(int),1,f);
+			
+	fread(&height,sizeof(int),1,f);
+	
+	float* ar2 = (float*)malloc(sizeof(float)*width*height);
+
+	if(!sourceIsFloat)
+	{
+		int* ar = (int*)malloc(sizeof(int)*width*height);
+		fread(ar,sizeof(int),width*height,f);
+		for(int i=0;i<width*height;i++)
+		{
+			ar2[i]=ar[i];
+		}
+		
+		free(ar);
+	}
+	else
+	{
+		fread(ar2,sizeof(float),width*height,f);
+	}
+	
+	fclose(f);
+
+	CUDAArray<float> sourceImage = CUDAArray<float>();
+	sourceImage.cpuPt = ar2;
+	sourceImage.Width = width;
+	sourceImage.Height = height;
+
+	//free(ar2);		
+
+	return sourceImage;
+	//return ar2;
+}
+
+void SaveArray(float* arTest, int width, int height, const char* fname)
+{
+	FILE* f = fopen(fname,"wb");
+	fwrite(&width,sizeof(int),1,f);
+	fwrite(&height,sizeof(int),1,f);
+	for(int i=0;i<width*height;i++)
+	{
+		float value = (float)arTest[i];
+		int result = fwrite(&value,sizeof(float),1,f);
+		result++;
+	}
+	fclose(f);
+	free(arTest);
+}
+
+
 __device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch) 
     {                                               
         // 1 - ending, >2 - branching,                     
@@ -28,7 +87,7 @@ __device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch)
         {
             for (int j = y - 1; j <= y + 1 ; j++)
             {
-                if ((picture[i + j*rowWidthInElements] == 1) && ((i != x) || (j != y))) 
+                if ((picture[i + j*rowWidthInElements] == 0) && ((i != x) || (j != y))) //NB! 0 or 1 depends on tests 
 				{
 					counter++;
 				}
@@ -43,7 +102,7 @@ __global__  void FindMinutiae(int* picture, size_t pitch, int width, int height,
 	int x = threadIdx.x + blockIdx.x*blockDim.x;
     int y = threadIdx.y + blockIdx.y*blockDim.y;
 	int rowWidthInElements = pitch/sizeof(size_t);
-	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)) && (picture[x + y*rowWidthInElements] == 1))
+	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)) && (picture[x + y*rowWidthInElements] == 0))
 	{
 		int value = CheckMinutiae(picture, x, y, pitch);
 		test[x + y*rowWidthInElements] = value;
@@ -68,14 +127,40 @@ __global__  void FindMinutiae(int* picture, size_t pitch, int width, int height,
 int main()
 {
 	int size = 32;
-	int width = size;
-	int	height = size;
+	int width;// = size;
+	int	height;// = size;
+	CUDAArray<float> img = loadImage("C:\\temp\\104_6_BinarizatedThinnedCUDA.bin", true);
+	width = img.Width;
+	height = img.Height;
 	int *picture = (int*)malloc(width*height*sizeof(int));
 	int *minutiaeCounter = (int*)malloc(sizeof(int));
 	Minutiae *result = (Minutiae*)malloc(width*height*sizeof(Minutiae));
+	
 	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture2.in","r");
 	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
+	float* picture1;
+	picture1 = img.cpuPt;
+	int* result1 = (int*)malloc(width*height*sizeof(int));
 	for(int i = 0; i < width; i++)
+	{
+		for(int j = 0; j < height; j++)
+		{
+			picture[j*width + i] = (int)picture1[j*width + i];
+			result1[j*width + i] = (int)picture1[j*width + i];
+		}
+	}
+
+	for(int i = 0; i < width; i++)
+	{
+		for(int j = 0; j < height; j++)
+		{
+			printf("%d ",picture[j*width + i]);
+		}
+		printf("\n");
+	}
+	printf("\n");
+
+	/*for(int i = 0; i < width; i++)
 	{
 		for(int j = 0; j < height; j++)
 		{
@@ -92,7 +177,7 @@ int main()
 		printf("\n");
 	}
 	printf("\n");
-
+*/
     cudaError_t cudaStatus = addWithCuda(picture, width, height, result, minutiaeCounter); 
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addWithCuda failed!");
@@ -102,8 +187,11 @@ int main()
 	{
 		fprintf(out,"%d %d \n",result[j].x, result[j].y);
 	}
-
-
+	for(int j = 0; j < minutiaeCounter[0]; j++)
+	{
+		picture1[result[j].y*width + result[j].x] = 150;
+	}
+	SaveArray(picture1, width, height,"C:\\temp\\104_6_BinarizatedThinnedMinutiaeMatchedCUDA.bin");
     // cudaDeviceReset must be called before exiting in order for profiling and
     // tracing tools such as Nsight and Visual Profiler to show complete traces.
 //    cudaStatus = cudaDeviceReset();
@@ -115,6 +203,8 @@ int main()
 	free(picture);
 	free(result);
 	free(minutiaeCounter);
+	img.Dispose();
+
 
     return 0;
 }
