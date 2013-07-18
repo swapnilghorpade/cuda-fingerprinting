@@ -63,5 +63,16 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //ImageHelper.SaveArray(Detection, path);
             Process.Start(path);
         }
+        [TestMethod]
+        public void TestMethod5()
+        {
+            //var img = ImageHelper.LoadImage(TestResource._104_6);
+            //ImageHelper.SaveImageAsBinaryFloat("C:\\cuda-fingerprinting\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150.png", "C:\\temp\\104_6_Binarizated.bin");
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_BinarizatedThinnedMinutiaeMatchedCUDA.bin", "C:\\cuda-fingerprinting\\104_6_BinarizatedThinnedMinutiaeMatchedCUDA.png", true);
+            //ImageHelper.SaveIntArray();
+ 
+            Process.Start("C:\\cuda-fingerprinting\\104_6_BinarizatedThinnedMinutiaeMatchedCUDA.png");
+        }
+
     }
 }
