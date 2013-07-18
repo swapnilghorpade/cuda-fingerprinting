@@ -1,10 +1,10 @@
-﻿
+﻿//CUDAThinning
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
 #include <stdio.h>
 #include<stdlib.h>
-#include "CUDAArray.h"
+#include "CUDAArray.cuh"
 
 //#include<MinutiaMatching.h>
 
@@ -48,11 +48,30 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	
 	fclose(f);
 
-	CUDAArray<float> sourceImage = CUDAArray<float>(ar2,width,height);
+	CUDAArray<float> sourceImage = CUDAArray<float>();
+	sourceImage.cpuPt = ar2;
+	sourceImage.Width = width;
+	sourceImage.Height = height;
 
-	free(ar2);		
+	//free(ar2);		
 
 	return sourceImage;
+	//return ar2;
+}
+
+void SaveArray(float* arTest, int width, int height, const char* fname)
+{
+	FILE* f = fopen(fname,"wb");
+	fwrite(&width,sizeof(int),1,f);
+	fwrite(&height,sizeof(int),1,f);
+	for(int i=0;i<width*height;i++)
+	{
+		float value = (float)arTest[i];
+		int result = fwrite(&value,sizeof(float),1,f);
+		result++;
+	}
+	fclose(f);
+	free(arTest);
 }
 
 __device__ int B(int *picture, int x, int y, size_t pitch)        //Ìåòîä Â(Ð) âîçâðàùàåò êîëè÷åñòâî ÷åðíûõ ïèêñåëåé â îêðåñòíîñòè òî÷êè Ð
@@ -226,30 +245,55 @@ void DeleteCorners(int *picture, int width, int height)
 
 int main()
 {
-	int size = 32;
-	int width = size;
-	int	height = size;
+	//int size = 32;
+	int width; //= size;
+	int	height; //= size;
+	CUDAArray<float> img = loadImage("C:\\temp\\104_6_Binarizated.bin", true);
+	width = img.Width;
+	height = img.Height;
 	int *picture = (int*)malloc(width*height*sizeof(int));
 	int *result = (int*)malloc(width*height*sizeof(int));
+	float* picture1;// = (float*)malloc(width*height*sizeof(float));
 	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.in","r");
 	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
+	float* result1 = (float*)malloc(width*height*sizeof(float));
+
+	picture1 = img.cpuPt;
 	for(int i = 0; i < width; i++)
 	{
 		for(int j = 0; j < height; j++)
 		{
-			fscanf(in,"%d",&picture[j*size + i]);
+			picture[j*width + i] = picture1[j*width + i] > 0 ? 0 : 1;
 		}
 	}
 
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			printf("%d ",picture[j*size + i]);
-		}
-		printf("\n");
-	}
-	printf("\n");
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		printf("%.0f ",picture1[j*width + i]);
+	//	}
+	//	printf("\n");
+	//}
+	//printf("\n");
+
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		fscanf(in,"%d",&picture[j*size + i]);
+	//	}
+	//}
+
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		printf("%d ",picture[j*size + i]);
+	//	}
+	//	printf("\n");
+	//}
+	//printf("\n");
 
     cudaError_t cudaStatus = addWithCuda(picture, width, height, result); 
     if (cudaStatus != cudaSuccess) {
@@ -264,7 +308,14 @@ int main()
 		}
 		fprintf(out,"\n");
 	}
-
+	for(int i = 0; i < width; i++)
+	{
+		for(int j = 0; j < height; j++)
+		{
+			result1[j*width + i] = result[j*width + i] > 0 ? 0 : 255;
+		}
+	}
+	SaveArray(result1, width, height,"C:\\temp\\104_6_BinarizatedThinnedCUDA.bin");
 
     // cudaDeviceReset must be called before exiting in order for profiling and
     // tracing tools such as Nsight and Visual Profiler to show complete traces.
@@ -276,7 +327,8 @@ int main()
 
 	free(picture);
 	free(result);
-
+	img.Dispose();
+	free(picture1);
     return 0;
 }
 
@@ -383,15 +435,15 @@ cudaError_t addWithCuda(int *picture, int width, int height, int *result)
 			goto Error;
 		}
 
-		for(int i = 0; i < width; i++)
-		{
-			for(int j = 0; j < height; j++)
-			{
-				printf("%d ",result[j*width + i]);
-			}
-			printf("\n");
-		}
-		printf("\n");
+		//for(int i = 0; i < width; i++)
+		//{
+		//	for(int j = 0; j < height; j++)
+		//	{
+		//		printf("%d ",result[j*width + i]);
+		//	}
+		//	printf("\n");
+		//}
+		//printf("\n");
 		
 		ThiningPictureWithCUDA2<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_pictureToRemove, dev_picture, pitch, width, height, dev_hasChanged);
 
@@ -404,15 +456,15 @@ cudaError_t addWithCuda(int *picture, int width, int height, int *result)
 			goto Error;
 		}
 
-		for(int i = 0; i < width; i++)
-		{
-			for(int j = 0; j < height; j++)
-			{
-				printf("%d ",result[j*width + i]);
-			}
-			printf("\n");
-		}
-		printf("\n");
+		//for(int i = 0; i < width; i++)
+		//{
+		//	for(int j = 0; j < height; j++)
+		//	{
+		//		printf("%d ",result[j*width + i]);
+		//	}
+		//	printf("\n");
+		//}
+		//printf("\n");
 
 		cudaStatus = cudaMemcpy(&hasChanged, dev_hasChanged, sizeof(bool), cudaMemcpyDeviceToHost);
 		if (cudaStatus != cudaSuccess) {
@@ -450,14 +502,14 @@ cudaError_t addWithCuda(int *picture, int width, int height, int *result)
 
     // Copy output vector from GPU buffer to host memory.
 
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			printf("%d ",result[j*width + i]);
-		}
-		printf("\n");
-	}
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		printf("%d ",result[j*width + i]);
+	//	}
+	//	printf("\n");
+	//}
 
 Error:
     cudaFree(dev_picture);
