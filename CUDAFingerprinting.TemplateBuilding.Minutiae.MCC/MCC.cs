@@ -10,7 +10,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
     public static class MCC
     {
         private static int[, ,] value;
-        private static bool[,] mask = new bool[Constants.Ns, Constants.Ns];
+        private static int[,] mask = new int[Constants.Ns, Constants.Ns];
         private static Dictionary<double, double> integralValues = new Dictionary<double, double>();
         private static double deltaS;
         private static double deltaD;
@@ -21,19 +21,19 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             get { return value; }
         }
 
-        public static bool[,] Mask
+        public static int[,] Mask
         {
             get { return mask; }
         }
 
-        public static void MCCMethod(Minutia[] minutiae, int rows, int columns)
+        public static void MCCMethod(List<Minutia> minutiae, int rows, int columns)
         {
             deltaS = 2 * Constants.R / Constants.Ns;
             deltaD = 2 * Math.PI / Constants.Nd;
             MakeDictionary();
-            workingArea = WorkingArea.BuildWorkingArea(minutiae.ToList(), Constants.R, rows, columns);
+            workingArea = WorkingArea.BuildWorkingArea(minutiae, Constants.R, rows, columns);
 
-            for (int index = 0; index < minutiae.GetLength(0); index++)
+            for (int index = 0; index < minutiae.Count; index++)
             {
                 value = new int[Constants.Ns, Constants.Ns, Constants.Nd];
 
@@ -57,11 +57,11 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             return (v >= Constants.MuPsi) ? 1 : 0;
         }
 
-        private static double GetValue(Minutia[] AllMinutiae, Minutia currentMinutia, int i, int j, int k)
+        private static double GetValue(List<Minutia> allMinutiae, Minutia currentMinutia, int i, int j, int k)
         {
             double result = 0;
             Tuple<int, int> currentCoorpinate = GetCoordinatesInFingerprint(currentMinutia, i, j);
-            List<Minutia> neighbourMinutiae = GetNeighbourMinutiae(AllMinutiae, currentMinutia, currentCoorpinate);
+            List<Minutia> neighbourMinutiae = GetNeighbourMinutiae(allMinutiae, currentMinutia, currentCoorpinate);
 
             for (int myLovelyCounterInThisCycle = 0; myLovelyCounterInThisCycle < neighbourMinutiae.Count; myLovelyCounterInThisCycle++)
             {
@@ -141,10 +141,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             return result * factor;
         }
 
-        private static List<Minutia> GetNeighbourMinutiae(Minutia[] minutiae, Minutia minutia, Tuple<int, int> currentCell)
+        private static List<Minutia> GetNeighbourMinutiae(List<Minutia> minutiae, Minutia minutia, Tuple<int, int> currentCell)
         {
             List<Minutia> result = new List<Minutia>();
-            for (int i = 0; i < minutiae.GetLength(0); i++)
+            for (int i = 0; i < minutiae.Count; i++)
             {
                 if (minutiae[i] != minutia &&
                     GetDistance(new Tuple<int, int>(minutiae[i].X, minutiae[i].Y), currentCell) <= 3 * Constants.SigmaS)
@@ -177,9 +177,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             }
         }
 
-        private static bool CalculateMaskValue(int iMinutia, int jMinutia, int i, int j)
+        private static int CalculateMaskValue(int iMinutia, int jMinutia, int i, int j)
         {
-            return (GetDistance(iMinutia, jMinutia, i, j) <= Constants.R) && workingArea[i, j];
+            return ((GetDistance(iMinutia, jMinutia, i, j) <= Constants.R) && workingArea[i, j]) ? 1 : 0;
         }
     }
 }

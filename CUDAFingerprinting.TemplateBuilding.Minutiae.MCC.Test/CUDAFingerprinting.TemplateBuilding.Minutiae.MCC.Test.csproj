@@ -6,7 +6,7 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>37d76aa8-cb27-4183-9273-ed5756fa1099</ProjectGuid>
+    <ProjectGuid>{4D51658B-4406-48C3-AE00-21AAB17DFB01}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test</RootNamespace>
@@ -33,10 +33,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
@@ -45,6 +47,53 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="MCCTest.cs" />
+    <Compile Include="Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
+      <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
+      <Name>CUDAFingerprinting.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.csproj">
+      <Project>{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}</Project>
+      <Name>CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.MCC\CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.csproj">
+      <Project>{C11C918C-3172-4869-B4A6-50EACFFAFC49}</Project>
+      <Name>CUDAFingerprinting.TemplateBuilding.Minutiae.MCC</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\2_2_.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\65_8.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\103_4.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\103_7.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\104_6.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\105_4.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\104_6.tif" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
