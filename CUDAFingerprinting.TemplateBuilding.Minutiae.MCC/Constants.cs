@@ -18,5 +18,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         public static readonly double MinM = 2;
         public static readonly double MinME = 0.6;
         public static readonly double SigmaTetta = Math.PI / 2;
+        public static readonly double N = 10;
+        public static readonly double DictionaryCount = 360; // 720, 1440
     }
 }
