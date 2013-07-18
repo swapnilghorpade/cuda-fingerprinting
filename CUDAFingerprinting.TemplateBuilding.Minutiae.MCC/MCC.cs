@@ -3,22 +3,35 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using CUDAFingerprinting.Common;
+using CUDAFingerprinting.Common.ConvexHull;
 
 namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 {
     public static class MCC
     {
         private static int[, ,] value;
+        private static bool[,] mask = new bool[Constants.Ns, Constants.Ns];
         private static Dictionary<double, double> integralValues = new Dictionary<double, double>();
         private static double deltaS;
         private static double deltaD;
+        private static bool[,] workingArea;
 
-        public static void MCCMethod(Minutia[] minutiae)
+        public static int[, ,] Value
         {
-            bool[,] mask = new bool[Constants.Ns, Constants.Ns];
+            get { return value; }
+        }
+
+        public static bool[,] Mask
+        {
+            get { return mask; }
+        }
+
+        public static void MCCMethod(Minutia[] minutiae, int rows, int columns)
+        {
             deltaS = 2 * Constants.R / Constants.Ns;
             deltaD = 2 * Math.PI / Constants.Nd;
             MakeDictionary();
+            workingArea = WorkingArea.BuildWorkingArea(minutiae.ToList(), Constants.R, rows, columns);
 
             for (int index = 0; index < minutiae.GetLength(0); index++)
             {
@@ -29,9 +42,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                     for (int j = 0; j < Constants.Ns; j++)
                     {
                         mask[i, j] = CalculateMaskValue(minutiae[index].X, minutiae[index].Y, i, j);
+
                         for (int k = 0; k < Constants.Nd; k++)
                         {
-                            value[i, j, k] = Psi(GetValue(minutiae, minutiae[index],i,j,k));
+                            value[i, j, k] = Psi(GetValue(minutiae, minutiae[index], i, j, k));
                         }
                     }
                 }
@@ -40,7 +54,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
         private static int Psi(double v)
         {
-            return (v >= Constants.MuPsi)? 1:0;
+            return (v >= Constants.MuPsi) ? 1 : 0;
         }
 
         private static double GetValue(Minutia[] AllMinutiae, Minutia currentMinutia, int i, int j, int k)
@@ -55,6 +69,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                 double directionalContribution = GetDirectionalContribution(currentMinutia.Angle, neighbourMinutiae[myLovelyCounterInThisCycle].Angle, k);
                 result += spatialContribution * directionalContribution;
             }
+
             return result;
         }
 
@@ -65,12 +80,14 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             double cosTetta = Math.Cos(m.Angle);
             double iDelta = cosTetta * (i - halfNs) + sinTetta * (j - halfNs);
             double jDelta = -sinTetta * (i - halfNs) + cosTetta * (j - halfNs);
+
             return new Tuple<int, int>((int)(m.X + deltaS * iDelta), (int)(m.Y + deltaS * jDelta));
         }
 
         private static double GetDifferenceAngles(double tetta1, double tetta2)
         {
             double difference = tetta1 - tetta2;
+
             if (difference < -Math.PI)
             {
                 return 2 * Math.PI + difference;
@@ -87,12 +104,17 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         private static double GetAngleFromLevel(int k)
         {
             return Math.PI + (k - 1 / 2) * deltaD;
-
         }
 
         private static double GetDistance(Tuple<int, int> point1, Tuple<int, int> point2)
         {
-            return Math.Sqrt((point1.Item1 - point2.Item1) * (point1.Item1 - point2.Item1) + (point1.Item2 - point2.Item2) * (point1.Item2 - point2.Item2));
+            return Math.Sqrt((point1.Item1 - point2.Item1) * (point1.Item1 - point2.Item1) +
+                             (point1.Item2 - point2.Item2) * (point1.Item2 - point2.Item2));
+        }
+
+        private static double GetDistance(int x1, int y1, int x2, int y2)
+        {
+            return Math.Sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
         }
 
         private static double GetDirectionalContribution(double mAngle, double mtAngle, int k)
@@ -100,13 +122,13 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             double angleFromLevel = GetAngleFromLevel(k);
             double differenceAngles = GetDifferenceAngles(mAngle, mtAngle);
             double param = GetDifferenceAngles(angleFromLevel, differenceAngles);
+
             return integralValues[param];
         }
 
         private static double GetIntegral(double parameter)
         {
             double factor = 1 / (Constants.SigmaD * Math.Sqrt(2 * Math.PI));
-
             double a = parameter - deltaD / 2;
             double h = deltaD / Constants.N;
             double result = 0;
@@ -136,13 +158,14 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         private static double GetSpatialContribution(Minutia mt, Tuple<int, int> currentCellXY)
         {
             double distance = GetDistance(new Tuple<int, int>(mt.X, mt.Y), currentCellXY);
-            Gaussian.Gaussian1D(distance, Constants.SigmaS);
-            return 0;
+
+            return Gaussian.Gaussian1D(distance, Constants.SigmaS);
         }
 
         private static double Integrand(double parameter)
         {
             double result = (-parameter * parameter) / (2 * Constants.SigmaD * Constants.SigmaD);
+
             return Math.Exp(result);
         }
 
@@ -156,10 +179,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
         private static bool CalculateMaskValue(int iMinutia, int jMinutia, int i, int j)
         {
-            /*  return (GetDistance(iMinutia, jMinutia, i, j) <= Constants.R) &&
-                     IsBelongsToConvexHull(i, j); */
-
-            return true;
+            return (GetDistance(iMinutia, jMinutia, i, j) <= Constants.R) && workingArea[i, j];
         }
     }
 }

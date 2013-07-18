@@ -51,6 +51,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.ConvexHull\CUDAFingerprinting.Common.ConvexHull.csproj">
+      <Project>{DDF83AFE-585E-463E-8835-FD11B389EF04}</Project>
+      <Name>CUDAFingerprinting.Common.ConvexHull</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
