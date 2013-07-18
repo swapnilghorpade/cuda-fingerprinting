@@ -144,5 +144,31 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.MarkMinutiaeWithDirections(TestResource._104_61globalBinarization150Thinned, Minutiae, path);
             Process.Start(path);
         }
+
+        [TestMethod()]
+        public void FindDirectionVersion6Test()
+        {
+            var img = ImageHelper.LoadImage(TestResource.goodFP);
+            double[,] sobel = LocalBinarizationCanny.Sobel(img);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            double[,] gl = GlobalBinarization.Binarization(nonMax, 60);
+            gl = LocalBinarizationCanny.Inv(gl);
+            var path = Path.GetTempPath() + "lol.png";
+            ImageHelper.SaveArray(gl, path);
+            Process.Start(path);
+            /*int[,] BinaryImage = ImageHelper.LoadImageAsInt(bmp);
+            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
+            for (int i = 0; i < OrientationField.GetLength(0); i++)
+                for (int j = 0; j < OrientationField.GetLength(1); j++)
+                    if (OrientationField[i, j] < 0)
+                        OrientationField[i, j] += Math.PI;
+            double[,] temp = ImageHelper.LoadImage(bmp);
+            var path = Path.GetTempPath() + "direction4.png";
+            List<Minutia> Minutiae = BinarizationThinking.MinutiaeDetection.FindMinutiae(temp);
+            Minutiae = BinarizationThinking.MinutiaeDetection.FindBigMinutiae(Minutiae);
+            MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, BinaryImage, 4);
+            ImageHelper.MarkMinutiaeWithDirections(TestResource._104_61globalBinarization150Thinned, Minutiae, path);
+            Process.Start(path);*/
+        }
     }
 }
