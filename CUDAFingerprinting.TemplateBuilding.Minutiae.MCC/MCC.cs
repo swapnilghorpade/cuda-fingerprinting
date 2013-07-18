@@ -14,14 +14,14 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         private static double deltaD;
 
         public static void MCCMethod(Minutia[] minutiae)
-        {
+        {    
             bool[,] mask = new bool[Constants.Ns,Constants.Ns];
-
             deltaS = 2 * Constants.R / Constants.Ns;
             deltaD = 2 * Math.PI / Constants.Nd;
             MakeDictionary();
 
             for (int index = 0; index < minutiae.GetLength(0); index++)
+
             {
                 value = new int[Constants.Ns, Constants.Ns, Constants.Nd];
 
@@ -30,19 +30,33 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                     for (int j = 0; j < Constants.Ns; j++)
                     {
                         mask[i, j] = CalculateMaskValue(minutiae[index].X, minutiae[index].Y, i, j);
-
-                        for (int k = 0; k < Constants.Nd; k++)
+					for (int k = 0; k < Constants.Nd; k++)
                         {
-                            //value[i, j, k] = ... ;
+                            value[i, j, k] = Psi(GetValue());
                         }
                     }
                 }
             }
         }
 
-        private static bool Psi(double v)
+		        private static bool Psi(double v)
         {
             return v >= Constants.MuPsi;
+        }
+
+        private static double GetValue(Minutia[] AllMinutiae, Minutia currentMinutia, int i, int j, int k)
+        {
+            double result = 0;
+            Tuple<int,int> currentCoorpinate = GetCoordinatesInFingerprint(currentMinutia,i,j);
+            List<Minutia> neighbourMinutiae = GetNeighbourMinutiae(AllMinutiae, currentMinutia, currentCoorpinate);
+
+            for (int myLovelyCounterInThisCycle = 0; myLovelyCounterInThisCycle < neighbourMinutiae.Count; myLovelyCounterInThisCycle++)
+            {
+                double spatialContribution = GetSpatialContribution(neighbourMinutiae[myLovelyCounterInThisCycle],currentCoorpinate);
+                double directionalContribution = GetDirectionalContribution(currentMinutia.Angle, neighbourMinutiae[myLovelyCounterInThisCycle].Angle, k);
+                result += spatialContribution * directionalContribution;
+            }
+            return result;
         }
 
         private static Tuple<int, int> GetCoordinatesInFingerprint(Minutia m, int i, int j)
@@ -52,14 +66,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             double cosTetta = Math.Cos(m.Angle);
             double iDelta = cosTetta * (i - halfNs) + sinTetta * (j - halfNs);
             double jDelta = -sinTetta * (i - halfNs) + cosTetta * (j - halfNs);
-
             return new Tuple<int, int>((int)(m.X + deltaS * iDelta), (int)(m.Y + deltaS * jDelta));
         }
 
         private static double GetDifferenceAngles(double tetta1, double tetta2)
         {
             double difference = tetta1 - tetta2;
-
             if (difference < -Math.PI)
             {
                 return 2 * Math.PI + difference;
@@ -76,11 +88,14 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         private static double GetAngleFromLevel(int k)
         {
             return Math.PI + (k - 1 / 2) * deltaD;
+
         }
 
         private static double GetDistance(Tuple<int, int> point1, Tuple<int, int> point2)
+
         {
             return Math.Sqrt((point1.Item1 - point2.Item1) * (point1.Item1 - point2.Item1) + (point1.Item2 - point2.Item2) * (point1.Item2 - point2.Item2));
+
         }
 
         private static double GetDirectionalContribution(double mAngle, double mtAngle, int k)
@@ -106,6 +121,28 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             }
 
             return result * factor;
+        }
+
+
+        private static List<Minutia> GetNeighbourMinutiae(Minutia[] minutiae, Minutia minutia, Tuple<int,int> currentCell)
+        {
+            List<Minutia> result = new List<Minutia>();
+            for (int i = 0; i < minutiae.GetLength(0); i++)
+            {
+                if (minutiae[i] != minutia &&
+                    GetDistance(new Tuple<int, int>(minutiae[i].X, minutiae[i].Y), currentCell) <= 3 * Constants.SigmaS)
+                {
+                    result.Add(minutiae[i]);
+                }
+            }
+            return result;
+        }
+
+        private static double GetSpatialContribution(Minutia mt, Tuple<int, int> currentCellXY)
+        {
+            double distance = GetDistance(new Tuple<int, int>(mt.X, mt.Y), currentCellXY);
+            Gaussian.Gaussian1D(distance, Constants.SigmaS);
+            return 0;
         }
 
         private static double Integrand(double parameter)
