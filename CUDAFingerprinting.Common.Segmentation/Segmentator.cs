@@ -8,6 +8,24 @@ namespace CUDAFingerprinting.Common.Segmentation
 {
     public static class Segmentator
     {
+        private static int N;
+        private static int M;
+        private static bool[,] mask = new bool[N, M];
+
+        public static bool[,] GetMask(double[,] img, int windowSize, double weight, int threshold)
+        {
+            bool[,] bigMask =  new bool[img.GetLength(0), img.GetLength(1)];
+            
+            bigMask = bigMask.Select2D((value, x, y) =>
+                {
+                    int xBlock = (int)(((double)x) / windowSize);
+                    int yBlock = (int)(((double)y) / windowSize);
+                    return mask[xBlock, yBlock];
+                });
+
+            return bigMask;
+        }
+
         public static double[,] Segmetator(double[,] img, int windowSize, double weight, int threshold)
         {
             int[,] xGradients = OrientationFieldGenerator.GenerateXGradients(img.Select2D(a => (int)a));
@@ -18,9 +36,8 @@ namespace CUDAFingerprinting.Common.Segmentation
             double averege = KernelHelper.Average(magnitudes);
             double[,] window = new double[windowSize, windowSize];
 
-            int N = (int)Math.Ceiling(((double)img.GetLength(0)) / windowSize);
-            int M = (int)Math.Ceiling(((double)img.GetLength(1)) / windowSize);
-            bool[,] mask = new bool[N, M];
+            N = (int)Math.Ceiling(((double)img.GetLength(0)) / windowSize);
+            M = (int)Math.Ceiling(((double)img.GetLength(1)) / windowSize);
 
             for (int i = 0; i < N; i++)
             {

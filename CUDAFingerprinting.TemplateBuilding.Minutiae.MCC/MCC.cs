@@ -123,7 +123,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             double differenceAngles = GetDifferenceAngles(mAngle, mtAngle);
             double param = GetDifferenceAngles(angleFromLevel, differenceAngles);
 
-            return integralValues[param];
+            return integralValues[(int)param];
         }
 
         private static double GetIntegral(double parameter)
@@ -171,9 +171,13 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
         private static void MakeDictionary()
         {
+            double value = -Math.PI;
+            double step = 2 * Math.PI / Constants.DictionaryCount;
+
             for (int i = 0; i < Constants.DictionaryCount; i++)
             {
-                integralValues.Add(i, GetIntegral(i));
+                integralValues.Add(value, GetIntegral(i));
+                value += step;
             }
         }
 

@@ -55,6 +55,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.Segmentation\CUDAFingerprinting.Common.Segmentation.csproj">
+      <Project>{6BEF775C-E400-4EA6-A220-15BE47B27148}</Project>
+      <Name>CUDAFingerprinting.Common.Segmentation</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
