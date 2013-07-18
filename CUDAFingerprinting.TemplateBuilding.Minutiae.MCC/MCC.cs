@@ -83,10 +83,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             return Math.Sqrt((point1.Item1 - point2.Item1) * (point1.Item1 - point2.Item1) + (point1.Item2 - point2.Item2) * (point1.Item2 - point2.Item2));
         }
 
-        private static double GetDirectionalContribution(Minutia m, Minutia mt, Tuple<int, int> coordinatesInFingerprint, int k)
+        private static double GetDirectionalContribution(double mAngle, double mtAngle, int k)
         {
             double angleFromLevel = GetAngleFromLevel(k);
-            double differenceAngles = GetDifferenceAngles(m.Angle, mt.Angle);
+            double differenceAngles = GetDifferenceAngles(mAngle, mtAngle);
             double param = GetDifferenceAngles(angleFromLevel, differenceAngles);
            
             return integralValues[param];
