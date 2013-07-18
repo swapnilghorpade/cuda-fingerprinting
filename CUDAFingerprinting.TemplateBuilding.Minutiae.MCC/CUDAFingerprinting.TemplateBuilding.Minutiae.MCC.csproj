@@ -48,6 +48,7 @@
   <ItemGroup>
     <Compile Include="Constants.cs" />
     <Compile Include="MCC.cs" />
+    <Compile Include="Numeration.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
