@@ -1,4 +1,4 @@
-﻿
+﻿//CUDAMinutiaeDetectionSpecial
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 
@@ -87,7 +87,7 @@ int main()
 	Minutiae *result = (Minutiae*)malloc(width*height*sizeof(Minutiae));
 	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture2.in","r");
 	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
-	int radius = 5;
+	int radius = 2;
 	for(int i = 0; i < width; i++)
 	{
 		for(int j = 0; j < height; j++)
