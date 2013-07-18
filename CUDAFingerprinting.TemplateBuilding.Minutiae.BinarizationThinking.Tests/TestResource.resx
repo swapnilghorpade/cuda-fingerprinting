@@ -157,10 +157,16 @@
   <data name="_110_6" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\110_6.tif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
-  <data name="MinutiaeBigTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>Resources\MinutiaeBigTest.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
-  </data>
   <data name="miniTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\miniTest.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="goodFP" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\104_61.tif;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MinutiaBigDetection" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MinutiaBigDetection.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="MinutiaeBigTest" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\MinutiaeBigTest.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
 </root>

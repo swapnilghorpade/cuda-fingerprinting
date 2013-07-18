@@ -46,7 +46,6 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Clusterization.cs" />
     <Compile Include="GaussianBlurTest.cs" />
     <Compile Include="GradientTest.cs" />
     <Compile Include="LocalRidgeOrientationTest.cs" />

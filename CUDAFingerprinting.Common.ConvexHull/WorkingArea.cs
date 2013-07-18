@@ -4,9 +4,15 @@ namespace CUDAFingerprinting.Common.ConvexHull
 {
     class WorkingArea
     {
-        public static bool[,] BuildWorkingArea(List<Point> Minutiae, int radius, int rows, int columns)
+        public static bool[,] BuildWorkingArea(List<Minutia> Minutiae, int radius, int rows, int columns)
         {
-            bool[,] primaryField = FieldFilling.GetFieldFilling(rows, columns, Minutiae);
+            List<Point> MyMinutiae = new List<Point>();
+            for (int i = 0; i < Minutiae.Count; i++)
+            {
+                Point x = new Point(Minutiae[i].Y, Minutiae[i].X);
+                MyMinutiae.Add(x);
+            }
+            bool[,] primaryField = FieldFilling.GetFieldFilling(rows, columns, MyMinutiae);
             bool[,] resField = new bool[rows,columns];
             for (int i = 0; i < rows; i ++) 
                 for (int j = 0; j < columns; j++)
