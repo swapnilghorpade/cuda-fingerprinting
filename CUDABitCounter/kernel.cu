@@ -7,6 +7,11 @@
 #include "device_launch_parameters.h"
 #include <time.h>
 
+extern "C"
+{
+	__declspec(dllexport) int *BitCounter(int* arr, int x, int y);
+}
+
 __device__ int CountBits(int x)
         {
             x -= (x >> 1) & (0x55555555);

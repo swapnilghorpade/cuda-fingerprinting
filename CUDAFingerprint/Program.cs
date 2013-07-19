@@ -13,6 +13,9 @@ namespace CUDAFingerprint
 {
     internal class Program
     {
+        [DllImport("CUDABitCounter.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int[] BitCounter(int[] arr, int x, int y);
+
         [DllImport("CUDAFingercode.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern int disposeDevice();
 
@@ -67,7 +70,7 @@ namespace CUDAFingerprint
             // TestQuality();
             // TestTimings();
             TestSorting();
-            //TestHull();
+        
         }
 
         private static void TestSorting()
