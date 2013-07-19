@@ -168,6 +168,21 @@
   <ItemGroup>
     <None Include="Resources\BinaryImage.png" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\81_7.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\90_3.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\85_1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\81_4.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\81_8.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
