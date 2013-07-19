@@ -32,7 +32,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
             int [] resVec = new int[sizeResVec];
 
-            for (int i = 0; i < resVec.GetLength(0); i++)
+            for (int i = 0; i < sizeResVec; i++)
             {
                 for (int j = 0; j < 32; j++)
                 {
