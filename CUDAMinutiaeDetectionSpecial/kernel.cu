@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "CUDAArray.cuh"
 
 #define ceilMod(x, y) (x+y-1)/y
 
@@ -20,6 +21,65 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
 
 
 
+CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
+{
+	FILE* f = fopen(name,"rb");
+			
+	int width;
+	int height;
+	
+	fread(&width,sizeof(int),1,f);
+			
+	fread(&height,sizeof(int),1,f);
+	
+	float* ar2 = (float*)malloc(sizeof(float)*width*height);
+
+	if(!sourceIsFloat)
+	{
+		int* ar = (int*)malloc(sizeof(int)*width*height);
+		fread(ar,sizeof(int),width*height,f);
+		for(int i=0;i<width*height;i++)
+		{
+			ar2[i]=ar[i];
+		}
+		
+		free(ar);
+	}
+	else
+	{
+		fread(ar2,sizeof(float),width*height,f);
+	}
+	
+	fclose(f);
+
+	CUDAArray<float> sourceImage = CUDAArray<float>();
+	sourceImage.cpuPt = ar2;
+	sourceImage.Width = width;
+	sourceImage.Height = height;
+
+	//free(ar2);		
+
+	return sourceImage;
+	//return ar2;
+}
+
+void SaveArray(float* arTest, int width, int height, const char* fname)
+{
+	FILE* f = fopen(fname,"wb");
+	fwrite(&width,sizeof(int),1,f);
+	fwrite(&height,sizeof(int),1,f);
+	for(int i=0;i<width*height;i++)
+	{
+		float value = (float)arTest[i];
+		int result = fwrite(&value,sizeof(float),1,f);
+		result++;
+	}
+	fclose(f);
+	free(arTest);
+}
+
+
+
 __device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch) 
 {                                               
     // 1 - ending, >2 - branching,                     
@@ -29,7 +89,7 @@ __device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch)
     {
         for (int j = y - 1; j <= y + 1 ; j++)
         {
-            if ((picture[i + j*rowWidthInElements] == 1) && ((i != x) || (j != y))) 
+            if ((picture[i + j*rowWidthInElements] == 0) && ((i != x) || (j != y))) 
 			{
 				counter++;
 			}
@@ -44,7 +104,7 @@ __global__  void FindMinutiae(int* picture, size_t pitch, int width, int height,
 	int x = threadIdx.x + blockIdx.x*blockDim.x;
     int y = threadIdx.y + blockIdx.y*blockDim.y;
 	int rowWidthInElements = pitch/sizeof(size_t);
-	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)) && (picture[x + y*rowWidthInElements] == 1))
+	if((x > 0) && (y > 0) && (x < (width - 1)) && (y < (height - 1)) && (picture[x + y*rowWidthInElements] == 0))
 	{
 		int value = CheckMinutiae(picture, x, y, pitch);
 		test[x + y*rowWidthInElements] = value;
@@ -80,41 +140,74 @@ __global__ void ConsiderDistanceBetweenMinutiae(int radius, Minutiae *listMinuti
 int main()
 {
 	int size = 32;
-	int width = size;
-	int	height = size;
+	int width; //= size;
+	int	height;// = size;
+	CUDAArray<float> img = loadImage("C:\\temp\\104_6_BinarizatedThinnedCUDA.bin", true);
+	width = img.Width;
+	height = img.Height;
 	int *picture = (int*)malloc(width*height*sizeof(int));
 	int *minutiaeCounter = (int*)malloc(sizeof(int));
 	Minutiae *result = (Minutiae*)malloc(width*height*sizeof(Minutiae));
 	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture2.in","r");
 	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
-	int radius = 2;
+	int radius = 5;
+
+	float* picture1;
+	picture1 = img.cpuPt;
+	int* result1 = (int*)malloc(width*height*sizeof(int));
 	for(int i = 0; i < width; i++)
 	{
 		for(int j = 0; j < height; j++)
 		{
-			fscanf(in,"%d",&picture[j*width + i]);
+			picture[j*width + i] = (int)picture1[j*width + i];
+			result1[j*width + i] = (int)picture1[j*width + i];
 		}
 	}
 
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			printf("%d ",picture[j*width + i]);
-		}
-		printf("\n");
-	}
-	printf("\n");
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		printf("%d ",picture[j*width + i]);
+	//	}
+	//	printf("\n");
+	//}
+	//printf("\n");
+
+
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		fscanf(in,"%d",&picture[j*width + i]);
+	//	}
+	//}
+
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		printf("%d ",picture[j*width + i]);
+	//	}
+	//	printf("\n");
+	//}
+	//printf("\n");
 
     cudaError_t cudaStatus = addWithCuda(picture, width, height, result, minutiaeCounter, radius); 
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addWithCuda failed!");
         return 1;
     }
+	fprintf(out,"%d \n", minutiaeCounter[0]);
 	for(int j = 0; j < minutiaeCounter[0]; j++)
 	{
 		fprintf(out,"%d %d \n",result[j].x, result[j].y);
 	}
+		for(int j = 0; j < minutiaeCounter[0]; j++)
+	{
+		picture1[result[j].y*width + result[j].x] = 150;
+	}
+	SaveArray(picture1, width, height,"C:\\temp\\104_6_BinarizatedThinnedMinutiaeBigMatchedCUDA.bin");
 
 
     // cudaDeviceReset must be called before exiting in order for profiling and
@@ -128,6 +221,7 @@ int main()
 	free(picture);
 	free(result);
 	free(minutiaeCounter);
+	free(result1);
 
     return 0;
 }
@@ -232,14 +326,14 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
         fprintf(stderr, "cudaMemcpy failed!");
         goto Error;
     }
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			printf("%d ",test[j*width + i]);
-		}
-		printf("\n");
-	}
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		printf("%d ",test[j*width + i]);
+	//	}
+	//	printf("\n");
+	//}
 
 	printf("minutiaeCounter[0] = %d \n", minutiaeCounter[0]);
 	for(int j = 0; j < minutiaeCounter[0]; j++)
@@ -279,15 +373,15 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
         goto Error;
     }
 	
-	for(int i = 0; i < minutiaeCounter[0]; i++)
-	{
-		for(int j = 0; j < minutiaeCounter[0]; j++)
-		{
-			printf("%d ",tableDistance[j*minutiaeCounter[0] + i]);
-			tableDistance[j*minutiaeCounter[0] + i] == 1 ? result[i].numMinutiaeAround++ : result[i].numMinutiaeAround;
-		}
-		printf(" %d %d %d \n", result[i].x, result[i].y, result[i].numMinutiaeAround);
-	}
+	//for(int i = 0; i < minutiaeCounter[0]; i++)
+	//{
+	//	for(int j = 0; j < minutiaeCounter[0]; j++)
+	//	{
+	//		printf("%d ",tableDistance[j*minutiaeCounter[0] + i]);
+	//		tableDistance[j*minutiaeCounter[0] + i] == 1 ? result[i].numMinutiaeAround++ : result[i].numMinutiaeAround;
+	//	}
+	//	printf(" %d %d %d \n", result[i].x, result[i].y, result[i].numMinutiaeAround);
+	//}
 	int max;
 	for(int q = 0; (q < minutiaeCounter[0]) && (max != 0); q++)
 	{
@@ -350,11 +444,21 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
 		result1[countResult1] = minutiaS1;
 		countResult1++;}
 	}
+	printf("mintutiaeCounter[0] = %d\n", countResult1);
 	for(int i = 0; i < countResult1; i++)
 	{
 		printf(" %d %d \n", result1[i].x, result1[i].y);
+		result[i] = result1[i];
 	}
+	//result = result1;
+	minutiaeCounter[0] = countResult1;
 
+
+	//printf("minutiaeCounter[0] = %d \n", minutiaeCounter[0]);
+	//for(int j = 0; j < minutiaeCounter[0]; j++)
+	//{
+	//	printf("%d %d \n",result[j].x, result[j].y);
+	//}
 
 Error:
     cudaFree(dev_picture);
