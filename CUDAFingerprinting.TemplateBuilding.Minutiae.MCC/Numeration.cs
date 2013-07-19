@@ -36,7 +36,10 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             {
                 for (int j = 0; j < 32; j++)
                 {
-                    resVec[i] = resVec[i] | (vector[j + i*32] << (31 - j));
+                    if (j + i*32 < vector.Count)
+                    {
+                        resVec[i] = resVec[i] | (vector[j + i*32] << (31 - j));
+                    }
                 }
             }
             return resVec;
