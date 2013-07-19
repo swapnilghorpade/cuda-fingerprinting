@@ -18,7 +18,7 @@ namespace CUDAFingerprinting.Common.PoreFilter
                             for (int v = -1; v < 2; v++)
                                 if (field[u + i, v + j] == 255)
                                     count++;
-                        if (count <= 3)
+                        if (count <= 4)
                             field[i, j] = 0;
                     }
             for (int i = 1; i < field.GetLength(0) - 1; i++)
@@ -30,7 +30,7 @@ namespace CUDAFingerprinting.Common.PoreFilter
                             for (int v = -1; v < 2; v++)
                                 if (field[u + i, v + j] == 0)
                                     count++;
-                        if (count <= 3)
+                        if (count <= 4)
                             field[i, j] = 255;
                     }
         }
