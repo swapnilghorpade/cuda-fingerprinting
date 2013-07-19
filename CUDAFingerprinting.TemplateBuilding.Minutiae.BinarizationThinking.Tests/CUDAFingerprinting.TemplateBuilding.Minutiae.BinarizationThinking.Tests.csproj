@@ -77,6 +77,10 @@
       <Project>{5EEC4BD2-E1B0-4794-948A-45732CD41F99}</Project>
       <Name>CUDAFingerprinting.Common.OrientationField</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.PoreFilter\CUDAFingerprinting.Common.PoreFilter.csproj">
+      <Project>{D2178362-6AE7-4BFB-AF2C-A241BF85065F}</Project>
+      <Name>CUDAFingerprinting.Common.PoreFilter</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
@@ -84,6 +88,10 @@
     <ProjectReference Include="..\CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests\CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests.csproj">
       <Project>{2903088B-5258-448A-B107-32B5C8D78C73}</Project>
       <Name>CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.ImageEnhancement.ContextualGabor\CUDAFingerprinting.ImageEnhancement.ContextualGabor.csproj">
+      <Project>{8E0B3659-1BED-4580-B777-FE45D6840175}</Project>
+      <Name>CUDAFingerprinting.ImageEnhancement.ContextualGabor</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.ImageEnhancement.LinearSymmetry\CUDAFingerprinting.ImageEnhancement.LinearSymmetry.csproj">
       <Project>{83EBBA4F-41BD-4103-92DA-8923AEC11EFA}</Project>
@@ -159,6 +167,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\104_61.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BinaryImage.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

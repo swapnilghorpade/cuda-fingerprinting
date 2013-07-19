@@ -286,5 +286,10 @@ namespace CUDAFingerprinting.Common.OrientationField
 
             bmp.Save(name, ImageFormat.Bmp);
         }
+
+        public static double[,] GenerateBlur(double[,] p)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

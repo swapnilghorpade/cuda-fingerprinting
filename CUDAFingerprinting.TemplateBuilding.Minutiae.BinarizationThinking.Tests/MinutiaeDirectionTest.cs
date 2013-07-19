@@ -1,12 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using CUDAFingerprinting.Common.ComplexFilters;
+using CUDAFingerprinting.Common.OrientationField;
+using CUDAFingerprinting.Common.PoreFilter;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Drawing;
-using CUDAFingerprinting.Common.OrientationField;
 using CUDAFingerprinting.Common;
+using CUDAFingerprinting.ImageEnhancement.ContextualGabor;
+using OrientationFieldGenerator = CUDAFingerprinting.ImageEnhancement.ContextualGabor.OrientationFieldGenerator;
+
 namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests
 {
     
@@ -77,7 +82,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         {
             var bmp = new Bitmap(TestResource._104_61globalBinarization150Thinned);
             int[,] BinaryImage = ImageHelper.LoadImageAsInt(bmp);
-            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
+            double[,] OrientationField = CUDAFingerprinting.Common.OrientationField.OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
             for (int i = 0 ; i < OrientationField.GetLength(0); i++)
                 for (int j = 0 ; j < OrientationField.GetLength(1); j++)
                     if (OrientationField[i, j] < 0)
@@ -95,7 +100,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         {
             var bmp = new Bitmap(TestResource._104_61globalBinarization150Thinned);
             int[,] BinaryImage = ImageHelper.LoadImageAsInt(bmp);
-            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
+            double[,] OrientationField = CUDAFingerprinting.Common.OrientationField.OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
             for (int i = 0; i < OrientationField.GetLength(0); i++)
                 for (int j = 0; j < OrientationField.GetLength(1); j++)
                     if (OrientationField[i, j] < 0)
@@ -113,7 +118,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         {
             var bmp = new Bitmap(TestResource._104_61globalBinarization150Thinned);
             int[,] BinaryImage = ImageHelper.LoadImageAsInt(bmp);
-            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
+            double[,] OrientationField = CUDAFingerprinting.Common.OrientationField.OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
             for (int i = 0; i < OrientationField.GetLength(0); i++)
                 for (int j = 0; j < OrientationField.GetLength(1); j++)
                     if (OrientationField[i, j] < 0)
@@ -131,7 +136,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         {
             var bmp = new Bitmap(TestResource._104_61globalBinarization150Thinned);
             int[,] BinaryImage = ImageHelper.LoadImageAsInt(bmp);
-            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
+            double[,] OrientationField = CUDAFingerprinting.Common.OrientationField.OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
             for (int i = 0; i < OrientationField.GetLength(0); i++)
                 for (int j = 0; j < OrientationField.GetLength(1); j++)
                     if (OrientationField[i, j] < 0)
@@ -148,27 +153,37 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod()]
         public void FindDirectionVersion6Test()
         {
-            var img = ImageHelper.LoadImage(TestResource.goodFP);
-            double[,] sobel = LocalBinarizationCanny.Sobel(img);
+            double[,] img = ImageHelper.LoadImage(TestResource.goodFP);
+            double sigma = 1.4d;
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
             double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
-            double[,] gl = GlobalBinarization.Binarization(nonMax, 60);
-            gl = LocalBinarizationCanny.Inv(gl);
-            var path = Path.GetTempPath() + "lol.png";
-            ImageHelper.SaveArray(gl, path);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            int sizeWin = 16;
+            double[,] resImg = LocalBinarizationCanny.LocalBinarization(img, nonMax, sizeWin, 1.3d);
+            PoreFilter.DeletePores(resImg);
+            var path2 = Path.GetTempPath() + "BinaryImageololololo.png";
+            ImageHelper.SaveArray(resImg, path2);
+            Process.Start(path2);
+            resImg = Thining.ThiningPicture(resImg);
+            var path = Path.GetTempPath() + "BinaryImage.png";
+            ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
-            /*int[,] BinaryImage = ImageHelper.LoadImageAsInt(bmp);
-            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
+            int[,] BinaryImage = ImageHelper.LoadImageAsInt(TestResource.BinaryImage);
+            double[,] OrientationField =
+                Common.OrientationField.OrientationFieldGenerator.GenerateOrientationField(BinaryImage);
             for (int i = 0; i < OrientationField.GetLength(0); i++)
                 for (int j = 0; j < OrientationField.GetLength(1); j++)
                     if (OrientationField[i, j] < 0)
                         OrientationField[i, j] += Math.PI;
-            double[,] temp = ImageHelper.LoadImage(bmp);
-            var path = Path.GetTempPath() + "direction4.png";
+            double[,] temp = ImageHelper.LoadImage(TestResource.BinaryImage);
+            var path1 = Path.GetTempPath() + "direction4.png";
             List<Minutia> Minutiae = BinarizationThinking.MinutiaeDetection.FindMinutiae(temp);
             Minutiae = BinarizationThinking.MinutiaeDetection.FindBigMinutiae(Minutiae);
             MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, BinaryImage, 4);
             ImageHelper.MarkMinutiaeWithDirections(TestResource._104_61globalBinarization150Thinned, Minutiae, path);
-            Process.Start(path);*/
+            Process.Start(path1);
         }
     }
 }
