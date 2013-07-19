@@ -150,15 +150,15 @@ int main()
 		}
 	}
 
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			printf("%d ",picture[j*width + i]);
-		}
-		printf("\n");
-	}
-	printf("\n");
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		printf("%d ",picture[j*width + i]);
+	//	}
+	//	printf("\n");
+	//}
+	//printf("\n");
 
 	/*for(int i = 0; i < width; i++)
 	{
@@ -203,6 +203,7 @@ int main()
 	free(picture);
 	free(result);
 	free(minutiaeCounter);
+	free(result1);
 	img.Dispose();
 
 
@@ -296,14 +297,14 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
         fprintf(stderr, "cudaMemcpy failed!");
         goto Error;
     }
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			printf("%d ",test[j*width + i]);
-		}
-		printf("\n");
-	}
+	//for(int i = 0; i < width; i++)
+	//{
+	//	for(int j = 0; j < height; j++)
+	//	{
+	//		printf("%d ",test[j*width + i]);
+	//	}
+	//	printf("\n");
+	//}
 
 	printf("minutiaeCounter[0] = %d \n", minutiaeCounter[0]);
 	for(int j = 0; j < minutiaeCounter[0]; j++)
