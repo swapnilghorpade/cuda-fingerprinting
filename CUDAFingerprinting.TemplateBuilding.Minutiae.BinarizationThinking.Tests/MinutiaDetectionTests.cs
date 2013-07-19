@@ -77,7 +77,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod6()
         {
-            double[,] img = ImageHelper.LoadImage("C:\\Users\\Mirza\\Documents\\enh_img\\81_7.png");
+            double[,] img = ImageHelper.LoadImage(TestResource._81_7);
             double sigma = 1.4d;
             double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
             double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
@@ -104,7 +104,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod7()
         {
-            double[,] img = ImageHelper.LoadImage("C:\\Users\\Mirza\\Documents\\enh_img\\90_3.png");
+            double[,] img = ImageHelper.LoadImage(TestResource._90_3);
             double sigma = 1.4d;
             double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
             double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
@@ -132,7 +132,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod8()
         {
-            double[,] img = ImageHelper.LoadImage("C:\\Users\\Mirza\\Documents\\enh_img\\85_1.png");
+            double[,] img = ImageHelper.LoadImage(TestResource._85_1);
             double sigma = 1.4d;
             double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
             double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
@@ -160,7 +160,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod9()
         {
-            double[,] img = ImageHelper.LoadImage("C:\\Users\\Mirza\\Documents\\enh_img\\81_4.png");
+            double[,] img = ImageHelper.LoadImage(TestResource._81_4);
             double sigma = 1.4d;
             double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
             double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
@@ -188,7 +188,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         [TestMethod]
         public void TestMethod10()
         {
-            double[,] img = ImageHelper.LoadImage("C:\\Users\\Mirza\\Documents\\enh_img\\81_8.png");
+            double[,] img = ImageHelper.LoadImage(TestResource._81_8);
             double sigma = 1.4d;
             double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
             double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
