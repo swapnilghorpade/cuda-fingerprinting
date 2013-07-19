@@ -129,5 +129,35 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         //    ImageHelper.SaveArray(thining, path);
         //    Process.Start(path);
         //}
+
+        [TestMethod]
+        public void TestMethod6()
+        {
+            //var img = ImageHelper.LoadImage(TestResource._104_6);
+            //ImageHelper.SaveImageAsBinaryFloat("C:\\cuda-fingerprinting\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150.png", "C:\\temp\\104_6_Binarizated.bin");
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_BinarizatedThinnedMinutiaeBigMatchedCUDA.bin", "C:\\temp\\104_6_BinarizatedThinnedMinutiaeBigMatchedCUDA.png", true);
+            //ImageHelper.SaveIntArray();
+            var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150);
+            var path = Path.GetTempPath() + "thininig.png";
+            var thining = Thining.ThiningPicture(img);
+            ImageHelper.SaveArray(thining, path);
+            Process.Start(path);
+        }
+
+        [TestMethod]
+        public void TestMethod7()
+        {
+            //var img = ImageHelper.LoadImage(TestResource._104_6);
+            //ImageHelper.SaveImageAsBinaryFloat("C:\\cuda-fingerprinting\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150.png", "C:\\temp\\104_6_Binarizated.bin");
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_BinarizatedThinnedMinutiaeMatchedCUDA.bin", "C:\\temp\\104_6_BinarizatedThinnedMinutiaeMatchedCUDA.png", true);
+            //ImageHelper.SaveIntArray();
+            var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150);
+            var path = Path.GetTempPath() + "thininig.png";
+            var thining = Thining.ThiningPicture(img);
+            ImageHelper.SaveArray(thining, path);
+            Process.Start(path);
+        }
+
+
     }
 }

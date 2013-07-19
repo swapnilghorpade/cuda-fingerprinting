@@ -6,7 +6,7 @@
     <ProductVersion>
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{668CC13B-4839-4CC7-887E-82AC9D95DC7A}</ProjectGuid>
+    <ProjectGuid>{F2CF4953-53C3-4BDD-BAD5-C93D65E3F47C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests</RootNamespace>
@@ -33,17 +33,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Microsoft.VisualStudio.QualityTools.UnitTestFramework, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
-    <Reference Include="System.Data" />
-    <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="System.Drawing" />
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDependentAssemblyPaths Condition=" '$(VS100COMNTOOLS)' != '' " Include="$(VS100COMNTOOLS)..\IDE\PrivateAssemblies">
@@ -54,7 +49,6 @@
     <Compile Include="GlobalBinarizationTest.cs" />
     <Compile Include="LocalBinarizationTest.cs" />
     <Compile Include="MinutiaDetectionTests.cs" />
-    <Compile Include="MinutiaeDirectionTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -69,18 +63,6 @@
     <Compile Include="ThiningTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CUDAFingerprinting.Common.ComplexFilters\CUDAFingerprinting.Common.ComplexFilters.csproj">
-      <Project>{9CBC91CE-0EE7-4A78-A5F5-89EA40023F52}</Project>
-      <Name>CUDAFingerprinting.Common.ComplexFilters</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUDAFingerprinting.Common.OrientationField\CUDAFingerprinting.Common.OrientationField.csproj">
-      <Project>{5EEC4BD2-E1B0-4794-948A-45732CD41F99}</Project>
-      <Name>CUDAFingerprinting.Common.OrientationField</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUDAFingerprinting.Common.PoreFilter\CUDAFingerprinting.Common.PoreFilter.csproj">
-      <Project>{D2178362-6AE7-4BFB-AF2C-A241BF85065F}</Project>
-      <Name>CUDAFingerprinting.Common.PoreFilter</Name>
-    </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
@@ -88,18 +70,6 @@
     <ProjectReference Include="..\CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests\CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests.csproj">
       <Project>{2903088B-5258-448A-B107-32B5C8D78C73}</Project>
       <Name>CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUDAFingerprinting.ImageEnhancement.ContextualGabor\CUDAFingerprinting.ImageEnhancement.ContextualGabor.csproj">
-      <Project>{8E0B3659-1BED-4580-B777-FE45D6840175}</Project>
-      <Name>CUDAFingerprinting.ImageEnhancement.ContextualGabor</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUDAFingerprinting.ImageEnhancement.LinearSymmetry\CUDAFingerprinting.ImageEnhancement.LinearSymmetry.csproj">
-      <Project>{83EBBA4F-41BD-4103-92DA-8923AEC11EFA}</Project>
-      <Name>CUDAFingerprinting.ImageEnhancement.LinearSymmetry</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CUDAFingerprinting.Matching.Minutiae.BasicMatcher\CUDAFingerprinting.Matching.Minutiae.BasicMatcher.csproj">
-      <Project>{9139DE55-F3B0-4118-83A6-9604D83DCBC6}</Project>
-      <Name>CUDAFingerprinting.Matching.Minutiae.BasicMatcher</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.csproj">
       <Project>{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}</Project>
@@ -114,7 +84,6 @@
     <EmbeddedResource Include="TestResource.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>TestResource.Designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -142,31 +111,16 @@
     <None Include="Resources\104_61globalBinarization150.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\Valve_original_%281%29.PNG" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="Resources\104_61globalBinarization150Thinned.png" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\104_61globalBinarization150ThinnedMinutuaeFinded.png" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\MinutiaeBigTest.png" />
+    <None Include="Resources\Valve_original_%281%29.PNG" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\MinutiaeBigTest1.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\MinutiaeBigTest2.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\MinutiaBigDetection.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\104_61.tif" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\BinaryImage.png" />
+    <None Include="Resources\TestCUDA.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
