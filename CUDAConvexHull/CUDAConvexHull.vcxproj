@@ -81,10 +81,7 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="BuildConvexHull.h" />
-    <ClInclude Include="FieldFilling.h" />
     <ClInclude Include="Point.h" />
-    <ClInclude Include="WorkingArea.h" />
   </ItemGroup>
   <ItemGroup>
     <CudaCompile Include="kernel.cu" />
