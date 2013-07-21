@@ -8,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using CUDAFingerprinting.Common;
 
 namespace CUDAFingerprint
 {
@@ -58,19 +59,14 @@ namespace CUDAFingerprint
         private static extern void sortArrayAndIndexes(float[] arr, int[] arrIndexes, int amount);
 
         [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void BuildHull(int[] arr, int NoM, int[] Hull,int NHull);
+        private static extern void BuildWorkingArea(int[] field, int rows, int columns, int radius, int[] IntMinutiae, int NoM);
 
-        [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void FieldFilling(bool[] field,int rows, int columns,int[] arr, int NoM);
-
-        [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void WorkingArea(bool[] field, int rows, int columns, int radius);
     private static void Main(string[] args)
         {
             // TestQuality();
             // TestTimings();
             TestSorting();
-        
+            // TestHull();
         }
 
         private static void TestSorting()
@@ -370,51 +366,60 @@ namespace CUDAFingerprint
             Console.ReadKey();
         }
 
-        /*private static void TestHull()
+        private static void TestHull()
         {
             Random r = new Random();
-            int rows = r.Next();
-            int columns = r.Next();
+            int rows = 400;
+            int columns = 300;
             Console.WriteLine("rows: {0}; columns: {1}", rows, columns);
-            int NoM = r.Next();
+            int NoM = r.Next()%64;
             while (NoM == 0)
-                NoM = r.Next();
-            int[] arr = new int[2*NoM];
+                NoM = r.Next()%64;
+            int[] IntMunitae = new int[2*NoM];
             for (int i = 0; i < NoM; i++)
             {
-                arr[2*i] = r.Next();
-                arr[2*i + 1] = r.Next();
+                IntMunitae[2*i] = r.Next() % columns;
+                IntMunitae[2*i + 1] = r.Next() % rows;
                 bool repeat = false;
                 for (int j = i - 1; j >= 0; j--)
                 {
-                    if ((arr[2*i] == arr[2*j]) && (arr[2*i + 1] == arr[2*j + 1]))
+                    if ((IntMunitae[2*i] == IntMunitae[2*j]) && (IntMunitae[2*i + 1] == IntMunitae[2*j + 1]))
                         repeat = true;
                 }
                 while (repeat)
                 {
-                    arr[2*i] = r.Next(0,rows-1);
-                    arr[2*i + 1] = r.Next(0,columns-1);
+                    IntMunitae[2*i] = r.Next(0,columns-1);
+                    IntMunitae[2*i + 1] = r.Next(0,rows-1);
                     repeat = false;
                     for (int j = i - 1; j >= 0; j--)
                     {
-                        if ((arr[2*i] == arr[2*j]) && (arr[2*i + 1] == arr[2*j + 1]))
+                        if ((IntMunitae[2*i] == IntMunitae[2*j]) && (IntMunitae[2*i + 1] == IntMunitae[2*j + 1]))
                             repeat = true;
                     }
                 }
             }
+
+
             Console.WriteLine("Minutiae:");
             for (int i = 0; i < NoM; i++)
             {
-                Console.WriteLine("{0} {1}", arr[2*i], arr[2*i + 1]);
+                Console.WriteLine("{0} {1}", IntMunitae[2*i], IntMunitae[2*i + 1]);
             }
-            int[] Hull = new int[2*NoM];
-            int NHull = NoM;
-            BuildHull(arr,NoM,Hull,NHull);
-            Console.WriteLine("Hull:");
-            for (int i = 0; i < NHull; i++)
-            {
-                Console.WriteLine("{0} {1}", Hull[2 * i], Hull[2 * i + 1]);
-            }
-        }*/
+            int[] field = new int[rows*columns];
+            BuildWorkingArea(field, rows, columns, 10,IntMunitae,NoM);
+            int[,] Field = new int[rows,columns];
+            for (int i = 0 ; i < rows; i++)
+                for (int j = 0; j < columns; j++)
+                {
+                    if (field[i*columns + j] == 1)
+                        Field[i, j] = 0;
+                    else
+                        Field[i, j] = 255;
+                }
+            for (int i = 0; i < NoM; i++)
+                Field[IntMunitae[2*i+1], IntMunitae[2*i]] = 127;
+            ImageHelper.SaveIntArray(Field,Path.GetTempPath() + "temp.png");
+            Process.Start(Path.GetTempPath() + "temp.png");
+        }
     }
 }

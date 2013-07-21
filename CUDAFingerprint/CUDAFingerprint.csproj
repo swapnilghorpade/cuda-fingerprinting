@@ -54,6 +54,7 @@
     </Content>
     <Content Include="..\Debug\CUDAConvexHull.dll">
       <Link>CUDAConvexHull.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="..\Debug\CUDAFingercode.dll">
       <Link>CUDAFingercode.dll</Link>
