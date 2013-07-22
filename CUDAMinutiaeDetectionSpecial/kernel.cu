@@ -129,6 +129,7 @@ __global__ void ConsiderDistanceBetweenMinutiae(int radius, Minutiae *listMinuti
 	int rowWidthInElements = pitch/sizeof(size_t);
 	int dX = listMinutiae[x].x - listMinutiae[y].x; 
 	int dY = listMinutiae[x].y - listMinutiae[y].y;
+	//result[x + y*rowWidthInElements] = 1;
 	if(dX*dX + dY*dY < radius*radius)
 	{
 		result[x + y*rowWidthInElements] = 1;
@@ -142,7 +143,7 @@ int main()
 	int size = 32;
 	int width; //= size;
 	int	height;// = size;
-	CUDAArray<float> img = loadImage("C:\\temp\\104_6_BinarizatedThinnedCUDA.bin", true);
+	CUDAArray<float> img = loadImage("C:\\temp\\Thinned81_81.bin", true);
 	width = img.Width;
 	height = img.Height;
 	int *picture = (int*)malloc(width*height*sizeof(int));
@@ -198,16 +199,17 @@ int main()
         fprintf(stderr, "addWithCuda failed!");
         return 1;
     }
-	fprintf(out,"%d \n", minutiaeCounter[0]);
+	//fprintf(out,"%d \n", minutiaeCounter[0]);
+	//for(int j = 0; j < minutiaeCounter[0]; j++)
+	//{
+	//	fprintf(out,"%d %d \n",result[j].x, result[j].y);
+	//}
+		
 	for(int j = 0; j < minutiaeCounter[0]; j++)
-	{
-		fprintf(out,"%d %d \n",result[j].x, result[j].y);
-	}
-		for(int j = 0; j < minutiaeCounter[0]; j++)
 	{
 		picture1[result[j].y*width + result[j].x] = 150;
 	}
-	SaveArray(picture1, width, height,"C:\\temp\\104_6_BinarizatedThinnedMinutiaeBigMatchedCUDA.bin");
+	SaveArray(picture1, width, height,"C:\\temp\\MinutiaeMatched81_81.bin");
 
 
     // cudaDeviceReset must be called before exiting in order for profiling and
@@ -290,7 +292,7 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
     // Launch a kernel on the GPU with one thread for each element.
     FindMinutiae<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_picture, pitch, width, height, dev_result, dev_minutiaeCounter, dev_test);
 
-    // cudaDeviceSynchronize waits for the kernel to finish, and returns
+    // cudaDeviceSynchronize waits for the kernel to finish, and returns  
     // any errors encountered during the launch.
     cudaStatus = cudaDeviceSynchronize();
     if (cudaStatus != cudaSuccess) {
@@ -335,64 +337,76 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
 	//	printf("\n");
 	//}
 
-	printf("minutiaeCounter[0] = %d \n", minutiaeCounter[0]);
-	for(int j = 0; j < minutiaeCounter[0]; j++)
-	{
-		printf("%d %d \n",result[j].x, result[j].y);
-	}
+	//printf("minutiaeCounter[0] = %d \n", minutiaeCounter[0]);
+	//for(int j = 0; j < minutiaeCounter[0]; j++)
+	//{
+	//	printf("%d %d \n",result[j].x, result[j].y);
+	//}
 //__________________________________
-	cudaStatus = cudaMallocPitch((void**)&dev_resultSpecial, &pitch2, minutiaeCounter[0]*sizeof(int), minutiaeCounter[0]); //TODO : check pitches
+
+	int *minutiaeCounter1 = (int*)malloc(sizeof(int));
+	minutiaeCounter1[0] = minutiaeCounter[0];
+	cudaStatus = cudaMallocPitch((void**)&dev_resultSpecial, &pitch2, minutiaeCounter1[0]*sizeof(int), minutiaeCounter1[0]); //TODO : check pitches
 	if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMallocPitch!");
         goto Error;
     }
 	
-	int* tableDistance = (int*)calloc(minutiaeCounter[0]*minutiaeCounter[0], sizeof(int));
-	cudaStatus = cudaMemcpy2D(dev_resultSpecial, pitch2, tableDistance, minutiaeCounter[0]*sizeof(int), minutiaeCounter[0]*sizeof(int), minutiaeCounter[0], cudaMemcpyHostToDevice);
+	int* tableDistance = (int*)calloc(minutiaeCounter1[0]*minutiaeCounter1[0], sizeof(int));
+	//int* tableDistance = (int*)malloc(minutiaeCounter1[0]*minutiaeCounter1[0]*sizeof(int));
+	//for(int i = 0; i < minutiaeCounter1[0]; i++)
+	//{
+	//	for(int j = 0; j < minutiaeCounter1[0]; j++)
+	//	{
+	//		tableDistance[j*minutiaeCounter1[0] + i ] = 0;
+	//
+	//	}
+	//}
+	cudaStatus = cudaMemcpy2D(dev_resultSpecial, pitch2, tableDistance, minutiaeCounter1[0]*sizeof(int), minutiaeCounter1[0]*sizeof(int), minutiaeCounter1[0], cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy!");
         goto Error;
     }
-	ConsiderDistanceBetweenMinutiae<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(radius, dev_result, pitch2, dev_resultSpecial);
+	ConsiderDistanceBetweenMinutiae<<<dim3(ceilMod(minutiaeCounter1[0],16),ceilMod(minutiaeCounter1[0],16)),dim3(16,16)>>>(radius, dev_result, pitch2, dev_resultSpecial);
 	
 	
-	//resultSpecial = (int*)malloc(minutiaeCounter[0]*minutiaeCounter[0]*sizeof(int)); // final answer, later...
+	//resultSpecial = (int*)malloc(minutiaeCounter1[0]*minutiaeCounter1[0]*sizeof(int)); // final answer, later...
 
 	Minutiae *result1 = (Minutiae*)malloc(width*height*sizeof(Minutiae));
 	int countResult1 = 0;
-	cudaStatus = cudaMemcpy(result, dev_result, minutiaeCounter[0]*sizeof(Minutiae), cudaMemcpyDeviceToHost);
-	if (cudaStatus != cudaSuccess) {
-	    fprintf(stderr, "cudaMemcpy failed!");
-	    goto Error;
-	}
+	//cudaStatus = cudaMemcpy(result, dev_result, minutiaeCounter1[0]*sizeof(Minutiae), cudaMemcpyDeviceToHost);
+	//if (cudaStatus != cudaSuccess) {
+	//    fprintf(stderr, "cudaMemcpy failed!");
+	//    goto Error;
+	//}
 
 	
-	cudaStatus = cudaMemcpy2D(tableDistance, minutiaeCounter[0]*sizeof(int), dev_resultSpecial, pitch2, minutiaeCounter[0]*sizeof(int), minutiaeCounter[0], cudaMemcpyDeviceToHost);
+	cudaStatus = cudaMemcpy2D(tableDistance, minutiaeCounter1[0]*sizeof(int), dev_resultSpecial, pitch2, minutiaeCounter1[0]*sizeof(int), minutiaeCounter1[0], cudaMemcpyDeviceToHost);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy!");
         goto Error;
     }
 	
-	//for(int i = 0; i < minutiaeCounter[0]; i++)
+	//for(int i = 0; i < minutiaeCounter1[0]; i++)
 	//{
-	//	for(int j = 0; j < minutiaeCounter[0]; j++)
+	//	for(int j = 0; j < minutiaeCounter1[0]; j++)
 	//	{
-	//		printf("%d ",tableDistance[j*minutiaeCounter[0] + i]);
-	//		tableDistance[j*minutiaeCounter[0] + i] == 1 ? result[i].numMinutiaeAround++ : result[i].numMinutiaeAround;
+	//		printf("%d ",tableDistance[j*minutiaeCounter1[0] + i]);
+	//		//tableDistance[j*minutiaeCounter1[0] + i] == 1 ? result[i].numMinutiaeAround++ : result[i].numMinutiaeAround;
 	//	}
 	//	printf(" %d %d %d \n", result[i].x, result[i].y, result[i].numMinutiaeAround);
 	//}
-	int max;
-	for(int q = 0; (q < minutiaeCounter[0]) && (max != 0); q++)
+	int max = 1;
+	for(int q = 0; (q < minutiaeCounter1[0]) && (max != 0); q++)
 	{
-		int max = 0;
+		max = 0;
 		int locmax = 0;
 		int numLocMax;
-		for(int i = 0; i < minutiaeCounter[0]; i++)
+		for(int i = 0; i < minutiaeCounter1[0]; i++)
 		{
-			for(int j = 0; j < minutiaeCounter[0]; j++)
+			for(int j = 0; j < minutiaeCounter1[0]; j++)
 			{
-				tableDistance[j*minutiaeCounter[0] + i] == 1 ? locmax++ : locmax;
+				tableDistance[j*minutiaeCounter1[0] + i] == 1 ? locmax++ : locmax;
 			}
 			if(locmax > max)
 			{
@@ -403,54 +417,59 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
 		}
 		int dX = 0;
 		int dY = 0;
-		for(int i = 0; (i < minutiaeCounter[0])&&(max != 0); i++)
+		for(int i = 0; (i < minutiaeCounter1[0])&&(max != 0); i++)
 		{
-			if(tableDistance[numLocMax*minutiaeCounter[0] + i] == 1)
+			if(tableDistance[numLocMax*minutiaeCounter1[0] + i] == 1)
 			{
 				dX = dX + result[i].x;
 				dY = dY + result[i].y;
 			}
 
 		}
-		if(max == 0) { continue;} else{ 
-		Minutiae minutiaS;
-		Minutiae minutiaS1;
-		minutiaS.x = (dX + max - 1)/max;
-		minutiaS.y = (dY + max - 1)/max;
-		dX = minutiaS.x - result[numLocMax].x;
-		dY = minutiaS.y - result[numLocMax].y;
-		minutiaS1 = result[numLocMax];
-		int min =  dX*dX + dY*dY;
-		for(int i = 0; i < minutiaeCounter[0]; i++)
+		if(max == 0)
 		{
-			if(tableDistance[i*minutiaeCounter[0] + numLocMax] == 1)
+			continue;
+		} else
+		{
+			Minutiae minutiaS;
+			Minutiae minutiaS1;
+			minutiaS.x = (dX + max - 1)/max;
+			minutiaS.y = (dY + max - 1)/max;
+			dX = minutiaS.x - result[numLocMax].x;
+			dY = minutiaS.y - result[numLocMax].y;
+			minutiaS1 = result[numLocMax];
+			int min =  dX*dX + dY*dY;
+			for(int i = 0; i < minutiaeCounter1[0]; i++)
 			{
-				dX = minutiaS.x - result[i].x;
-				dY = minutiaS.y - result[i].y;
-				int locmin = dX*dX + dY*dY;
-				if(min > locmin)
+				if(tableDistance[i*minutiaeCounter1[0] + numLocMax] == 1)
 				{
-					min = locmin;
-					minutiaS1 = result[i];
-				}
-				//tableDistance[numLocMax*minutiaeCounter[0] + i] = 0;
-				//tableDistance[i*minutiaeCounter[0] + numLocMax] = 0;
-				for(int w = 0; w < minutiaeCounter[0]; w++)
-				{
-					tableDistance[i*minutiaeCounter[0] + w] = 0;
+					dX = minutiaS.x - result[i].x;
+					dY = minutiaS.y - result[i].y;
+					int locmin = dX*dX + dY*dY;
+					if(min > locmin)
+					{
+						min = locmin;
+						minutiaS1 = result[i];
+					}
+					//tableDistance[numLocMax*minutiaeCounter1[0] + i] = 0;
+					//tableDistance[i*minutiaeCounter1[0] + numLocMax] = 0;
+					for(int w = 0; w < minutiaeCounter1[0]; w++)
+					{
+						tableDistance[i*minutiaeCounter1[0] + w] = 0;
+					}
 				}
 			}
+			result1[countResult1] = minutiaS1;
+			countResult1++;
 		}
-		result1[countResult1] = minutiaS1;
-		countResult1++;}
 	}
-	printf("mintutiaeCounter[0] = %d\n", countResult1);
+	//printf("mintutiaeCounter[0] = %d\n", countResult1);
 	for(int i = 0; i < countResult1; i++)
 	{
-		printf(" %d %d \n", result1[i].x, result1[i].y);
+		//printf(" %d %d \n", result1[i].x, result1[i].y);
 		result[i] = result1[i];
 	}
-	//result = result1;
+	result = result1;
 	minutiaeCounter[0] = countResult1;
 
 
@@ -468,6 +487,7 @@ Error:
 	cudaFree(dev_resultSpecial);
 	free(test);
 	free(tableDistance);
+	free(minutiaeCounter1);
 	//free(resultSpecial);
 
 
