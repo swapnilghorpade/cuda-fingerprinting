@@ -21,6 +21,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
            // Assert.IsTrue(average == 2);
             var img = ImageHelper.LoadImageAsInt(TestResources.goodFP);
             Normalizer.Normalize(100, 500, img);
+            // Check it in debug mode
             var x = RidgeFrequencyGenerator.GenerateInterpolatedFrequency(img);
             int a = 2;
         }

@@ -46,6 +46,7 @@
     </CodeAnalysisDependentAssemblyPaths>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ClusterizationTest.cs" />
     <Compile Include="GaussianBlurTest.cs" />
     <Compile Include="GradientTest.cs" />
     <Compile Include="LocalRidgeOrientationTest.cs" />
@@ -88,6 +89,30 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bikesgray.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\1.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\2.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\3.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\4.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\5.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\6.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\7.tif" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\8.tif" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

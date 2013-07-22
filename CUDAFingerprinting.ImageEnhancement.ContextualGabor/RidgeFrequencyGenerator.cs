@@ -9,7 +9,6 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
     {
         public const int W = 16;
         public const int L = 32;
-        const int dpi = 500;
 
         public static double[,,] GenerateXSignature(int[,] normalizedImage)
         {
@@ -31,8 +30,11 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                             int v = Convert.ToInt32(j + (d - W / 2) * Math.Cos(lro[i, j]) + (L / 2 - k) * Math.Sin(lro[i, j]));
                             if (u >= 0 && u < maxY && v >= 0 && v < maxX)
                                 result[i, j, k] += normalizedImage[u, v];
+                            else
+                                result[i, j, k] = -1;
                         }
-                        result[i, j, k] /= (double)W;
+                        if (result[i, j, k] != -1)
+                            result[i, j, k] /= (double)W;
                     }
                 }
             }
@@ -72,7 +74,44 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                     }
             }
             if (counter == 0)
-                return -1;
+                return 0;
+            return accum / counter;
+        }
+
+        public static double AverageDistanceBetweenLocalMin(double[, ,] XSign, int y, int x)
+        {
+            int size = XSign.GetLength(2);
+            var localMaxFlags = new bool[size];
+            const int mask = 1;
+            for (int i = 0; i < size; i++)
+            {
+                localMaxFlags[i] = true;
+                for (int j = i - mask; j < i + mask; j++)
+                {
+                    if (j >= 0 && j < size && XSign[y, x, j] <= XSign[y, x, i] && j != i)
+                        localMaxFlags[i] = false;
+                }
+            }
+            double counter = 0;
+            double accum = 0;
+            int curMax = -1;
+
+            for (int i = 0; i < size; i++)
+            {
+                if (localMaxFlags[i])
+                    if (curMax == -1)
+                    {
+                        curMax = i;
+                    }
+                    else
+                    {
+                        accum = accum + i - curMax - 1;
+                        ++counter;
+                        curMax = i;
+                    }
+            }
+            if (counter == 0)
+                return 0;
             return accum / counter;
         }
 
@@ -87,22 +126,13 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             {
                 for (int j = 0; j < maxX; j++)
                 {
-                    double den = AverageDistanceBetweenLocalMax(xSign, i, j);
-                    if (den != 0)
+                    double denominator = AverageDistanceBetweenLocalMax(xSign, i, j);
+                    if (denominator != 0)
                         freq[i, j] = 1 / AverageDistanceBetweenLocalMax(xSign, i, j);
                     else
                         freq[i, j] = -1;
                 }
             }
-            
-         /*   for (int i = 0; i < maxY; i++)
-            {
-                for (int j = 0; j < maxX; j++)
-                {
-                    if (freq[i, j] < 1 / 3 || freq[i, j] > 1 / 25)
-                        freq[i, j] = -1;
-                }
-            }*/
             return freq;
         }
 
@@ -113,7 +143,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             int maxX = freq.GetLength(1);
             const int variance = 9;
             var kernel = OrientationFieldGenerator.GenerateGaussianKernel(Math.Sqrt(variance));
-            const int size = 7;
+            int size = kernel.GetLength(0);
             bool flag = true;
             Func<double, double> m = x => (x <= 0 ? 0 : x);
             Func<double, double> b = x => (x <= 0 ? 0 : 1);
@@ -133,7 +163,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 
                         for (int u = -size / 2; u <= size / 2; u++)
                         {
-                            for (int v = -size / 2; v < size / 2; v++)
+                            for (int v = -size / 2; v <= size / 2; v++)
                             {   
                                 int y = i - u;
                                 int x = j - v;
@@ -163,7 +193,12 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             }
 
 
+
+
             var result = new double[maxY, maxX];
+            kernel = OrientationFieldGenerator.GenerateGaussianKernel(1);
+            size = kernel.GetLength(0);
+
             for (int i = 0; i < maxY; i++)
             {
                 for (int j = 0; j < maxX; j++)
@@ -183,6 +218,38 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             }
 
 
+            return result;
+        }
+
+        public static List<ClustersGenerator.ClusterPoint> GenerateBlocksInfo(int[,] image)
+        {
+            var xSign = GenerateXSignature(image);
+            var freq = GenerateInterpolatedFrequency(image);
+            var result = new List<ClustersGenerator.ClusterPoint>();
+            int maxY = freq.GetLength(0);
+            int maxX = freq.GetLength(1);
+
+            for (int i = 0; i < maxY; i++)
+            {
+                for (int j = 0; j < maxX; j++)
+                {
+                    double a = AverageDistanceBetweenLocalMax(xSign, i, j) - AverageDistanceBetweenLocalMin(xSign, i, j);
+                    double f = 1 / freq[i, j];
+                    double variance = 0;
+                    double mean = 0;
+                    for (int k = 0; k < L; k++)
+                    {
+                        mean += xSign[i, j, k];
+                    }
+                    mean /= L;
+                    for (int k = 0; k < L; k++)
+                    {
+                        variance = (xSign[i, j, k] - mean) * (xSign[i, j, k] - mean);
+                    }
+                    variance /= L;
+                    result.Add(new ClustersGenerator.ClusterPoint(a, f, variance));
+                }
+            }
             return result;
         }
     }

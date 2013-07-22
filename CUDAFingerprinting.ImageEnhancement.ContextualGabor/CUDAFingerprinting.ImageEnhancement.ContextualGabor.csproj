@@ -45,6 +45,7 @@
     <Compile Include="Normalizer.cs" />
     <Compile Include="OrientationFieldGenerator.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegionMaskGenerator.cs" />
     <Compile Include="RidgeFrequencyGenerator.cs" />
   </ItemGroup>
   <ItemGroup>

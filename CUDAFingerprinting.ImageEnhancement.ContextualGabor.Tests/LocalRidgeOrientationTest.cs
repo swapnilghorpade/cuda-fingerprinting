@@ -17,13 +17,13 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
         [TestMethod]
         public void LROTest()
         {
-            var img = ImageHelper.LoadImageAsInt(TestResources.sample1);
+            var img = ImageHelper.LoadImageAsInt(TestResources._1);
             Normalizer.Normalize(100, 500, img);
             var path = Path.GetTempPath() + "numbers.png";
             var lro = OrientationFieldGenerator.GenerateLocalRidgeOrientation(img);
             var image = ImageHelper.SaveArrayToBitmap(img.Select2D(x => (double)x));
 
-            const int W = OrientationFieldGenerator.W;
+            const int W = OrientationFieldGenerator.W;  
             int maxY = img.GetLength(0) / W;
             int maxX = img.GetLength(1) / W;
             var p = new Pen(Color.White);

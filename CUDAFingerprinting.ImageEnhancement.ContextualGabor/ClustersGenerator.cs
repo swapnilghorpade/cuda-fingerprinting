@@ -9,6 +9,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
     public static class ClustersGenerator
     {
         const int clustersAmount = 6;
+        readonly static public string ClusterPath = Path.GetTempPath() + "clusters.txt";
 
         public class ClusterPoint
         {
@@ -50,7 +51,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 
         }
 
-        private void Iterate(List<ClusterPoint> points, ClusterPoint[] centers)
+        private static void Iterate(List<ClusterPoint> points, ClusterPoint[] centers)
         {
             foreach (var p in points)
             {
@@ -59,11 +60,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         }
 
 
-        private bool IsClustered(ClusterPoint[] oldCenters, ClusterPoint[] newCenters)
+        private static bool IsClustered(ClusterPoint[] oldCenters, ClusterPoint[] newCenters)
         {
-            if (newCenters == null)
-                return false;
-
             for (int i = 0; i < clustersAmount; i++)
             {
                 if (oldCenters[i].Amplitude != newCenters[i].Amplitude || oldCenters[i].Frequency != newCenters[i].Frequency
@@ -73,13 +71,14 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             return true;
         }
 
-        private ClusterPoint[] FindCenters(List<ClusterPoint> points)
+        private static ClusterPoint[] FindCenters(List<ClusterPoint> points)
         {
             ClusterPoint[] result = new ClusterPoint[clustersAmount];
             double[] pointsAmount = new double[clustersAmount];
             for (int i = 0; i < clustersAmount; i++)
             {
                 pointsAmount[i] = 0;
+                result[i] = new ClusterPoint(0, 0, 0);
             }
 
             foreach (var p in points)
@@ -99,29 +98,30 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             return result;
         }
 
-        public void Clusterization(List<ClusterPoint> points, ClusterPoint[] centers)
+        public static ClusterPoint[] Clusterization(List<ClusterPoint> points, ClusterPoint[] centers)
         {
             ClusterPoint[] newCenters = new ClusterPoint[clustersAmount];
-            Array.Copy(centers, newCenters, clustersAmount);
-            Iterate(points, centers);
-            centers = FindCenters(points);
-
-            while (!IsClustered(centers, newCenters))
+            do
             {
                 Array.Copy(centers, newCenters, clustersAmount);
                 Iterate(points, centers);
                 centers = FindCenters(points);
+            } while (!IsClustered(centers, newCenters));
+    
+            // Writing result to file
+            using(StreamWriter file = new StreamWriter(ClusterPath))
+            {
+                for (int i = 0; i < centers.Length; i++)
+                {
+                    file.WriteLine(i);
+                    file.WriteLine(centers[i].Amplitude);
+                    file.WriteLine(centers[i].Frequency);
+                    file.WriteLine(centers[i].Variance);
+                    file.WriteLine();
+                }
             }
 
-            // Writing result to file
-            StreamWriter file = new System.IO.StreamWriter(Path.GetTempPath() + "clusters.txt");
-            for (int i = 0; i < centers.Length; i++)
-            {
-                file.WriteLine(i);
-                file.WriteLine(centers[i].Amplitude);
-                file.WriteLine(centers[i].Frequency);
-                file.WriteLine(centers[i].Variance);
-            }
+            return centers;
         }
     }
  }

@@ -9,7 +9,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
     public static class OrientationFieldGenerator
     {
         // frame's size for square estimate
-        public const int W = 11;
+        public const int W = 16;
         // Sigma of Gaussian's blur
         // from 0.34 to 0.65 for recommended size of low-pass filter
         private const double sigma = 0.7;
@@ -162,6 +162,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                 for (int j = 0; j < maxX; j++)
                 {
                     lro[i, j] = 0.5 * Math.Atan2(cvf[i, j].Item2, cvf[i, j].Item1);
+                    if (double.IsNaN(lro[i, j]))
+                        lro[i, j] = Math.PI / 2;
                 }
             }
             return lro;
