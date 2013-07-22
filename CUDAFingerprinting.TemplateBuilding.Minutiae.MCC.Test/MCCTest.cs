@@ -97,7 +97,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
             for (int i = 0; i < response.Count; i++)
             {
                 Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item1, Path.GetTempPath() + "valueN" + i);
-                Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item2, Path.GetTempPath() + "valueN" + i);
+                Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item2, Path.GetTempPath() + "maskN" + i);
             }
 
         }
