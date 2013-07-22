@@ -26,7 +26,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         {
             deltaS = 2 * Constants.R / Constants.Ns;
             deltaD = 2 * Math.PI / Constants.Nd;
-            MakeDictionary();
+            MakeTableOfIntegrals();
             workingArea = WorkingArea.BuildWorkingArea(minutiae, Constants.R, rows, columns);
 
             for (int index = 0; index < minutiae.Count; index++)
@@ -169,7 +169,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             return Math.Exp(result);
         }
 
-        private static void MakeDictionary()
+        private static void MakeTableOfIntegrals()
         {
             double value = -Math.PI;
             double step = 2 * Math.PI / Constants.DictionaryCount;
