@@ -101,10 +101,14 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 
         public void Clusterization(List<ClusterPoint> points, ClusterPoint[] centers)
         {
-            ClusterPoint[] newCenters = null;
+            ClusterPoint[] newCenters = new ClusterPoint[clustersAmount];
+            Array.Copy(centers, newCenters, clustersAmount);
+            Iterate(points, centers);
+            centers = FindCenters(points);
+
             while (!IsClustered(centers, newCenters))
             {
-                newCenters = FindCenters(points);
+                Array.Copy(centers, newCenters, clustersAmount);
                 Iterate(points, centers);
                 centers = FindCenters(points);
             }
