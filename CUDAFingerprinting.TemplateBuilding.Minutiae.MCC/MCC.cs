@@ -32,6 +32,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             for (int index = 0; index < minutiae.Count; index++)
             {
                 value = new int[Constants.Ns, Constants.Ns, Constants.Nd];
+                mask = new int[Constants.Ns, Constants.Ns, Constants.Nd];
 
                 for (int i = 0; i < Constants.Ns; i++)
                 {
