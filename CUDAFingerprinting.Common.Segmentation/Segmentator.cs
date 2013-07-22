@@ -47,19 +47,19 @@ namespace CUDAFingerprinting.Common.Segmentation
         private static int M;
         private static bool[,] mask = new bool[N, M];
 
-        public static bool[,] GetMask(int[] mask1D, int maskY, int imgX, int imgY, int windowSize)
-        {
-            bool[,] bigMask = new bool[imgX, imgY];
+        //public static bool[,] GetMask(int[] mask1D, int maskY, int imgX, int imgY, int windowSize)
+        //{
+        //    bool[,] bigMask = new bool[imgX, imgY];
 
-            bigMask = bigMask.Select2D((value, x, y) =>
-                {
-                    int xBlock = (int)(((double)x) / windowSize);
-                    int yBlock = (int)(((double)y) / windowSize);
-                    return mask1D[xBlock + yBlock * maskY] == 1;
-                });
+        //    bigMask = bigMask.Select2D((value, x, y) =>
+        //        {
+        //            int xBlock = (int)(((double)x) / windowSize);
+        //            int yBlock = (int)(((double)y) / windowSize);
+        //            return mask1D[xBlock + yBlock * maskY] == 1;
+        //        });
 
-            return bigMask;
-        }
+        //    return bigMask;
+        //}
 
         public static int[,] Segmetator(double[,] img, int windowSize, double weight, int threshold)
         {
