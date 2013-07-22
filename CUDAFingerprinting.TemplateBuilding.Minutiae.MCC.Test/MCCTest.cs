@@ -22,7 +22,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
 
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "PostProcessing")]
         private static extern void PostProcessing(int[] mask, int maskX, int maskY, int threshold);
-        
+
 
         private int windowSize = 12;
         private double weight = 0.3;
@@ -34,12 +34,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
             Bitmap bitmap = Resources._104_6;
             var img = ImageHelper.LoadImage(bitmap);
             var binaryImg = ImageHelper.LoadImageAsInt(bitmap);
-            
+
             int maskX = (int)Math.Ceiling((double)binaryImg.GetLength(0) / windowSize);
             int maskY = (int)Math.Ceiling((double)binaryImg.GetLength(1) / windowSize);
 
             int[] maskOfSegmentation = new int[maskX * maskY];
-            
+
             float[] oneDimensionalBinaryImg = new float[binaryImg.GetLength(0) * binaryImg.GetLength(1)];
 
             for (int i = 0; i < binaryImg.GetLength(0); i++)
@@ -91,7 +91,15 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
             secondMinutia.Angle = Math.PI / 6;
             twoMinutiae.Add(secondMinutia);
 
-            MCC.MCCMethod(twoMinutiae, 364, 2); 
+            MCC.MCCMethod(twoMinutiae, 364, 256);
+
+            Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = MCC.Response;
+            for (int i = 0; i < response.Count; i++)
+            {
+                Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item1, Path.GetTempPath() + "valueN" + i);
+                Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item2, Path.GetTempPath() + "valueN" + i);
+            }
+
         }
     }
 }
