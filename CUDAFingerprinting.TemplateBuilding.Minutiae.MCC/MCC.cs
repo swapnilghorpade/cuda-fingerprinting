@@ -10,9 +10,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
     public static class MCC
     {
         private static Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = new Dictionary<Minutia, Tuple<int[, ,], int[, ,]>>();
-        //private static int[, ,] value;
-        //private static int[, ,] mask;
-        private static int[,] mask2D = new int[Constants.Ns, Constants.Ns];
+        private static int[, ,] value;
+        private static int[, ,] mask;
         private static Dictionary<double, double> integralValues = new Dictionary<double, double>();
         private static double deltaS;
         private static double deltaD;
@@ -22,16 +21,6 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         {
             get { return response;}
         }
-
-        //public static int[, ,] Value
-        //{
-        //    get { return value; }
-        //}
-
-        //public static int[,,] Mask
-        //{
-        //    get { return mask; }
-        //}
 
         public static void MCCMethod(List<Minutia> minutiae, int rows, int columns)
         {
@@ -57,6 +46,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                         }
                     }
                 }
+
+                response.Add(minutiae[index],new Tuple<int[,,], int[,,]>(value, mask));
             }
         }
 
