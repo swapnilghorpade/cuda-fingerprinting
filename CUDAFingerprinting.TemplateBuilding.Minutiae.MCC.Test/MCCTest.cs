@@ -91,9 +91,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
             secondMinutia.Angle = Math.PI / 6;
             twoMinutiae.Add(secondMinutia);
 
-            MCC.MCCMethod(twoMinutiae, 364, 256);
-
-            Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = MCC.Response;
+            Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = MCC.MCCMethod(twoMinutiae, 364, 256);
+            
             for (int i = 0; i < response.Count; i++)
             {
                 Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item1, Path.GetTempPath() + "valueN" + i);
