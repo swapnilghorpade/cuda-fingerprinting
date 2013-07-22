@@ -99,6 +99,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
                 Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item2, Path.GetTempPath() + "maskN" + i);
             }
 
+            // CalculateMaskValue: all points < Constants.MinVC => invalid
         }
     }
 }
