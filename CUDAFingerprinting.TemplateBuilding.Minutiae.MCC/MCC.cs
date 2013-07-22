@@ -19,7 +19,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
         public static Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> Response
         {
-            get { return response;}
+            get { return response; }
         }
 
         public static void MCCMethod(List<Minutia> minutiae, int rows, int columns)
@@ -38,8 +38,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                 {
                     for (int j = 0; j < Constants.Ns; j++)
                     {
-                        int maskValue = CalculateMaskValue(minutiae[index].X, minutiae[index].Y, i, j);
-                        
+                        int maskValue = CalculateMaskValue(minutiae[index].X, minutiae[index].Y, i, j, rows, columns);
+
                         for (int k = 0; k < Constants.Nd; k++)
                         {
                             mask[i, j, k] = maskValue;
@@ -48,7 +48,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                     }
                 }
 
-                response.Add(minutiae[index],new Tuple<int[,,], int[,,]>(value, mask));
+                response.Add(minutiae[index], new Tuple<int[, ,], int[, ,]>(value, mask));
             }
         }
 
@@ -123,7 +123,48 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             double differenceAngles = GetDifferenceAngles(mAngle, mtAngle);
             double param = GetDifferenceAngles(angleFromLevel, differenceAngles);
 
-            return integralValues[(int)param];
+            try
+            {
+                return integralValues[GetIntegralParameter(param)];
+            }
+            catch (ArgumentNullException e)
+            {
+                throw e;
+            }
+        }
+
+        private static double GetIntegralParameter(double param)
+        {
+            foreach (double key in integralValues.Keys)
+            {
+                if (Math.Abs(key - param) < Math.PI/Constants.DictionaryCount)
+                {
+                    return key;
+                }
+            }
+
+            throw new ArgumentNullException("param");
+        }
+
+        private static double GetIntegral_1(double parameter)
+        {
+            double factor = 1 / (Constants.SigmaD * Math.Sqrt(2 * Math.PI));
+            double a = parameter - deltaD / 2;
+            double h = deltaD / Constants.N;
+            double result = Integrand(a) + Integrand(a + (Constants.N - 1) * h);
+
+            for (int i = 1; i < Constants.N; i++)
+            {
+                result += 2 * Integrand(a + i*h);
+            }
+
+            for (int i = 0; i < Constants.N; i++)
+            {
+                result += 4 * Integrand(0.5 * h + a + i*h);
+            }
+
+            return factor * h * result / 6.0;
+
         }
 
         private static double GetIntegral(double parameter)
@@ -181,8 +222,13 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             }
         }
 
-        private static int CalculateMaskValue(int iMinutia, int jMinutia, int i, int j)
+        private static int CalculateMaskValue(int iMinutia, int jMinutia, int i, int j, int rows, int columns)
         {
+            if (i < 0 || i >= columns || j < 0 || j >= rows)
+            {
+                return 0;
+            }
+
             return ((GetDistance(iMinutia, jMinutia, i, j) <= Constants.R) && workingArea[i, j]) ? 1 : 0;
         }
     }

@@ -23,7 +23,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             {
                 intLayer = intLayer.Select2D((a, x, y) => (value[x, y, i]));
                 Bitmap layer = ImageHelper.SaveArrayToBitmap(intLayer);
-                layer.Save(path+"_"+i, ImageFormat.Png);
+                layer.Save(path+"_" + i + ".png", ImageFormat.Png);
             }
         }
     }
