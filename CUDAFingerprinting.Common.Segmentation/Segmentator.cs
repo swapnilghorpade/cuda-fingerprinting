@@ -2,10 +2,45 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Linq;
+using System.Drawing;
 using CUDAFingerprinting.Common.OrientationField;
 
 namespace CUDAFingerprinting.Common.Segmentation
 {
+    //class Programm
+    //{
+    //    public static int[,] Normalize(int[,] arr)
+    //    {
+    //        int xLength = arr.GetLength(0);
+    //        int yLength = arr.GetLength(1);
+
+    //        for (int i = 0; i < xLength; i++)
+    //        {
+    //            for (int j = 0; j < yLength; j++)
+    //            {
+    //                arr[i, j] = arr[i, j] == 1 ? 240 : 0;
+    //            }
+    //        }
+
+    //        return arr;
+    //    }
+    //    static void Main(string[] args)
+    //    {
+
+    //        int windowSize = 12;
+    //        double weight = 0.3;
+    //        int threshold = 5;
+
+
+    //        double[,] img1 = ImageHelper.LoadImage("D:/103_7.tif");
+    //        int[,] resultImg1;
+
+    //        resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6" + ".png");
+    //        //ImageHelper.SaveArray(resultImg1, Path.GetTempPath() + "Segm_104_6" + ".png");
+
+    //    }
+    //}
     public static class Segmentator
     {
         private static int N;
@@ -26,7 +61,7 @@ namespace CUDAFingerprinting.Common.Segmentation
             return bigMask;
         }
 
-        public static double[,] Segmetator(double[,] img, int windowSize, double weight, int threshold)
+        public static int[,] Segmetator(double[,] img, int windowSize, double weight, int threshold)
         {
             int[,] xGradients = OrientationFieldGenerator.GenerateXGradients(img.Select2D(a => (int)a));
             int[,] yGradients = OrientationFieldGenerator.GenerateYGradients(img.Select2D(a => (int)a));
@@ -39,11 +74,13 @@ namespace CUDAFingerprinting.Common.Segmentation
             N = (int)Math.Ceiling(((double)img.GetLength(0)) / windowSize);
             M = (int)Math.Ceiling(((double)img.GetLength(1)) / windowSize);
 
+            bool[,] mask = new bool[N, M];
+
             for (int i = 0; i < N; i++)
             {
                 for (int j = 0; j < M; j++)
                 {
-                    window = window.Select2D((x, y, value) =>
+                    window = window.Select2D((value, x, y) =>
                     {
                         if (i * windowSize + x >= magnitudes.GetLength(0)
                             || j * windowSize + y >= magnitudes.GetLength(1))
@@ -51,7 +88,7 @@ namespace CUDAFingerprinting.Common.Segmentation
                             return 0;
                         }
 
-                        return magnitudes[(int)(i * windowSize + x), j * windowSize + y];
+                        return magnitudes[(int)(i * windowSize + x), (int)(j * windowSize + y)];
                     });
 
                     if (KernelHelper.Average(window) < averege * weight)
@@ -66,8 +103,22 @@ namespace CUDAFingerprinting.Common.Segmentation
             }
 
             mask = PostProcessing(mask, threshold);
+            return GetBigMask(mask, img.GetLength(0), img.GetLength(1),windowSize);
+            //return ColorImage(img, mask, windowSize);
+        }
 
-            return ColorImage(img, mask, windowSize);
+        private static int[,] GetBigMask(bool[,] mask, int imgX, int imgY, int windowSize)
+        {
+            int[,] bigMask = new int[imgX, imgY];
+
+            bigMask = bigMask.Select2D((value, x, y) =>
+            {
+                int xBlock = (int)(((double)x) / windowSize);
+                int yBlock = (int)(((double)y) / windowSize);
+                return mask[xBlock , yBlock]? 1:0;
+            });
+
+            return bigMask;
         }
 
         public static double[,] ColorImage(double[,] img, bool[,] mask, int windowSize)

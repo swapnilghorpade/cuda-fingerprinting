@@ -23,7 +23,7 @@ namespace ModelBasedAlgorithmCUDAFingerprinting.ReferencePoint.HoughPoincare
             for (int i = 0; i < pathes.GetLength(0); i++)
             {
                 break;
-                Tuple<int, int> redPoint = ImageHelper.FindRedPoint(pathes[i]);
+                Tuple<int, int> redPoint = ImageHelper.FindColorPoint(pathes[i]);
                 double[,] imgBytes = ImageEnhancementHelper.EnhanceImage(ImageHelper.LoadImage(pathes[i]));
                 double[,] orientationField = PixelwiseOrientationFieldGenerator.GenerateOrientationField(imgBytes);
                 List<Tuple<int, int>> singularPoints = PoincareIndexMethod.FindSingularPoins(orientationField);

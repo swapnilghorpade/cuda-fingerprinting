@@ -392,7 +392,7 @@ namespace CUDAFingerprinting.Common
             }
         }
 
-        public static Tuple<int, int> FindRedPoint(string path)
+        public static Tuple<int, int> FindColorPoint(string path)
         {
             var bmp = new Bitmap(path);
             int x = 0;
@@ -409,8 +409,6 @@ namespace CUDAFingerprinting.Common
                     }
                 }                
             }
-
-
             return new Tuple<int,int>(x,y);
         }
     }

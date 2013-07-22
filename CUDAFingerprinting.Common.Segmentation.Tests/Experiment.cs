@@ -12,7 +12,7 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
     public class Experiment
     {
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "CUDASegmentator")]
-        private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant, 
+        private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant,
                                                 int windowSize, int[] mask, int maskWidth, int maskHight);
 
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "PostProcessing")]
@@ -36,71 +36,53 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
         [TestMethod]
         public void ExperimentMethod()
         {
-            // double[,] img1 = ImageHelper.LoadImage(Resources._104_6);
-            // double[,] img2 = ImageHelper.LoadImage(Resources._65_8);
-            // double[,] img3 = ImageHelper.LoadImage(Resources._103_7);
-            double[,] resultImg1;
-            // double[,] resultImg2;
-            // double[,] resultImg3;
-
-            resultImg1 = Segmentator.Segmetator(img, windowSize, weight, threshold);
-            ImageHelper.SaveArray(resultImg1,
-                                  Path.GetTempPath() + "GOOD_IMAGE_2_2_resultImg_" + weight + "_" + threshold +
-                                  ".png");
-
-            //for (double weight = minValue; weight <= maxValue; weight+= 0.1)
-            //{
-            //    for (int currentThreshold = minThreshold; currentThreshold <= maxThreshold; currentThreshold++)
-            //    {
-            //        resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, currentThreshold);
-            //        ImageHelper.SaveArray(resultImg1, Path.GetTempPath() + "104_6_resultImg_" + weight + "_" + currentThreshold + ".png");
-            //        resultImg2 = Segmentator.Segmetator(img2, windowSize, weight, currentThreshold);
-            //        ImageHelper.SaveArray(resultImg2, Path.GetTempPath() + "65_8_resultImg_" + weight + "_" + currentThreshold + ".png");
-            //        resultImg3 = Segmentator.Segmetator(img3, windowSize, weight, currentThreshold);
-            //        ImageHelper.SaveArray(resultImg3, Path.GetTempPath() + "103_7_resultImg_" + weight + "_" + currentThreshold + ".png");
-            //    }
-            //}
+            double[,] img1 = ImageHelper.LoadImage(Resources._104_6);
+            int[,] resultImg1;
+            
+            resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, threshold);
+            ImageHelper.SaveIntArray(resultImg1, Path.GetTempPath() + "Segm_104_6" + ".png");                       
         }
 
         [TestMethod]
         public void MakeBinFromImage()
         {
+            int i = 9;
             //ImageHelper.SaveImageAsBinary("C:\\temp\\104_6.png",
             //    "C:\\temp\\104_6.bin");
 
-            ImageHelper.SaveImageAsBinary("C:\\MyOwnFingerprinting\\CUDAFingerprinting.Common.Segmentation.Tests\\Resources\\103_4.tif",
-                "C:\\temp\\103_4.bin");
+            //ImageHelper.SaveImageAsBinary("C:\\MyOwnFingerprinting\\CUDAFingerprinting.Common.Segmentation.Tests\\Resources\\103_4.tif",
+            //    "C:\\temp\\103_4.bin");
         }
 
-        [TestMethod]
-        public void GpuTest()
-        {
-            string pathToSave = Path.GetTempPath() + "mask_";
-            string pathToSave1 = Path.GetTempPath() + "maskP_";
+        //[TestMethod]
+        //public void GpuTest()
+        //{
+        //    string pathToSave = Path.GetTempPath() + "mask_";
+        //    string pathToSave1 = Path.GetTempPath() + "maskP_";
 
-            for (int k = 0; k < binaryImgList.Count; k++)
-            {
-                int maskX = (int)Math.Ceiling((double)binaryImgList[k].GetLength(0) / windowSize);
-                int maskY = (int)Math.Ceiling((double)binaryImgList[k].GetLength(1) / windowSize);
-                int[] mask = new int[maskX*maskY];
-                float[] oneDimensionalBinaryImg = new float[binaryImgList[k].GetLength(0) * binaryImgList[k].GetLength(1)];
+        //    for (int k = 0; k < binaryImgList.Count; k++)
+        //    {
+        //        int maskX = (int)Math.Ceiling((double)binaryImgList[k].GetLength(0) / windowSize);
+        //        int maskY = (int)Math.Ceiling((double)binaryImgList[k].GetLength(1) / windowSize);
+        //        int[] mask = new int[maskX*maskY];
+        //        float[] oneDimensionalBinaryImg = new float[binaryImgList[k].GetLength(0) * binaryImgList[k].GetLength(1)];
 
-                for (int i = 0; i < binaryImgList[k].GetLength(0); i++)
-                {
-                    for (int j = 0; j < binaryImgList[k].GetLength(1); j++)
-                    {
-                        oneDimensionalBinaryImg[j * binaryImgList[k].GetLength(0) + i] = binaryImgList[k][i, j];
-                    }
-                }
+        //        for (int i = 0; i < binaryImgList[k].GetLength(0); i++)
+        //        {
+        //            for (int j = 0; j < binaryImgList[k].GetLength(1); j++)
+        //            {
+        //                oneDimensionalBinaryImg[j * binaryImgList[k].GetLength(0) + i] = binaryImgList[k][i, j];
+        //            }
+        //        }
 
-                CUDASegmentator(oneDimensionalBinaryImg, binaryImgList[k].GetLength(0), binaryImgList[k].GetLength(1), 
-                                (float)weight, windowSize, mask, maskX, maskY);
-                SaveMask(mask, maskX, maskY, pathToSave + k + ".txt");
+        //        CUDASegmentator(oneDimensionalBinaryImg, binaryImgList[k].GetLength(0), binaryImgList[k].GetLength(1), 
+        //                        (float)weight, windowSize, mask, maskX, maskY);
+        //        SaveMask(mask, maskX, maskY, pathToSave + k + ".txt");
 
-                PostProcessing(mask, maskX, maskY, threshold);
-                SaveMask(mask, maskX, maskY, pathToSave1 + k + ".txt");
-            }
-        }
+        //        PostProcessing(mask, maskX, maskY, threshold);
+        //        SaveMask(mask, maskX, maskY, pathToSave1 + k + ".txt");
+        //    }
+        //}
 
         private void SaveMask(int[] mask, int width, int height, string path)
         {

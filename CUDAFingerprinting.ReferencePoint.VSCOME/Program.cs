@@ -16,7 +16,7 @@ namespace CUDAFingerprinting.ReferencePoint.VSCOME
 
             for (int i = 0; i < 3 /*pathes.GetLength(0)*/; i++)
             {
-                Tuple<int, int> redPoint = ImageHelper.FindRedPoint(pathes[i]);
+                Tuple<int, int> redPoint = ImageHelper.FindColorPoint(pathes[i]);
                 double[,] imgBytes = ImageEnhancementHelper.EnhanceImage(ImageHelper.LoadImage(pathes[i]));
                 
                 double[,] orientationField = OrientationFieldGenerator.GenerateOrientationField(imgBytes.Select2D(x => (int)x));
