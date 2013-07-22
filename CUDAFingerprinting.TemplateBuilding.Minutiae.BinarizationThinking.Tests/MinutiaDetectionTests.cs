@@ -87,7 +87,6 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             int sizeWin = 16;
             double[,] resImg = LocalBinarizationCanny.LocalBinarization(img, nonMax, sizeWin, 1.3d);
             PoreFilter.DeletePores(resImg);
-            PoreFilter.DeletePores(resImg);
             var path = Path.GetTempPath() + "BinarizatedPoreFiltred81_7.png";
             ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
@@ -99,6 +98,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             var list2 = MinutiaeDetection.FindBigMinutiae(list);
             var path3 = Path.GetTempPath() + "MinutiaeMatchedTest81_7.png";
             ImageHelper.MarkMinutiae(path2, list2, path3);
+            Process.Start(path3);
         }
 
         [TestMethod]
@@ -212,6 +212,29 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.MarkMinutiae(path2, list2, path3);
 
             Process.Start(path3);
+        }
+        [TestMethod]
+        public void TestMethod11()
+        {
+            double[,] img = ImageHelper.LoadImage(TestResource._81_81);
+            double sigma = 1.4d;
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            int sizeWin = 16;
+            double[,] resImg = LocalBinarizationCanny.LocalBinarization(img, nonMax, sizeWin, 1.3d);
+            PoreFilter.DeletePores(resImg);
+            PoreFilter.DeletePores(resImg);
+            var path = "C:\\temp\\BinarizatedPoreFiltred81_81.png";
+            ImageHelper.SaveArray(resImg, path);
+            ImageHelper.SaveImageAsBinary(path, "C:\\temp\\BinarizatedPoreFiltred81_81.bin");
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\Thinned81_81.bin", "C:\\temp\\Thinned81_81.png", true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\MinutiaeMatched81_81.bin", "C:\\temp\\MinutiaeMatched81_81.png", true);
+            Process.Start("C:\\temp\\MinutiaeMatched81_81.png");
+            Process.Start("C:\\temp\\Thinned81_81.png");
+            //System.Console.WriteLine(path);
         }
 
     }
