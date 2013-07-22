@@ -9,6 +9,9 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using CUDAFingerprinting.Common;
+using CUDAFingerprinting.Common.OrientationField;
+using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
+
 
 namespace CUDAFingerprint
 {
@@ -27,16 +30,17 @@ namespace CUDAFingerprint
         private static extern int createGaborFilters(float[] result, float frequency, int amount);
 
         [DllImport("CUDAFingercode.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void createFingerCode(int[] imgBytes, float[] result, int width, int height, int filterAmount,
-                                                         int numBands, int numSectors,
-                                                         int holeRadius, int bandRadius, int referencePointX,
-                                                         int referencePointY);
-
-        [DllImport("CUDAFingercode.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void fullFilterImage(int[] imgBytes, int[] result, int width, int height, 
-													int filterAmount, int numBands,
+        private static extern void createFingerCode(int[] imgBytes, float[] result, int width, int height,
+                                                    int filterAmount,
+                                                    int numBands, int numSectors,
                                                     int holeRadius, int bandRadius, int referencePointX,
                                                     int referencePointY);
+
+        [DllImport("CUDAFingercode.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void fullFilterImage(int[] imgBytes, int[] result, int width, int height,
+                                                   int filterAmount, int numBands,
+                                                   int holeRadius, int bandRadius, int referencePointX,
+                                                   int referencePointY);
 
         [DllImport("CUDAFingercode.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void normalizeImage(int[] imgBytes, int[] result, int width, int height, int numBands,
@@ -53,20 +57,28 @@ namespace CUDAFingerprint
         private static extern void loadFingerCodeDatabase(float[] fingers, int numberOfRegions, int numberOfCodes);
 
         [DllImport("CUDAFingercode.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void loadNoncoalescedFingerCodeDatabase(float[] fingers, int numberOfRegions, int numberOfCodes);
+        private static extern void loadNoncoalescedFingerCodeDatabase(float[] fingers, int numberOfRegions,
+                                                                      int numberOfCodes);
 
         [DllImport("CUDAFingercode.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void sortArrayAndIndexes(float[] arr, int[] arrIndexes, int amount);
 
         [DllImport("CUDAConvexHull.dll", CallingConvention = CallingConvention.Cdecl)]
-        private static extern void BuildWorkingArea(int[] field, int rows, int columns, int radius, int[] IntMinutiae, int NoM);
+        private static extern void BuildWorkingArea(int[] field, int rows, int columns, int radius, int[] IntMinutiae,
+                                                    int NoM);
+        [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant, int windowSize, int[] mask, int maskWidth, int maskHight);
+    
 
-    private static void Main(string[] args)
+
+
+        private static void Main(string[] args)
         {
             // TestQuality();
             // TestTimings();
-            TestSorting();
+            //TestSorting();
             // TestHull();
+            TestDirectionsWithSegmentator();
         }
 
         private static void TestSorting()
@@ -420,6 +432,66 @@ namespace CUDAFingerprint
                 Field[IntMunitae[2*i+1], IntMunitae[2*i]] = 127;
             ImageHelper.SaveIntArray(Field,Path.GetTempPath() + "temp.png");
             Process.Start(Path.GetTempPath() + "temp.png");
+        }
+
+        private static void TestDirectionsWithSegmentator()
+        {
+            double[,] startImg = ImageHelper.LoadImage(Resources._7_6start);
+            int imgHeight = startImg.GetLength(0);
+            int imgWidth = startImg.GetLength(1);    
+            int[] mask = new int[imgHeight * imgWidth];
+            int windowSize = 12;
+            float WeightConstant = 0.3F;
+            int maskHeight = imgHeight/windowSize;
+            int maskWidth = imgWidth/windowSize;
+            float[] imgToSegmentator = new float[imgHeight * imgWidth];
+            for (int i = 0; i < imgHeight; i++)
+                for (int j = 0; j < imgWidth; j++)
+                    imgToSegmentator[i*imgWidth + j] = (float) startImg[i, j];
+
+            CUDASegmentator(imgToSegmentator,imgWidth,imgHeight,WeightConstant,windowSize,mask,maskWidth,maskHeight);
+
+
+            double[,] binaryImage = ImageHelper.LoadImage(Resources._7_6);
+            //---------------------------------------
+            double sigma = 1.4d;
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(binaryImage, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            int sizeWin = 16;
+            binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
+            //---------------------------------------
+            binaryImage = Thining.ThiningPicture(binaryImage);
+            //---------------------------------------
+            List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
+            for (int i = 0; i < Minutiae.Count; i++ )
+            {
+                if (mask[Minutiae[i].Y / windowSize * maskWidth + Minutiae[i].X/windowSize] == 0)
+                {
+                    Minutiae.Remove(Minutiae[i]);
+                    i--;
+                }
+            }
+            Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
+            //--------------------------------------
+            int[,] intImage = ImageHelper.ConvertDoubleToInt(binaryImage);
+            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
+            for (int i = 0; i < OrientationField.GetLength(0); i++)
+                for (int j = 0; j < OrientationField.GetLength(1); j++)
+                    if (OrientationField[i, j] < 0)
+                        OrientationField[i, j] += Math.PI;
+            MinutiaeDirection.FindDirection(OrientationField,16,Minutiae,intImage,4);
+            /*for (int i = 0; i < imgHeight; i++)
+                for (int j = 0; j < imgWidth; j++)
+                    if (mask[i/windowSize*maskWidth + j/windowSize] == 0)
+                        binaryImage[i, j] = 0;*/
+            var path1 = Path.GetTempPath() + "binaryImage.png";
+            ImageHelper.SaveArray(binaryImage,path1);
+            var path2 = Path.GetTempPath() + "checkYourself.png";
+            ImageHelper.MarkMinutiaeWithDirections(path1,Minutiae,path2);
+            Process.Start(path2);
         }
     }
 }

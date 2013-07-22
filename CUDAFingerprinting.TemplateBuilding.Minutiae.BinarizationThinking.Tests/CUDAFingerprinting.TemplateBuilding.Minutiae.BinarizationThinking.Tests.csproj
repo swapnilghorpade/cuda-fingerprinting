@@ -81,6 +81,10 @@
       <Project>{D2178362-6AE7-4BFB-AF2C-A241BF85065F}</Project>
       <Name>CUDAFingerprinting.Common.PoreFilter</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.SerializationHelper\CUDAFingerprinting.Common.Serialization.csproj">
+      <Project>{C57F6464-8900-4CC8-A08C-5A7B33BDAF60}</Project>
+      <Name>CUDAFingerprinting.Common.Serialization</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
@@ -121,6 +125,7 @@
     <None Include="Resources\104_6.tif" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Resources\4_1.bin" />
     <None Include="Resources\Test.png" />
   </ItemGroup>
   <ItemGroup>
@@ -182,6 +187,12 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\81_8.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\4_1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\4_1.tif" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

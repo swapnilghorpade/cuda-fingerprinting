@@ -131,6 +131,16 @@ namespace CUDAFingerprinting.Common
             return LoadImageAsInt(new Bitmap(path));
         }
 
+        public static int[,] ConvertDoubleToInt(double[,] source)
+        {
+            int Height = source.GetLength(0);
+            int Width = source.GetLength(1);
+            int[,] result = new int[Height,Width];
+            for (int i = 0; i < Height; i++)
+                for (int j = 0; j < Width; j++)
+                    result[i, j] = (int) source[i, j];
+            return result;
+        }
         public static void SaveComplexArrayAsHSV(Complex[,] data, string path)
         {
             int X = data.GetLength(1);
