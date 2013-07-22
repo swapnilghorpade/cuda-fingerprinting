@@ -248,7 +248,7 @@ int main()
 	//int size = 32;
 	int width; //= size;
 	int	height; //= size;
-	CUDAArray<float> img = loadImage("C:\\temp\\104_6_Binarizated.bin", true);
+	CUDAArray<float> img = loadImage("C:\\temp\\BinarizatedPoreFiltred81_81.bin", true);
 	width = img.Width;
 	height = img.Height;
 	int *picture = (int*)malloc(width*height*sizeof(int));
@@ -315,7 +315,7 @@ int main()
 			result1[j*width + i] = result[j*width + i] > 0 ? 0 : 255;
 		}
 	}
-	SaveArray(result1, width, height,"C:\\temp\\104_6_BinarizatedThinnedCUDA.bin");
+	SaveArray(result1, width, height,"C:\\temp\\Thinned81_81.bin");
 
     // cudaDeviceReset must be called before exiting in order for profiling and
     // tracing tools such as Nsight and Visual Profiler to show complete traces.
