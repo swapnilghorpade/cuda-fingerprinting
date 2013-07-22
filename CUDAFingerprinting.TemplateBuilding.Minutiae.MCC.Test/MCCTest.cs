@@ -50,9 +50,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
                 }
             }
 
-            CUDASegmentator(oneDimensionalBinaryImg, binaryImg.GetLength(0), binaryImg.GetLength(1),
-                              (float)weight, windowSize, maskOfSegmentation, maskX, maskY);
-            PostProcessing(maskOfSegmentation, maskX, maskY, threshold);
+            //CUDASegmentator(oneDimensionalBinaryImg, binaryImg.GetLength(0), binaryImg.GetLength(1),
+            //                  (float)weight, windowSize, maskOfSegmentation, maskX, maskY);
+            //PostProcessing(maskOfSegmentation, maskX, maskY, threshold);
 
             bool[,] maskOfSegmentation2D = Segmentator.GetMask(maskOfSegmentation, maskY, img.GetLength(1), img.GetLength(0), windowSize);
 
@@ -70,10 +70,28 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
 
             MCC.MCCMethod(validMinutiae, thining.GetLength(1), thining.GetLength(0)); // is it right?
 
-            int[,,] value = MCC.Value;
-            int[,,] mask3d = MCC.Mask;
-            Img3DHelper.Save3DAs2D(value, Path.GetTempPath() + "value");
-            Img3DHelper.Save3DAs2D(mask3d, Path.GetTempPath() + "mask");
+            //int[,,] value = MCC.Value;
+            //int[,,] mask3d = MCC.Mask;
+            //Img3DHelper.Save3DAs2D(value, Path.GetTempPath() + "value");
+            //Img3DHelper.Save3DAs2D(mask3d, Path.GetTempPath() + "mask");
+        }
+        [TestMethod]
+        public void SimpleTestMcc()
+        {
+            List<Minutia> twoMinutiae = new List<Minutia>();
+            Minutia firstMinutia = new Minutia();
+            firstMinutia.X = 40;
+            firstMinutia.Y = 60;
+            firstMinutia.Angle = 0;
+            twoMinutiae.Add(firstMinutia);
+
+            Minutia secondMinutia = new Minutia();
+            secondMinutia.X = 70;
+            secondMinutia.Y = 100;
+            secondMinutia.Angle = Math.PI / 6;
+            twoMinutiae.Add(secondMinutia);
+
+            MCC.MCCMethod(twoMinutiae, 364, 2); 
         }
     }
 }

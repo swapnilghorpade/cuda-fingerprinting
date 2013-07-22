@@ -9,23 +9,29 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 {
     public static class MCC
     {
-        private static int[, ,] value;
-        private static int[, ,] mask;
+        private static Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = new Dictionary<Minutia, Tuple<int[, ,], int[, ,]>>();
+        //private static int[, ,] value;
+        //private static int[, ,] mask;
         private static int[,] mask2D = new int[Constants.Ns, Constants.Ns];
         private static Dictionary<double, double> integralValues = new Dictionary<double, double>();
         private static double deltaS;
         private static double deltaD;
         private static bool[,] workingArea;
 
-        public static int[, ,] Value
+        public static Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> Response
         {
-            get { return value; }
+            get { return response;}
         }
 
-        public static int[,,] Mask
-        {
-            get { return mask; }
-        }
+        //public static int[, ,] Value
+        //{
+        //    get { return value; }
+        //}
+
+        //public static int[,,] Mask
+        //{
+        //    get { return mask; }
+        //}
 
         public static void MCCMethod(List<Minutia> minutiae, int rows, int columns)
         {
