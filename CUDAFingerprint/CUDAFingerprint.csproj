@@ -65,6 +65,10 @@
       <Link>CUDAFingercode.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\Debug\CUDAMinutiaeDirection.dll">
+      <Link>CUDAMinutiaeDirection.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\Debug\CUDASegmentation.dll">
       <Link>CUDASegmentation.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -68,9 +68,11 @@ namespace CUDAFingerprint
                                                     int NoM);
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant, int windowSize, int[] mask, int maskWidth, int maskHight);
-    
 
-
+        [DllImport("CUDAMinutiaeDirection.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void FindDirection(double[] OrientationField, int orHeight, int orWidth, int dim,
+                                                 int[] Minutiae, int NoM, int[] BinaryImage, int imgHeight, int imgWidth,
+                                                 double[] Directions);
 
         private static void Main(string[] args)
         {
@@ -78,7 +80,8 @@ namespace CUDAFingerprint
             // TestTimings();
             //TestSorting();
             // TestHull();
-            TestDirectionsWithSegmentator();
+            //TestDirectionsWithSegmentator();
+            TestCUDADirections();
         }
 
         private static void TestSorting()
@@ -491,6 +494,91 @@ namespace CUDAFingerprint
             ImageHelper.SaveArray(binaryImage,path1);
             var path2 = Path.GetTempPath() + "checkYourself.png";
             ImageHelper.MarkMinutiaeWithDirections(path1,Minutiae,path2);
+            Process.Start(path2);
+        }
+
+        private static void TestCUDADirections()
+        {
+            double[,] startImg = ImageHelper.LoadImage(Resources._7_6start);
+            int imgHeight = startImg.GetLength(0);
+            int imgWidth = startImg.GetLength(1);
+            int[] mask = new int[imgHeight * imgWidth];
+            int windowSize = 12;
+            float WeightConstant = 0.3F;
+            int maskHeight = imgHeight / windowSize;
+            int maskWidth = imgWidth / windowSize;
+            float[] imgToSegmentator = new float[imgHeight * imgWidth];
+            for (int i = 0; i < imgHeight; i++)
+                for (int j = 0; j < imgWidth; j++)
+                    imgToSegmentator[i * imgWidth + j] = (float)startImg[i, j];
+
+            CUDASegmentator(imgToSegmentator, imgWidth, imgHeight, WeightConstant, windowSize, mask, maskWidth, maskHeight);
+
+
+            double[,] binaryImage = ImageHelper.LoadImage(Resources._7_6);
+            //---------------------------------------
+            double sigma = 1.4d;
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(binaryImage, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            int sizeWin = 16;
+            binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
+            //---------------------------------------
+            binaryImage = Thining.ThiningPicture(binaryImage);
+            //---------------------------------------
+            List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
+            for (int i = 0; i < Minutiae.Count; i++)
+            {
+                if (mask[Minutiae[i].Y / windowSize * maskWidth + Minutiae[i].X / windowSize] == 0)
+                {
+                    Minutiae.Remove(Minutiae[i]);
+                    i--;
+                }
+            }
+            Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
+            //--------------------------------------
+            int[,] intImage = ImageHelper.ConvertDoubleToInt(binaryImage);
+            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
+            for (int i = 0; i < OrientationField.GetLength(0); i++)
+                for (int j = 0; j < OrientationField.GetLength(1); j++)
+                    if (OrientationField[i, j] < 0)
+                        OrientationField[i, j] += Math.PI;
+            //--------------------------------------
+            int orHeight = OrientationField.GetLength(0);
+            int orWidth = OrientationField.GetLength(1);
+            double[] myOrientationField = new double[orHeight*orWidth];
+            for (int i = 0; i < orHeight; i++)
+                for (int j = 0; j < orWidth; j++)
+                    myOrientationField[i*orWidth + j] = OrientationField[i, j];
+            //---------------------------------------
+            int NoM = Minutiae.Count;
+            int[] myMinutiae = new int[2*NoM];
+            for (int i = 0; i < NoM; i++)
+            {
+                myMinutiae[2*i] = Minutiae[i].X;
+                myMinutiae[2*i + 1] = Minutiae[i].Y;
+            }
+            //-----------------------------------------------
+            double[] Directions = new double[NoM];
+            //------------------------------------------
+            int[] BinaryImage = new int[imgWidth * imgHeight];
+            for (int i = 0; i < imgHeight; i++)
+                for (int j = 0; j < imgWidth; j++)
+                    BinaryImage[i*imgWidth + j] = intImage[i, j];
+            //----------------------------------------
+            FindDirection(myOrientationField, orHeight, orWidth, 16, myMinutiae, NoM, BinaryImage, imgHeight, imgWidth, Directions);
+            for (int i = 0; i < NoM; i++)
+            {
+                var temp = Minutiae[i];
+                temp.Angle = Directions[i];
+                Minutiae[i] = temp;
+            }
+            var path1 = Path.GetTempPath() + "binaryImage.png";
+            ImageHelper.SaveArray(binaryImage, path1);
+            var path2 = Path.GetTempPath() + "checkYourself.png";
+            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
             Process.Start(path2);
         }
     }
