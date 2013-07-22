@@ -46,8 +46,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         public void TestMethod4()
         {
             //var img = ImageHelper.LoadImage(TestResource._104_6);
-            ImageHelper.SaveImageAsBinaryFloat("C:\\cuda-fingerprinting\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150.png", "C:\\temp\\104_6_Binarizated.bin");
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_BinarizatedThinnedCUDA.bin", "C:\\cuda-fingerprinting\\104_61globalBinarizatedthinnedCUDA.png", true);
+            ImageHelper.SaveImageAsBinaryFloat("C:\\Users\\CUDA Fingerprinting2\\Documents\\Fingerprints\\Databases\\FVC2000\\Dbs\\Db2_a\\81_8.tif", "C:\\temp\\81_8.bin");
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\81_8.bin", "C:\\temp\\81_8.png", true);
+            //ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_MinutiaeBigMatched.bin", "C:\\temp\\104_6_MinutiaeBigMatched.png", true);
             //ImageHelper.SaveIntArray();
             var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150);
             var path = Path.GetTempPath() + "thininig.png";
