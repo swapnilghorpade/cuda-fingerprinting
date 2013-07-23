@@ -73,15 +73,18 @@ namespace CUDAFingerprint
         private static extern void FindDirection(double[] OrientationField, int orHeight, int orWidth, int dim,
                                                  int[] Minutiae, int NoM, int[] BinaryImage, int imgHeight, int imgWidth,
                                                  double[] Directions);
-
+        [DllImport("CUDAComparing.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void Comparing(int[] data, int dataCount, int[] sample, int sampleCount, int[] maskData, int[] maskSample, int[] offset, int offsetCount, float[] result);
+        
         private static void Main(string[] args)
         {
             // TestQuality();
             // TestTimings();
             //TestSorting();
             // TestHull();
-            TestDirectionsWithSegmentator();
+            //TestDirectionsWithSegmentator();
             //TestCUDADirections();
+            TestCUDAComparing();
         }
 
         private static void TestSorting()
@@ -580,6 +583,31 @@ namespace CUDAFingerprint
             var path2 = Path.GetTempPath() + "checkYourself.png";
             ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
             Process.Start(path2);
+        }
+
+        private static void TestCUDAComparing()
+        {
+            int dataCount = 48;
+            int[] data = new int[dataCount];
+            int[] maskData = new int[dataCount];
+            maskData[0] = 7;
+            data[0] = 6;
+
+            int sampleCount = 48;
+            int[] sample = new int[sampleCount];
+            int[] maskSample = new int[sampleCount];
+            maskSample[0] = 7;
+            sample[0] = 3;
+
+            int offsetCount = 1;
+            int[] offset = new int[offsetCount];
+            offset[0] = 0;
+
+            float[] result = new float[dataCount * sampleCount / (48 * 48)];
+
+            Comparing(data, dataCount, sample, sampleCount, maskData, maskSample, offset, offsetCount, result);
+
+            Console.WriteLine("{0}",result[0]);
         }
     }
 }
