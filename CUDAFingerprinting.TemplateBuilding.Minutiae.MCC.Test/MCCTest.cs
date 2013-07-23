@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Collections.Generic;
@@ -120,21 +121,25 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
                         = oneImage[16 + 17 * 3, j] 
                         = oneImage[16 + 17 * 4, j] 
                         = oneImage[16 + 17 * 5, j] 
-                        = oneImage[16 + 17 * 6, j] = 0;
+                        = oneImage[16 + 17 * 6, j] = 253;
                 }
                 oneImage = Img3DHelper.Normalize(oneImage);
-                ImageHelper.SaveIntArray(oneImage,Path.GetTempPath() + "valueN" + i);
-                var bmp = new Bitmap(Path.GetTempPath() + "valueN" + i + ".png");
-                Graphics graphic = Graphics.FromImage(bmp);
-                graphic.DrawLine(Pens.Red,16,0,16,15);
-                graphic.DrawLine(Pens.Red, 16+17, 0, 16+17, 15);
-                graphic.DrawLine(Pens.Red, 16 + 17 * 2, 0, 16 + 17 * 2, 15);
-                graphic.DrawLine(Pens.Red, 16 + 17 * 3, 0, 16 + 17 * 3, 15);
-                graphic.DrawLine(Pens.Red, 16 + 17 * 4, 0, 16 + 17 * 4, 15);
-                graphic.DrawLine(Pens.Red, 16 + 17 * 5, 0, 16 + 17 * 5, 15);
-                graphic.DrawLine(Pens.Red, 16 + 17 * 6, 0, 16 + 17 * 6, 15);
+                string path = Path.GetTempPath() + "valueN" + i + ".tif";
+                ImageHelper.SaveIntArray(oneImage,path);
 
-                }
+                //var bmp = new Bitmap(path);
+                //Graphics graphic = Graphics.FromImage(bmp);
+                //graphic.DrawLine(Pens.Red,16,0,16,15);
+                //graphic.DrawLine(Pens.Red, 16+17, 0,  16+17, 15);
+                //graphic.DrawLine(Pens.Red, 16 + 17 * 2, 0, 16 + 17 * 2, 15);
+                //graphic.DrawLine(Pens.Red, 16 + 17 * 3, 0, 16 + 17 * 3, 15);
+                //graphic.DrawLine(Pens.Red, 16 + 17 * 4, 0, 16 + 17 * 4, 15);
+                //graphic.DrawLine(Pens.Red, 16 + 17 * 5, 0, 16 + 17 * 5, 15);
+                //graphic.DrawLine(Pens.Red, 16 + 17 * 6, 0, 16 + 17 * 6, 15);
+                //graphic.Save();
+                //bmp.Save(path, ImageFormat.Tiff);   
+                
+            }
             //  Graphics graphics = Graphics.FromImage(Resources._104_6);
         }
     }
