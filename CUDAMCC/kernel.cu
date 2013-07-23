@@ -32,14 +32,18 @@ struct Minutiae
 	float angle;
 };
 
-__global__ void cudaMakeTableOfIntegrals(double* integralParameters, CUDAArray<double> integralValues)
+__global__ void cudaMCC (Minutiae* minutiae, CUDAArray<double> integralValues)
+{
+
+}
+
+__global__ void cudaMakeTableOfIntegrals(double* integralParameters, CUDAArray<double> integralValues, bool* workingArea)
 {
 
 }
 
 void MCCMethod(Minutiae *minutiae, int minutiaeCount, int rows, int columns)
 {
-	/*
 	cudaError_t cudaStatus = cudaSetDevice(0);
 
 	double deltaS = 2 * R / Ns;
@@ -66,10 +70,8 @@ void MCCMethod(Minutiae *minutiae, int minutiaeCount, int rows, int columns)
 
 	 dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
 	 dim3 gridSize = dim3(ceilMod(DictionaryCount, defaultThreadCount));
-
-	 //MakeTableOfIntegrals()
-
 	 CUDAArray<double> integralValues = CUDAArray<double>(DictionaryCount, 1);
+
 	 cudaMakeTableOfIntegrals<<<gridSize,blockSize>>>(integralParameters, integralValues);
 	 cudaStatus = cudaGetLastError();
 	 if (cudaStatus != cudaSuccess) 
@@ -77,14 +79,13 @@ void MCCMethod(Minutiae *minutiae, int minutiaeCount, int rows, int columns)
 		printf("cudaMakeTableOfIntegrals - ERROR!!!\n");
 	 }
 
-	 */
-
-
-
+	 gridSize = dim3(ceilMod(minutiaeCount, defaultThreadCount));
+	 cudaMCC<<<gridSize,blockSize>>>(minutiae, integralValues);
 }
 
 void main()
 {
 	// MinutiaDetectionSpecial.kernel.cu = > Minutiae *minutiae (array of Minutiae struct), int minutiaeCount(length of array)
 	// CUDAConvexHull.BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutiae,int NoM);
+	// workingArea = WorkingArea.BuildWorkingArea(minutiae, Constants.R, rows, columns);
 }
