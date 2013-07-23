@@ -60,11 +60,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
 
             Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = MCC.MCCMethod(twoMinutiae, 364, 256);
 
-            for (int i = 0; i < response.Count; i++)
-            {
-                Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item1, Path.GetTempPath() + "valueN" + i);
-                Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item2, Path.GetTempPath() + "maskN" + i);
-            }
+            SaveResponse(response, twoMinutiae);
         }
 
         [TestMethod]
@@ -110,21 +106,21 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
                 {
                     for (int k = 0; k < response[minutiae[i]].Item1.GetLength(1); k++)
                     {
-                        oneImage[j, k] = response[minutiae[i]].Item2[j, k, 0];
-                        oneImage[j, k + 17] = response[minutiae[i]].Item1[j, k, 0];
-                        oneImage[j, k + 17 * 2] = response[minutiae[i]].Item1[j, k, 1];
-                        oneImage[j, k + 17 * 3] = response[minutiae[i]].Item1[j, k, 2];
-                        oneImage[j, k + 17 * 4] = response[minutiae[i]].Item1[j, k, 3];
-                        oneImage[j, k + 17 * 5] = response[minutiae[i]].Item1[j, k, 4];
-                        oneImage[j, k + 17 * 6] = response[minutiae[i]].Item1[j, k, 5];
+                        oneImage[k, j] = response[minutiae[i]].Item2[j, k, 0];
+                        oneImage[k + 17, j] = response[minutiae[i]].Item1[j, k, 0];
+                        oneImage[k + 17 * 2, j] = response[minutiae[i]].Item1[j, k, 1];
+                        oneImage[k + 17 * 3, j] = response[minutiae[i]].Item1[j, k, 2];
+                        oneImage[k + 17 * 4, j] = response[minutiae[i]].Item1[j, k, 3];
+                        oneImage[k + 17 * 5, j] = response[minutiae[i]].Item1[j, k, 4];
+                        oneImage[k + 17 * 6, j] = response[minutiae[i]].Item1[j, k, 5];
                     }
-                    oneImage[j, 16] 
-                        = oneImage[j, 17 + 16] 
-                        = oneImage[j, 16 + 17 * 2] 
-                        = oneImage[j, 16 + 17 * 3] 
-                        = oneImage[j, 16 + 17 * 4] 
-                        = oneImage[j, 16 + 17 * 5] 
-                        = oneImage[j, 16 + 17 * 6] = 0;
+                    oneImage[16, j] 
+                        = oneImage[17 + 16, j] 
+                        = oneImage[16 + 17 * 2, j] 
+                        = oneImage[16 + 17 * 3, j] 
+                        = oneImage[16 + 17 * 4, j] 
+                        = oneImage[16 + 17 * 5, j] 
+                        = oneImage[16 + 17 * 6, j] = 0;
                 }
                 oneImage = Img3DHelper.Normalize(oneImage);
                 ImageHelper.SaveIntArray(oneImage,Path.GetTempPath() + "valueN" + i);
