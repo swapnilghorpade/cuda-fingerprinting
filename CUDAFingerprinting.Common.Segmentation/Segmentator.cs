@@ -35,9 +35,25 @@ namespace CUDAFingerprinting.Common.Segmentation
     //        double[,] img1 = ImageHelper.LoadImage("D:/103_7.tif");
     //        int[,] resultImg1;
 
-    //        resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, threshold);
-    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6" + ".png");
-    //        //ImageHelper.SaveArray(resultImg1, Path.GetTempPath() + "Segm_104_6" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 5, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_5" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 6, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_6" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 7, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_7" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 8, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_8" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 9, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_9" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 10, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_10" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 11, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_11" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 12, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_12" + ".png");
+    //        resultImg1 = Segmentator.Segmetator(img1, 13, weight, threshold);
+    //        ImageHelper.SaveIntArray(Normalize(resultImg1), Path.GetTempPath() + "Segm_104_6_13" + ".png");
+    ////        ImageHelper.SaveArray(resultImg1, Path.GetTempPath() + "Segm_104_6" + ".png");
 
     //    }
     //}

@@ -103,11 +103,42 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
 
         private void SaveResponse(Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response, List<Minutia> minutiae)
         {
+            int[,] oneImage = new int[7 * (response[minutiae[0]].Item1.GetLength(0)) + 7, response[minutiae[0]].Item1.GetLength(1)];
             for (int i = 0; i < response.Count; i++)
             {
-                Img3DHelper.Save3DAs2D(response[minutiae[i]].Item1, Path.GetTempPath() + "valueN" + i);
-                Img3DHelper.Save3DAs2D(response[minutiae[i]].Item2, Path.GetTempPath() + "maskN" + i);
-            }
+                for (int j = 0; j < response[minutiae[i]].Item1.GetLength(0); j++)
+                {
+                    for (int k = 0; k < response[minutiae[i]].Item1.GetLength(1); k++)
+                    {
+                        oneImage[j, k] = response[minutiae[i]].Item2[j, k, 0];
+                        oneImage[j, k + 17] = response[minutiae[i]].Item1[j, k, 0];
+                        oneImage[j, k + 17 * 2] = response[minutiae[i]].Item1[j, k, 1];
+                        oneImage[j, k + 17 * 3] = response[minutiae[i]].Item1[j, k, 2];
+                        oneImage[j, k + 17 * 4] = response[minutiae[i]].Item1[j, k, 3];
+                        oneImage[j, k + 17 * 5] = response[minutiae[i]].Item1[j, k, 4];
+                        oneImage[j, k + 17 * 6] = response[minutiae[i]].Item1[j, k, 5];
+                    }
+                    oneImage[j, 16] 
+                        = oneImage[j, 17 + 16] 
+                        = oneImage[j, 16 + 17 * 2] 
+                        = oneImage[j, 16 + 17 * 3] 
+                        = oneImage[j, 16 + 17 * 4] 
+                        = oneImage[j, 16 + 17 * 5] 
+                        = oneImage[j, 16 + 17 * 6] = 0;
+                }
+                oneImage = Img3DHelper.Normalize(oneImage);
+                ImageHelper.SaveIntArray(oneImage,Path.GetTempPath() + "valueN" + i);
+                var bmp = new Bitmap(Path.GetTempPath() + "valueN" + i + ".png");
+                Graphics graphic = Graphics.FromImage(bmp);
+                graphic.DrawLine(Pens.Red,16,0,16,15);
+                graphic.DrawLine(Pens.Red, 16+17, 0, 16+17, 15);
+                graphic.DrawLine(Pens.Red, 16 + 17 * 2, 0, 16 + 17 * 2, 15);
+                graphic.DrawLine(Pens.Red, 16 + 17 * 3, 0, 16 + 17 * 3, 15);
+                graphic.DrawLine(Pens.Red, 16 + 17 * 4, 0, 16 + 17 * 4, 15);
+                graphic.DrawLine(Pens.Red, 16 + 17 * 5, 0, 16 + 17 * 5, 15);
+                graphic.DrawLine(Pens.Red, 16 + 17 * 6, 0, 16 + 17 * 6, 15);
+
+                }
             //  Graphics graphics = Graphics.FromImage(Resources._104_6);
         }
     }
