@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
@@ -96,6 +97,82 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
             var response = MCC.MCCMethod(minutiae, img.GetLength(0), img.GetLength(1));
 
             SaveResponse(response, minutiae);
+        }
+
+        [TestMethod]
+        public void SimpleTestNumerationMcc()
+        {
+            List<Minutia> twoMinutiae = new List<Minutia>();
+            Minutia firstMinutia = new Minutia();
+            firstMinutia.X = 40;
+            firstMinutia.Y = 60;
+            firstMinutia.Angle = 0;
+            twoMinutiae.Add(firstMinutia);
+
+            Minutia secondMinutia = new Minutia();
+            secondMinutia.X = 70;
+            secondMinutia.Y = 100;
+            secondMinutia.Angle = Math.PI / 6;
+            twoMinutiae.Add(secondMinutia);
+
+            Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = MCC.MCCMethod(twoMinutiae, 364, 256);
+
+            for (int i = 0; i < response.Count; i++)
+            {
+                int[] valueN = Numeration.numerizationBlock(response[twoMinutiae[i]].Item1);
+                int[] maskN = Numeration.numerizationBlock(response[twoMinutiae[i]].Item2);
+                for (int j = 0; j < maskN.GetLength(0); j++)
+                {
+                    //System.Console.Write(valueN[j] + " ");
+                    BitArray b = new BitArray(new int[] { maskN[j] });
+                    bool[] bits = new bool[b.Count];
+                    b.CopyTo(bits, 0);
+
+                    if (j % (maskN.Count() / 6) == 0)
+                    {
+       //                 System.Console.Write(" j = " + j + "\n");
+                    }
+
+                    for (int k = 0; k < bits.GetLength(0); k++)
+                    {
+                        System.Console.Write(bits[k]? 1 : 0);
+                        if (k == 15)
+                        {
+                            System.Console.Write(" i = "+i+"\n");
+                        }
+                    }
+                    System.Console.Write(" j = "+j+"\n");
+                }
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+                for (int j = 0; j < valueN.GetLength(0); j++)
+                {
+                    //System.Console.Write(valueN[j] + " ");
+                    BitArray b = new BitArray(new int[] { valueN[j] });
+                    bool[] bits = new bool[b.Count];
+                    b.CopyTo(bits, 0);
+
+                    if (j % (valueN.Count() / 6) == 0)
+                    {
+         //               System.Console.Write(" j = " + j + "\n");
+                    }
+
+                    for (int k = 0; k < bits.GetLength(0); k++)
+                    {
+                        System.Console.Write(bits[k]? 1 : 0);
+                        if (k == 15)
+                        {
+                            System.Console.Write(" i = "+i+"\n");
+                        }
+                    }
+                    System.Console.Write(" j = "+j+"\n");
+                }
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+                
+            }
         }
 
         private void SaveResponse(Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response, List<Minutia> minutiae)

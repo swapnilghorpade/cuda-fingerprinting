@@ -1,14 +1,21 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using CUDAFingerprinting.TemplateBuilding.Minutiae.MCC;
 
 namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 {
     public static class Numeration
     {
-        public static int[] numerizationBlock(int[,,] cylinder, int xNs, int yNs, int zNd, double r) { //
-          
+        public static int[] numerizationBlock(int[,,] cylinder) { //
+
+            int xNs = Constants.Ns;
+            int yNs = Constants.Ns;
+            int zNd = Constants.Nd;
+            double r = Constants.R;
+
             float sizeOneCube = 2*(float)r/xNs;
 
             List<int> vector = new List<int>();
@@ -24,8 +31,11 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                         if (d <= r) {
                             vector.Add(cylinder[x,y,z]);
                         }
+   //                         System.Console.Write(cylinder[x, y, z]);
                     }
+   //                 System.Console.WriteLine();
                 }
+   //             System.Console.WriteLine();
             }
 
             int sizeResVec = (vector.Count + 31)/32;
@@ -38,9 +48,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
                 {
                     if (j + i*32 < vector.Count)
                     {
-                        resVec[i] = resVec[i] | (vector[j + i*32] << (31 - j));
+                        resVec[i] = resVec[i] | (vector[j + i*32] << j);
                     }
                 }
+                BitArray b = new BitArray(new int[] { resVec[i] });
+                bool[] bits = new bool[b.Count];
+                b.CopyTo(bits, 0);
             }
             return resVec;
         }
