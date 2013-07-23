@@ -15,6 +15,8 @@ const int Ns = 16; // 8
 const int Nd = 6;
 const double SigmaS = 28 / 3;
 const double SigmaD = 2* M_PI / 9;
+double deltaS;
+double deltaD;
 const double MuPsi = 0.001;
 const int BigSigma = 50;
 const double MinVC = 0.75;
@@ -37,17 +39,30 @@ __global__ void cudaMCC (Minutiae* minutiae, CUDAArray<double> integralValues)
 
 }
 
-__global__ void cudaMakeTableOfIntegrals(double* integralParameters, CUDAArray<double> integralValues, bool* workingArea)
+__global__ void cudaMakeTableOfIntegrals(double* integralParameters, CUDAArray<double> integralValues, 
+	bool* workingArea, double factor, double h)
 {
+	int column = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
+	double a = integralParameters[column] - deltaD / 2;
+	double integrand = 0;
+    double result = 0;
 
+    for (int i = 0; i < N; i++)
+    {
+		integrand = a + ((2 * i + 1) * h) / 2;
+		integrand = exp((-integrand * integrand) / (2 * SigmaD * SigmaD));
+		result += h * integrand;    
+	}
+	
+	integralValues.SetAt(1, column, result * factor);
 }
 
 void MCCMethod(Minutiae *minutiae, int minutiaeCount, int rows, int columns)
 {
 	cudaError_t cudaStatus = cudaSetDevice(0);
 
-	double deltaS = 2 * R / Ns;
-	double deltaD = 2 * M_PI / Nd;
+	deltaS = 2 * R / Ns;
+	deltaD = 2 * M_PI / Nd;
 	double* integralParameters = (double*)malloc(DictionaryCount*sizeof(double));
 
 	//------------new method--------------------
@@ -79,8 +94,11 @@ void MCCMethod(Minutiae *minutiae, int minutiaeCount, int rows, int columns)
 		printf("cudaMakeTableOfIntegrals - ERROR!!!\n");
 	 }
 
-	 gridSize = dim3(ceilMod(minutiaeCount, defaultThreadCount));
-	 cudaMCC<<<gridSize,blockSize>>>(minutiae, integralValues);
+	double factor = 1 / (SigmaD * sqrt(2 * M_PI));
+    double h = deltaD / N;
+		 
+	gridSize = dim3(ceilMod(minutiaeCount, defaultThreadCount));
+	cudaMCC<<<gridSize,blockSize>>>(minutiae, integralValues, factor, h);
 }
 
 void main()
