@@ -80,8 +80,8 @@ namespace CUDAFingerprint
             // TestTimings();
             //TestSorting();
             // TestHull();
-            //TestDirectionsWithSegmentator();
-            TestCUDADirections();
+            TestDirectionsWithSegmentator();
+            //TestCUDADirections();
         }
 
         private static void TestSorting()
