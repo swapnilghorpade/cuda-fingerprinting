@@ -232,8 +232,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         {
             Tuple<int, int> point = GetCoordinatesInFingerprint(m, i, j);
 
-            if (point.Item1 < 0 || point.Item1 >= columns ||
-                point.Item2 < 0 || point.Item2 >= rows)
+            if (point.Item1 < 0 || point.Item1 >= rows ||
+                point.Item2 < 0 || point.Item2 >= columns)
             {
                 return 0;
             }

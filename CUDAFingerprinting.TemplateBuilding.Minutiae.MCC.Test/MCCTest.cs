@@ -15,78 +15,33 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
     [TestClass]
     public class MCCTest
     {
-
-        [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "CUDASegmentator")]
-        private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant,
-                                                int windowSize, int[] mask, int maskWidth, int maskHight);
-
-        [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "PostProcessing")]
-        private static extern void PostProcessing(int[] mask, int maskX, int maskY, int threshold);
-
-
         private int windowSize = 12;
         private double weight = 0.3;
         private int threshold = 5;
+        private double board = 150;
+        private double[,] img = ImageHelper.LoadImage(Resources._104_6);
 
         [TestMethod]
         public void TestMcc()
         {
-            Bitmap bitmap = Resources._104_6;
-            var img = ImageHelper.LoadImage(bitmap);
-            var binaryImg = ImageHelper.LoadImageAsInt(bitmap);
-
-            int maskX = (int)Math.Ceiling((double)binaryImg.GetLength(0) / windowSize);
-            int maskY = (int)Math.Ceiling((double)binaryImg.GetLength(1) / windowSize);
-
-            float[] oneDimensionalBinaryImg = new float[binaryImg.GetLength(0) * binaryImg.GetLength(1)];
-
-            for (int i = 0; i < binaryImg.GetLength(0); i++)
-            {
-                for (int j = 0; j < binaryImg.GetLength(1); j++)
-                {
-                    oneDimensionalBinaryImg[j * binaryImg.GetLength(0) + i] = binaryImg[i, j];
-                }
-            }
-
             int[,] maskOfSegmentation2D = Segmentator.Segmetator(img, windowSize, weight, threshold);
-
-            //CUDASegmentator(oneDimensionalBinaryImg, binaryImg.GetLength(0), binaryImg.GetLength(1),
-            //                  (float)weight, windowSize, maskOfSegmentation, maskX, maskY);
-            //PostProcessing(maskOfSegmentation, maskX, maskY, threshold);
-
-           // bool[,] maskOfSegmentation2D = Segmentator.GetMask(maskOfSegmentation, maskY, img.GetLength(1), img.GetLength(0), windowSize);
-
-            double board = 150;
             var thining = Thining.ThiningPicture(GlobalBinarization.Binarization(img, board));
             List<Minutia> minutiaList = MinutiaeDetection.FindMinutiae(thining);
             List<Minutia> validMinutiae = new List<Minutia>();
-            Minutia newMinutia = new Minutia();
 
             foreach (Minutia minutia in minutiaList)
             {
-                if (maskOfSegmentation2D[minutia.Y, minutia.X] == 1) // coordinates swap
+                if (maskOfSegmentation2D[minutia.Y, minutia.X] == 1) // coordinates swap - ok
                 {
-                    //newMinutia.X = minutia.Y;
-                    //newMinutia.Y = minutia.X;
-                    //newMinutia.Angle = minutia.Angle;
-
                     validMinutiae.Add(minutia);
                 }
             }
 
-            Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = MCC.MCCMethod(validMinutiae, thining.GetLength(1), thining.GetLength(0)); // is it right?
+            var response = MCC.MCCMethod(validMinutiae, thining.GetLength(0), thining.GetLength(1));
 
-            for (int i = 0; i < response.Count; i++)
-            {
-                Img3DHelper.Save3DAs2D(response[validMinutiae[i]].Item1, Path.GetTempPath() + "valueN" + i);
-                Img3DHelper.Save3DAs2D(response[validMinutiae[i]].Item2, Path.GetTempPath() + "maskN" + i);
-            }
-
-            //int[, ,] value = MCC.Value;
-            //int[, ,] mask3d = MCC.Mask;
-            //Img3DHelper.Save3DAs2D(value, Path.GetTempPath() + "value");
-            //Img3DHelper.Save3DAs2D(mask3d, Path.GetTempPath() + "mask");
+            SaveResponse(response, validMinutiae);
         }
+
         [TestMethod]
         public void SimpleTestMcc()
         {
@@ -104,12 +59,56 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
             twoMinutiae.Add(secondMinutia);
 
             Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response = MCC.MCCMethod(twoMinutiae, 364, 256);
-            
+
             for (int i = 0; i < response.Count; i++)
             {
                 Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item1, Path.GetTempPath() + "valueN" + i);
                 Img3DHelper.Save3DAs2D(response[twoMinutiae[i]].Item2, Path.GetTempPath() + "maskN" + i);
             }
+        }
+
+        [TestMethod]
+        public void TestWithAdequateMinutiaeSet()
+        {
+            int[,] mask = Segmentator.Segmetator(img, windowSize, weight, threshold);
+            double[,] binaryImage = img; //
+            //---------------------------------------
+            double sigma = 1.4d;
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(binaryImage, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            int sizeWin = 16;
+            binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
+            //---------------------------------------
+            binaryImage = Thining.ThiningPicture(binaryImage);
+            //---------------------------------------
+            List<Minutia> minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
+            for (int i = 0; i < minutiae.Count; i++)
+            {
+                if (mask[minutiae[i].Y, minutiae[i].X] == 0)
+                {
+                    minutiae.Remove(minutiae[i]);
+                    i--;
+                }
+            }
+
+            minutiae = MinutiaeDetection.FindBigMinutiae(minutiae);
+
+            var response = MCC.MCCMethod(minutiae, img.GetLength(0), img.GetLength(1));
+
+            SaveResponse(response, minutiae);
+        }
+
+        private void SaveResponse(Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> response, List<Minutia> minutiae)
+        {
+            for (int i = 0; i < response.Count; i++)
+            {
+                Img3DHelper.Save3DAs2D(response[minutiae[i]].Item1, Path.GetTempPath() + "valueN" + i);
+                Img3DHelper.Save3DAs2D(response[minutiae[i]].Item2, Path.GetTempPath() + "maskN" + i);
+            }
+            //  Graphics graphics = Graphics.FromImage(Resources._104_6);
         }
     }
 }
