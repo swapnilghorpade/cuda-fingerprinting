@@ -356,6 +356,13 @@ cudaError_t addWithCuda(int *picture, int width, int height, int *result)
     size_t pitch1;
 	size_t pitch2;
 	
+	// Choose which GPU to run on, change this on a multi-GPU system.
+    cudaStatus = cudaSetDevice(0);
+    if (cudaStatus != cudaSuccess) {
+        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
+        goto Error;
+    }
+	
 	cudaStatus = cudaMallocPitch((void**)&dev_pictureToRemove, &pitch2, width*sizeof(int), height);
 	if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMallocPitch");
@@ -366,12 +373,7 @@ cudaError_t addWithCuda(int *picture, int width, int height, int *result)
         fprintf(stderr, "cudaMemcpy!");
         goto Error;
     }
-	// Choose which GPU to run on, change this on a multi-GPU system.
-    cudaStatus = cudaSetDevice(0);
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
-        goto Error;
-    }
+
 	//Allocate GPU buffers for picture.
 	cudaStatus = cudaMallocPitch((void**)&dev_picture, &pitch, width*sizeof(int), height);
 	if (cudaStatus != cudaSuccess) {
