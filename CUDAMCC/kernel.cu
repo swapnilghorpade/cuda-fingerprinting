@@ -32,26 +32,54 @@ struct Minutiae
 	float angle;
 };
 
+__global__ void cudaMakeTableOfIntegrals(double* integralParameters, CUDAArray<double> integralValues)
+{
+
+}
+
 void MCCMethod(Minutiae *minutiae, int minutiaeCount, int rows, int columns)
 {
-	/*cudaError_t cudaStatus = cudaSetDevice(0);
+	/*
+	cudaError_t cudaStatus = cudaSetDevice(0);
 
 	double deltaS = 2 * R / Ns;
 	double deltaD = 2 * M_PI / Nd;
 	double* integralParameters = (double*)malloc(DictionaryCount*sizeof(double));
 
-	for (int i = 0; i < DictionaryCount; i++)
-	{
-		integralParameters[i] = 
-	}
+	//------------new method--------------------
+	 double key = -M_PI;
+	 double step = 2 * M_PI / DictionaryCount;
 
-	InitialIntegralValues();
+	 for (int i = 0; i < DictionaryCount; i++)
+	 {
+		 integralParameters[i] = key;
+		 key += step;
+	 }
+	 //----------------------------------------
+	 
+	 CUDAArray<double> integralValues = CUDAArray<double>(DictionaryCount, 1);
+	 cudaStatus = cudaGetLastError();
+	  if (cudaStatus != cudaSuccess) 
+	  {
+		printf("integralValues = CUDAArray<double>(DictionaryCount, 1); - ERROR!!!\n");
+	  }
 
-	CUDAArray<double> integralValues = CUDAArray<double>(DictionaryCount, 1);
-	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
-	dim3 gridSize = dim3(ceilMod(DictionaryCount, defaultThreadCount));
+	 dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+	 dim3 gridSize = dim3(ceilMod(DictionaryCount, defaultThreadCount));
 
-	MakeTableOfIntegrals()*/
+	 //MakeTableOfIntegrals()
+
+	 CUDAArray<double> integralValues = CUDAArray<double>(DictionaryCount, 1);
+	 cudaMakeTableOfIntegrals<<<gridSize,blockSize>>>(integralParameters, integralValues);
+	 cudaStatus = cudaGetLastError();
+	 if (cudaStatus != cudaSuccess) 
+	 {
+		printf("cudaMakeTableOfIntegrals - ERROR!!!\n");
+	 }
+
+	 */
+
+
 
 }
 
