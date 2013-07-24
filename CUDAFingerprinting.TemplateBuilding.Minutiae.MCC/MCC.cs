@@ -94,21 +94,19 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             return new Tuple<int, int>((int)(m.X + deltaS * iDelta), (int)(m.Y + deltaS * jDelta));
         }
 
-        private static double GetDifferenceAngles(double tetta1, double tetta2)
+        private static double NormalizeAngle(double angle)
         {
-            double difference = tetta1 - tetta2;
-
-            if (difference < -Math.PI)
+            if (angle < -Math.PI)
             {
-                return 2 * Math.PI + difference;
+                return 2 * Math.PI + angle;
             }
 
-            if (difference < Math.PI)
+            if (angle < Math.PI)
             {
-                return difference;
+                return angle;
             }
 
-            return -2 * Math.PI + difference;
+            return -2 * Math.PI + angle;
         }
 
         private static double GetAngleFromLevel(int k)
@@ -123,9 +121,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
         private static double GetDirectionalContribution(double mAngle, double mtAngle, int k)
         {
-            double angleFromLevel = GetAngleFromLevel(k);
-            double differenceAngles = GetDifferenceAngles(mAngle, mtAngle);
-            double param = GetDifferenceAngles(angleFromLevel, differenceAngles);
+            double angleFromLevel = NormalizeAngle(GetAngleFromLevel(k));
+            double differenceAngles = NormalizeAngle(mAngle - mtAngle);
+            double param = NormalizeAngle(angleFromLevel - differenceAngles);
 
             try
             {
@@ -141,7 +139,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         {
             foreach (double key in integralValues.Keys)
             {
-                if (Math.Abs(key - param) < Math.PI / Constants.DictionaryCount)
+                if (Math.Abs(key - param) <= Math.PI / Constants.DictionaryCount)
                 {
                     return key;
                 }
@@ -221,7 +219,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             double key = -Math.PI;
             double step = 2 * Math.PI / Constants.DictionaryCount;
 
-            for (int i = 0; i < Constants.DictionaryCount; i++)
+            for (int i = 0; i <= Constants.DictionaryCount; i++)
             {
                 integralValues.Add(key, GetIntegral(key));
                 key += step;
