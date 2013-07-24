@@ -77,6 +77,14 @@
       <Link>CUDASegmentation.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="..\Debug\CUDAThining.dll">
+      <Link>CUDAThining.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Include="Resources\48_1.png" />
+    <None Include="Resources\48_1.tif" />
+    <None Include="Resources\15_5.png" />
+    <None Include="Resources\15_5.tif" />
     <None Include="Resources\7_6.tif" />
     <None Include="Resources\7_6.png" />
     <None Include="Resources\5_6.png" />
@@ -98,6 +106,10 @@
     <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Matching.Minutiae.MCC\CUDAFingerprinting.Matching.Minutiae.MCC.csproj">
+      <Project>{099B7BDB-DAC5-4666-9829-A3FCCB2C2CFF}</Project>
+      <Name>CUDAFingerprinting.Matching.Minutiae.MCC</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.csproj">
       <Project>{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}</Project>

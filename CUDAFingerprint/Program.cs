@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using CUDAFingerprinting.Common;
 using CUDAFingerprinting.Common.OrientationField;
 using CUDAFingerprinting.Common.Segmentation;
+using CUDAFingerprinting.Matching.Minutiae.MCC;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.MCC;
 
@@ -593,69 +594,22 @@ namespace CUDAFingerprint
 
         private static void TestCUDAComparing()
         {
-            int dataCount = 39*97;
-            int[] data = new int[dataCount];
-            int[] maskData = new int[dataCount];
+            int number = 0;
+            int dataCount;
+            int[] data = new int[39*5*200];
+            int[] maskData = new int[39*5*200];
 
-            int sampleCount = 39*97;
-            int[] sample = new int[sampleCount];
-            int[] maskSample = new int[sampleCount];
+            int sampleCount;
+            int[] sample = new int[39*200];
+            int[] maskSample = new int[39*200];
 
-            int offsetCount = 1;
+            int offsetCount = 5;
             int[] offset = new int[offsetCount];
-
-            float[] result = new float[dataCount * sampleCount / (39 * 39)];
 
             //------------------------------------
 
             double[,] startImg = ImageHelper.LoadImage(Resources._104_6);
-            /*int imgHeight = startImg.GetLength(0);
-            int imgWidth = startImg.GetLength(1);
 
-            int[,] maskOfSegmentation2D = Segmentator.Segmetator(startImg, 12, 0.3, 5);
-
-
-            double[,] binaryImage = ImageHelper.LoadImage(Resources._104_6);
-            //---------------------------------------
-            /double sigma = 1.4d;
-            double[,] smoothing = LocalBinarizationCanny.Smoothing(binaryImage, sigma);
-            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
-            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
-            nonMax = GlobalBinarization.Binarization(nonMax, 60);
-            nonMax = LocalBinarizationCanny.Inv(nonMax);
-            int sizeWin = 16;
-            binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);*/
-            //---------------------------------------
-            //binaryImage = Thining.ThiningPicture(binaryImage);
-            //---------------------------------------
-            /*List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
-            for (int i = 0; i < Minutiae.Count; i++)
-            {
-                if (maskOfSegmentation2D[Minutiae[i].Y / 12 , Minutiae[i].X / 12] == 0)
-                {
-                    Minutiae.Remove(Minutiae[i]);
-                    i--;
-                }
-            }
-            Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
-            //--------------------------------------
-            int[,] intImage = ImageHelper.ConvertDoubleToInt(binaryImage);
-            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
-            for (int i = 0; i < OrientationField.GetLength(0); i++)
-                for (int j = 0; j < OrientationField.GetLength(1); j++)
-                    if (OrientationField[i, j] < 0)
-                        OrientationField[i, j] += Math.PI;
-            MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
-            /*for (int i = 0; i < imgHeight; i++)
-                for (int j = 0; j < imgWidth; j++)
-                    if (mask[i/windowSize*maskWidth + j/windowSize] == 0)
-                        binaryImage[i, j] = 0;*/
-            /*var path1 = Path.GetTempPath() + "binaryImage.png";
-            ImageHelper.SaveArray(binaryImage, path1);
-            var path2 = Path.GetTempPath() + "checkYourself.png";
-            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
-            Process.Start(path2);
-            var response = MCC.MCCMethod(Minutiae, binaryImage.GetLength(0), binaryImage.GetLength(1));*/
 
 
             int[,] maskOfSegmentation2D = Segmentator.Segmetator(startImg, 12, 0.3, 5);
@@ -670,8 +624,6 @@ namespace CUDAFingerprint
             int sizeWin = 16;
             startImg = LocalBinarizationCanny.LocalBinarization(startImg, nonMax, sizeWin, 1.3d);
             startImg = Thining.ThiningPicture(startImg);
-            var path1 = Path.GetTempPath() + "binaryImage.png";
-            ImageHelper.SaveArray(startImg, path1);
 
             List<Minutia> minutiaList = MinutiaeDetection.FindMinutiae(startImg);
             List<Minutia> Minutiae = new List<Minutia>();
@@ -688,7 +640,8 @@ namespace CUDAFingerprint
             int[,] intImage = ImageHelper.ConvertDoubleToInt(startImg);
             double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
             MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
-
+            var path1 = Path.GetTempPath() + "binaryImage.png";
+            ImageHelper.SaveArray(startImg, path1);
 
             var path2 = Path.GetTempPath() + "checkYourself.png";
             ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
@@ -697,30 +650,269 @@ namespace CUDAFingerprint
 
             var response = MCC.MCCMethod(Minutiae, startImg.GetLength(0), startImg.GetLength(1));
             //------------------------------------
+
             for (int i = 0; i < Minutiae.Count; i++)
             {
                 int[] valueN = Numeration.numerizationBlock(response[Minutiae[i]].Item1);
                 int[] maskN = Numeration.numerizationBlock(response[Minutiae[i]].Item2);
-
                 for (int j = 0; j < 39; j++)
                 {
                     data[i*39 + j] = valueN[j];
-                    sample[i*39 + j] = valueN[j];
                     maskData[i*39 + j] = maskN[j];
+                    sample[i*39 + j] = valueN[j];
                     maskSample[i*39 + j] = maskN[j];
                 }
             }
             offset[0] = 0;
-            //------------------------------------
-            Comparing(data, dataCount, sample, sampleCount, maskData, maskSample, offset, offsetCount, result);
+            number += Minutiae.Count*39;
 
-            for (int i = 0; i < sampleCount/39; i++)
+
+
+
+
+            startImg = ImageHelper.LoadImage(Resources._15_5);
+
+
+
+            maskOfSegmentation2D = Segmentator.Segmetator(startImg, 12, 0.3, 5);
+            smoothing = LocalBinarizationCanny.Smoothing(startImg, sigma);
+            sobel = LocalBinarizationCanny.Sobel(smoothing);
+            nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            startImg = LocalBinarizationCanny.LocalBinarization(startImg, nonMax, sizeWin, 1.3d);
+            startImg = Thining.ThiningPicture(startImg);
+
+            minutiaList = MinutiaeDetection.FindMinutiae(startImg);
+            Minutiae = new List<Minutia>();
+
+            foreach (Minutia minutia in minutiaList)
             {
-                for (int j = 0; j < dataCount / 39; j++ )
-                    Console.Write("{0} ",result[i*dataCount/39+ j]);
-                Console.WriteLine();
+                if (maskOfSegmentation2D[minutia.Y, minutia.X] == 1) // coordinates swap - ok
+                {
+                    Minutiae.Add(minutia);
+                }
             }
+            Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
+
+            intImage = ImageHelper.ConvertDoubleToInt(startImg);
+            OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
+            MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
+            path1 = Path.GetTempPath() + "binaryImage.png";
+            ImageHelper.SaveArray(startImg, path1);
+
+            path2 = Path.GetTempPath() + "checkYourself.png";
+            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
+            Process.Start(path2);
+
+
+            response = MCC.MCCMethod(Minutiae, startImg.GetLength(0), startImg.GetLength(1));
+            //------------------------------------
+
+            for (int i = 0; i < Minutiae.Count; i++)
+            {
+                int[] valueN = Numeration.numerizationBlock(response[Minutiae[i]].Item1);
+                int[] maskN = Numeration.numerizationBlock(response[Minutiae[i]].Item2);
+                for (int j = 0; j < 39; j++)
+                {
+                    data[number + i*39 + j] = valueN[j];
+                    maskData[number + i*39 + j] = maskN[j];
+                }
+            }
+            offset[1] = number;
+            number += Minutiae.Count*39;
+
+
+
+
+            startImg = ImageHelper.LoadImage(Resources._48_1);
+
+
+
+            maskOfSegmentation2D = Segmentator.Segmetator(startImg, 12, 0.3, 5);
+            smoothing = LocalBinarizationCanny.Smoothing(startImg, sigma);
+            sobel = LocalBinarizationCanny.Sobel(smoothing);
+            nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            startImg = LocalBinarizationCanny.LocalBinarization(startImg, nonMax, sizeWin, 1.3d);
+            startImg = Thining.ThiningPicture(startImg);
+
+            minutiaList = MinutiaeDetection.FindMinutiae(startImg);
+            Minutiae = new List<Minutia>();
+
+            foreach (Minutia minutia in minutiaList)
+            {
+                if (maskOfSegmentation2D[minutia.Y, minutia.X] == 1) // coordinates swap - ok
+                {
+                    Minutiae.Add(minutia);
+                }
+            }
+            Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
+
+            intImage = ImageHelper.ConvertDoubleToInt(startImg);
+            OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
+            MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
+            path1 = Path.GetTempPath() + "binaryImage.png";
+            ImageHelper.SaveArray(startImg, path1);
+
+            path2 = Path.GetTempPath() + "checkYourself.png";
+            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
+            Process.Start(path2);
+
+
+            response = MCC.MCCMethod(Minutiae, startImg.GetLength(0), startImg.GetLength(1));
+            //------------------------------------
+
+            for (int i = 0; i < Minutiae.Count; i++)
+            {
+                int[] valueN = Numeration.numerizationBlock(response[Minutiae[i]].Item1);
+                int[] maskN = Numeration.numerizationBlock(response[Minutiae[i]].Item2);
+                for (int j = 0; j < 39; j++)
+                {
+                    data[number + i*39 + j] = valueN[j];
+                    maskData[number + i*39 + j] = maskN[j];
+                }
+            }
+            offset[2] = number;
+            number += Minutiae.Count*39;
+
+
+
+            startImg = ImageHelper.LoadImage(Resources._4_1);
+
+
+
+            maskOfSegmentation2D = Segmentator.Segmetator(startImg, 12, 0.3, 5);
+            smoothing = LocalBinarizationCanny.Smoothing(startImg, sigma);
+            sobel = LocalBinarizationCanny.Sobel(smoothing);
+            nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            startImg = LocalBinarizationCanny.LocalBinarization(startImg, nonMax, sizeWin, 1.3d);
+            startImg = Thining.ThiningPicture(startImg);
+
+            minutiaList = MinutiaeDetection.FindMinutiae(startImg);
+            Minutiae = new List<Minutia>();
+
+            foreach (Minutia minutia in minutiaList)
+            {
+                if (maskOfSegmentation2D[minutia.Y, minutia.X] == 1) // coordinates swap - ok
+                {
+                    Minutiae.Add(minutia);
+                }
+            }
+            Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
+
+            intImage = ImageHelper.ConvertDoubleToInt(startImg);
+            OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
+            MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
+            path1 = Path.GetTempPath() + "binaryImage.png";
+            ImageHelper.SaveArray(startImg, path1);
+
+            path2 = Path.GetTempPath() + "checkYourself.png";
+            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
+            Process.Start(path2);
+
+
+            response = MCC.MCCMethod(Minutiae, startImg.GetLength(0), startImg.GetLength(1));
+            //------------------------------------
+
+            for (int i = 0; i < Minutiae.Count; i++)
+            {
+                int[] valueN = Numeration.numerizationBlock(response[Minutiae[i]].Item1);
+                int[] maskN = Numeration.numerizationBlock(response[Minutiae[i]].Item2);
+                for (int j = 0; j < 39; j++)
+                {
+                    data[number + i*39 + j] = valueN[j];
+                    maskData[number + i*39 + j] = maskN[j];
+                }
+            }
+            offset[3] = number;
+            number += Minutiae.Count*39;
+
+            startImg = ImageHelper.LoadImage(Resources._7_6);
+
+
+
+            maskOfSegmentation2D = Segmentator.Segmetator(startImg, 12, 0.3, 5);
+            smoothing = LocalBinarizationCanny.Smoothing(startImg, sigma);
+            sobel = LocalBinarizationCanny.Sobel(smoothing);
+            nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            startImg = LocalBinarizationCanny.LocalBinarization(startImg, nonMax, sizeWin, 1.3d);
+            startImg = Thining.ThiningPicture(startImg);
+
+            minutiaList = MinutiaeDetection.FindMinutiae(startImg);
+            Minutiae = new List<Minutia>();
+
+            foreach (Minutia minutia in minutiaList)
+            {
+                if (maskOfSegmentation2D[minutia.Y, minutia.X] == 1) // coordinates swap - ok
+                {
+                    Minutiae.Add(minutia);
+                }
+            }
+            Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
+
+            intImage = ImageHelper.ConvertDoubleToInt(startImg);
+            OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
+            MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
+            path1 = Path.GetTempPath() + "binaryImage.png";
+            ImageHelper.SaveArray(startImg, path1);
+
+            path2 = Path.GetTempPath() + "checkYourself.png";
+            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
+            Process.Start(path2);
+
+
+            response = MCC.MCCMethod(Minutiae, startImg.GetLength(0), startImg.GetLength(1));
+            //------------------------------------
+
+            for (int i = 0; i < Minutiae.Count; i++)
+            {
+                int[] valueN = Numeration.numerizationBlock(response[Minutiae[i]].Item1);
+                int[] maskN = Numeration.numerizationBlock(response[Minutiae[i]].Item2);
+                for (int j = 0; j < 39; j++)
+                {
+                    data[number + i*39 + j] = valueN[j];
+                    maskData[number + i*39 + j] = maskN[j];
+                }
+            }
+            offset[4] = number;
+            number += Minutiae.Count*39;
+            //------------------------------------
+
+
+
+
+            dataCount = number;
+            //--------------------------------------
+
+
+
+            sampleCount = 39*97;
+
+            //---------------------------------------
+            float[] result = new float[dataCount*sampleCount/(39*39)];
+
+            Comparing(data, dataCount, sample, sampleCount, maskData, maskSample, offset, offsetCount, result);
+            FileStream fs = new FileStream(Path.GetTempPath() + "log.txt", FileMode.OpenOrCreate, FileAccess.Write);
+            StreamWriter sw = new StreamWriter(fs);
+            for (int i = 0; i < offsetCount; i++)
+            {
+                double[,] Gamma = new double[(offset[i + 1] - offset[i])/39,sampleCount/39];
+                for (int j = 0; j < (offset[i + 1] - offset[i])/39; j++)
+                    for (int k = 0; k < sampleCount/39; k++)
+                        Gamma[j, k] = result[k*dataCount/39 + offset[i]/39 + j];
+                Console.WriteLine("{0}", LSA.GetScore(Gamma, 12));
+                sw.Close();
+            }
+
         }
+
+
 
         /*private static void TestCUDAThining()
         {
