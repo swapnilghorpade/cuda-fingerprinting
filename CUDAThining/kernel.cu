@@ -6,16 +6,13 @@
 #include<stdlib.h>
 #include "CUDAArray.cuh"
 
+extern "C"{
+__declspec(dllexport) void CUDAThining(int *picture, int width, int height, int *result);
+}
+
 //#include<MinutiaMatching.h>
 
-//cudaError_t addWithCuda(int *c, const int *a, const int *b, size_t size);
 cudaError_t addWithCuda(int *picture, int width, int height, int *result);
-
-//__global__ void addKernel(int *c, const int *a, const int *b)
-//{
-//    int i = threadIdx.x;
-//    c[i] = a[i] + b[i];
-//}
 
 CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 {
@@ -77,9 +74,6 @@ void SaveArray(float* arTest, int width, int height, const char* fname)
 __device__ int B(int *picture, int x, int y, size_t pitch)        //Ìåòîä Â(Ð) âîçâðàùàåò êîëè÷åñòâî ÷åðíûõ ïèêñåëåé â îêðåñòíîñòè òî÷êè Ð
 {
 	int rowWidthInElements = pitch/sizeof(size_t);
-	//return picture[x + (y - 1)*rowWidthInElements] + picture[x + 1 + (y - 1)*rowWidthInElements] + picture[x + 1 + y*rowWidthInElements] + picture[x + 1 + (y + 1)*rowWidthInElements] +
- //          picture[x * (y + 1)*rowWidthInElements] + picture[x - 1 + (y + 1)*rowWidthInElements] + picture[x - 1 + y*rowWidthInElements] + picture[x - 1 * (y - 1)*rowWidthInElements];
-
 	return picture[x + (y - 1)*rowWidthInElements] + picture[x + 1 + (y - 1)*rowWidthInElements] + picture[x + 1 + y*rowWidthInElements] + picture[x + 1 + (y + 1)*rowWidthInElements] +
 		   picture[x + (y + 1)*rowWidthInElements] + picture[x - 1 + (y + 1)*rowWidthInElements] + picture[x - 1 + y*rowWidthInElements] + picture[x - 1 + (y - 1)*rowWidthInElements];
 			
@@ -243,97 +237,65 @@ void DeleteCorners(int *picture, int width, int height)
 
 
 
-int main()
-{
-	//int size = 32;
-	int width; //= size;
-	int	height; //= size;
-	CUDAArray<float> img = loadImage("C:\\temp\\BinarizatedPoreFiltred81_81.bin", true);
-	width = img.Width;
-	height = img.Height;
-	int *picture = (int*)malloc(width*height*sizeof(int));
-	int *result = (int*)malloc(width*height*sizeof(int));
-	float* picture1;// = (float*)malloc(width*height*sizeof(float));
-	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.in","r");
-	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
-	float* result1 = (float*)malloc(width*height*sizeof(float));
-
-	picture1 = img.cpuPt;
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			picture[j*width + i] = picture1[j*width + i] > 0 ? 0 : 1;
-		}
-	}
-
-	//for(int i = 0; i < width; i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{
-	//		printf("%.0f ",picture1[j*width + i]);
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");
-
-	//for(int i = 0; i < width; i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{
-	//		fscanf(in,"%d",&picture[j*size + i]);
-	//	}
-	//}
-
-	//for(int i = 0; i < width; i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{
-	//		printf("%d ",picture[j*size + i]);
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");
-
-    cudaError_t cudaStatus = addWithCuda(picture, width, height, result); 
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addWithCuda failed!");
-        return 1;
-    }
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			fprintf(out,"%d ",result[j*width + i]);
-		}
-		fprintf(out,"\n");
-	}
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			result1[j*width + i] = result[j*width + i] > 0 ? 0 : 255;
-		}
-	}
-	SaveArray(result1, width, height,"C:\\temp\\Thinned81_81.bin");
-
-    // cudaDeviceReset must be called before exiting in order for profiling and
-    // tracing tools such as Nsight and Visual Profiler to show complete traces.
-//    cudaStatus = cudaDeviceReset();
-//    if (cudaStatus != cudaSuccess) {
-//        fprintf(stderr, "cudaDeviceReset failed!");
-//        return 1;
-//    }
-
-	free(picture);
-	free(result);
-	img.Dispose();
-	free(picture1);
-    return 0;
-}
+//int main()
+//{
+//	//int size = 32;
+//	int width; //= size;
+//	int	height; //= size;
+//	CUDAArray<float> img = loadImage("C:\\temp\\BinarizatedPoreFiltred81_81.bin", true);
+//	width = img.Width;
+//	height = img.Height;
+//	int *picture = (int*)malloc(width*height*sizeof(int));
+//	int *result = (int*)malloc(width*height*sizeof(int));
+//	float* picture1;// = (float*)malloc(width*height*sizeof(float));
+//	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.in","r");
+//	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
+//	float* result1 = (float*)malloc(width*height*sizeof(float));
+//
+//	picture1 = img.cpuPt;
+//	for(int i = 0; i < width; i++)
+//	{
+//		for(int j = 0; j < height; j++)
+//		{
+//			picture[j*width + i] = picture1[j*width + i] > 0 ? 0 : 1;
+//		}
+//	}
+//
+//    Thining(picture, width, height, result); 
+//    for(int i = 0; i < width; i++)
+//	{
+//		for(int j = 0; j < height; j++)
+//		{
+//			fprintf(out,"%d ",result[j*width + i]);
+//		}
+//		fprintf(out,"\n");
+//	}
+//	for(int i = 0; i < width; i++)
+//	{
+//		for(int j = 0; j < height; j++)
+//		{
+//			result1[j*width + i] = result[j*width + i] > 0 ? 0 : 255;
+//		}
+//	}
+//	SaveArray(result1, width, height,"C:\\temp\\Thinned81_81.bin");
+//
+//    // cudaDeviceReset must be called before exiting in order for profiling and
+//    // tracing tools such as Nsight and Visual Profiler to show complete traces.
+////    cudaStatus = cudaDeviceReset();
+////    if (cudaStatus != cudaSuccess) {
+////        fprintf(stderr, "cudaDeviceReset failed!");
+////        return 1;
+////    }
+//
+//	free(picture);
+//	free(result);
+//	img.Dispose();
+//	free(picture1);
+//    return 0;
+//}
 
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(int *picture, int width, int height, int *result)
+void CUDAThining(int *picture, int width, int height, int *result)
 {
 	int* dev_picture; 
 	int* dev_pictureThinned;
@@ -522,5 +484,5 @@ Error:
 	//img.Dispose();
     //cudaFree(dev_b);
     
-    return cudaStatus;
+
 }

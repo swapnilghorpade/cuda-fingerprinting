@@ -77,6 +77,9 @@ namespace CUDAFingerprint
                                                  double[] Directions);
         [DllImport("CUDAComparing.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void Comparing(int[] data, int dataCount, int[] sample, int sampleCount, int[] maskData, int[] maskSample, int[] offset, int offsetCount, float[] result);
+
+        [DllImport("CUDAThining.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void CUDAThining(int[] picture, int width, int height, int[] result);
         
         private static void Main(string[] args)
         {
@@ -87,6 +90,7 @@ namespace CUDAFingerprint
             //TestDirectionsWithSegmentator();
             //TestCUDADirections();
             TestCUDAComparing();
+            //TestCUDAThining();
         }
 
         private static void TestSorting()
@@ -717,5 +721,16 @@ namespace CUDAFingerprint
                 Console.WriteLine();
             }
         }
+
+        /*private static void TestCUDAThining()
+        {
+            var img = ImageHelper.LoadImageAsInt(Resources._104_6);
+            //var img = ImageHelper.LoadImage(TestResource.ThiningImageTest2);
+            int[] startImg = new int[img.GetLength(0)*img.GetLength(1)]; 
+            var path = Path.GetTempPath() + "thininig.png";
+            var thining = CUDAThining(img, img.GetLength(0), img.GetLength(1));
+            ImageHelper.SaveArray(thining, path);
+            Process.Start(path);
+        }*/
     }
 }
