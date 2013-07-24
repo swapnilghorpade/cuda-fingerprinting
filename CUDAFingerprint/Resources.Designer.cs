@@ -63,6 +63,26 @@ namespace CUDAFingerprint {
         /// <summary>
         ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap _104_6 {
+            get {
+                object obj = ResourceManager.GetObject("_104_6", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap _104_6start {
+            get {
+                object obj = ResourceManager.GetObject("_104_6start", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Поиск локализованного ресурса типа System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap _4_1 {
             get {
                 object obj = ResourceManager.GetObject("_4_1", resourceCulture);
