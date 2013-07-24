@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CUDAFingerprinting.Common;
 using CUDAFingerprinting.Common.OrientationField;
+using CUDAFingerprinting.Common.Segmentation;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.MCC;
 
@@ -603,39 +604,30 @@ namespace CUDAFingerprint
 
             //------------------------------------
 
-            double[,] startImg = ImageHelper.LoadImage(Resources._7_6start);
-            int imgHeight = startImg.GetLength(0);
+            double[,] startImg = ImageHelper.LoadImage(Resources._104_6);
+            /*int imgHeight = startImg.GetLength(0);
             int imgWidth = startImg.GetLength(1);
-            int[] mask = new int[imgHeight * imgWidth];
-            int windowSize = 12;
-            float WeightConstant = 0.3F;
-            int maskHeight = imgHeight / windowSize;
-            int maskWidth = imgWidth / windowSize;
-            float[] imgToSegmentator = new float[imgHeight * imgWidth];
-            for (int i = 0; i < imgHeight; i++)
-                for (int j = 0; j < imgWidth; j++)
-                    imgToSegmentator[i * imgWidth + j] = (float)startImg[i, j];
 
-            CUDASegmentator(imgToSegmentator, imgWidth, imgHeight, WeightConstant, windowSize, mask, maskWidth, maskHeight);
+            int[,] maskOfSegmentation2D = Segmentator.Segmetator(startImg, 12, 0.3, 5);
 
 
-            double[,] binaryImage = ImageHelper.LoadImage(Resources._7_6);
+            double[,] binaryImage = ImageHelper.LoadImage(Resources._104_6);
             //---------------------------------------
-            double sigma = 1.4d;
+            /double sigma = 1.4d;
             double[,] smoothing = LocalBinarizationCanny.Smoothing(binaryImage, sigma);
             double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
             double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
             nonMax = GlobalBinarization.Binarization(nonMax, 60);
             nonMax = LocalBinarizationCanny.Inv(nonMax);
             int sizeWin = 16;
-            binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
+            binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);*/
             //---------------------------------------
-            binaryImage = Thining.ThiningPicture(binaryImage);
+            //binaryImage = Thining.ThiningPicture(binaryImage);
             //---------------------------------------
-            List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
+            /*List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
             for (int i = 0; i < Minutiae.Count; i++)
             {
-                if (mask[Minutiae[i].Y / windowSize * maskWidth + Minutiae[i].X / windowSize] == 0)
+                if (maskOfSegmentation2D[Minutiae[i].Y / 12 , Minutiae[i].X / 12] == 0)
                 {
                     Minutiae.Remove(Minutiae[i]);
                     i--;
@@ -658,13 +650,63 @@ namespace CUDAFingerprint
             ImageHelper.SaveArray(binaryImage, path1);
             var path2 = Path.GetTempPath() + "checkYourself.png";
             ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
-            Process.Start(path2);*/
-            var response = MCC.MCCMethod(Minutiae, binaryImage.GetLength(0), binaryImage.GetLength(1));
+            Process.Start(path2);
+            var response = MCC.MCCMethod(Minutiae, binaryImage.GetLength(0), binaryImage.GetLength(1));*/
+
+
+            int[,] maskOfSegmentation2D = Segmentator.Segmetator(startImg, 12, 0.3, 5);
+            //var thining = Thining.ThiningPicture(GlobalBinarization.Binarization(startImg, 150));
+
+            double sigma = 1.4d;
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(startImg, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            int sizeWin = 16;
+            startImg = LocalBinarizationCanny.LocalBinarization(startImg, nonMax, sizeWin, 1.3d);
+            startImg = Thining.ThiningPicture(startImg);
+            var path1 = Path.GetTempPath() + "binaryImage.png";
+            ImageHelper.SaveArray(startImg, path1);
+
+            List<Minutia> minutiaList = MinutiaeDetection.FindMinutiae(startImg);
+            List<Minutia> Minutiae = new List<Minutia>();
+
+            foreach (Minutia minutia in minutiaList)
+            {
+                if (maskOfSegmentation2D[minutia.Y, minutia.X] == 1) // coordinates swap - ok
+                {
+                    Minutiae.Add(minutia);
+                }
+            }
+            Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
+
+            int[,] intImage = ImageHelper.ConvertDoubleToInt(startImg);
+            double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
+            MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
+
+
+            var path2 = Path.GetTempPath() + "checkYourself.png";
+            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
+            Process.Start(path2);
+
+
+            var response = MCC.MCCMethod(Minutiae, startImg.GetLength(0), startImg.GetLength(1));
             //------------------------------------
+            for (int i = 0; i < Minutiae.Count; i++)
+            {
+                int[] valueN = Numeration.numerizationBlock(response[Minutiae[i]].Item1);
+                int[] maskN = Numeration.numerizationBlock(response[Minutiae[i]].Item2);
 
-            int[] valueN = Numeration.numerizationBlock(response.I);
-            int[] maskN = Numeration.numerizationBlock(response[response.Item2);
-
+                for (int j = 0; j < 39; j++)
+                {
+                    data[i*39 + j] = valueN[j];
+                    sample[i*39 + j] = valueN[j];
+                    maskData[i*39 + j] = maskN[j];
+                    maskSample[i*39 + j] = maskN[j];
+                }
+            }
+            offset[0] = 0;
             //------------------------------------
             Comparing(data, dataCount, sample, sampleCount, maskData, maskSample, offset, offsetCount, result);
 

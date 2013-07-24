@@ -84,6 +84,16 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap _104_61 {
+            get {
+                object obj = ResourceManager.GetObject("_104_61", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap _104_61globalBinarization150 {
             get {
                 object obj = ResourceManager.GetObject("_104_61globalBinarization150", resourceCulture);
