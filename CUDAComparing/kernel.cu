@@ -57,8 +57,10 @@ __device__ int CountBits(int x)
 //}
 
 __global__ void GetScore(int *dev_data, int dev_dataCount, int *dev_sample, int dev_sampleCount, int *dev_maskData, int *dev_maskSample, float *dev_result, size_t pitch) {
-	int x = blockIdx.y;
-	int y = blockIdx.x* blockDim.x + threadIdx.x;
+	/*int x = blockIdx.y;
+	int y = blockIdx.x* blockDim.x + threadIdx.x;*/
+	int x = threadIdx.x;
+	int y = blockIdx.x;
 	int Width = pitch / sizeof(float);	
 	if ((x < dev_sampleCount/dev_numberOfBlocks) && (y < dev_dataCount/dev_numberOfBlocks)) {
 		int unityCountOfXOR = 0;
@@ -72,7 +74,11 @@ __global__ void GetScore(int *dev_data, int dev_dataCount, int *dev_sample, int 
 			unityCountOfData += CountBits(temp1);
 			unityCountOfSample += CountBits(temp2);
 		}
-		dev_result[x * Width + y] = (unityCountOfData == 0) && (unityCountOfSample == 0) ? 0 :  1 - ((float) unityCountOfXOR) / (float)(unityCountOfData + unityCountOfSample);
+		if ((unityCountOfData == 0) && (unityCountOfSample == 0))
+			dev_result[x * Width + y] = 0;
+		else
+			dev_result[x * Width + y] = 1 - ((float) unityCountOfXOR) / (float)(unityCountOfData + unityCountOfSample);
+		//dev_result[x * Width + y] = ((unityCountOfData == 0) && (unityCountOfSample == 0)) ? 0 :  1 - ((float) unityCountOfXOR) / (float)(unityCountOfData + unityCountOfSample);
 	}
 }
 		
@@ -111,8 +117,7 @@ void Comparing(int *data, int dataCount, int *sample, int sampleCount, int *mask
 {
 	int *dev_data, *dev_sample, *dev_maskData, *dev_maskSample, *dev_offset;
 	float *dev_result;
-	int dev_dataCount, dev_sampleCount, dev_offsetCount;
-	
+
 	cudaError_t cudaStatus;
 	cudaStatus = cudaSetDevice(0);
 	if (cudaStatus != cudaSuccess) {
@@ -187,14 +192,22 @@ void Comparing(int *data, int dataCount, int *sample, int sampleCount, int *mask
 	    goto Error;
 	}
 
-	GetScore<<< dim3(ceilMod(dataCount/numberOfBlocks, 1024), sampleCount/numberOfBlocks), 1024 >>>(dev_data, dev_dataCount, dev_sample, dev_sampleCount, dev_maskData, dev_maskSample, dev_result, pitch);
-	
+	GetScore<<< dim3(ceilMod(dataCount/numberOfBlocks, 1024), sampleCount/numberOfBlocks), 1024 >>>(dev_data, dataCount, dev_sample, sampleCount, dev_maskData, dev_maskSample, dev_result, pitch);
+	//GetScore<<< dataCount/numberOfBlocks, sampleCount/numberOfBlocks >>>(dev_data, dataCount, dev_sample, sampleCount, dev_maskData, dev_maskSample, dev_result, pitch);
 	cudaStatus = cudaMemcpy2D(result, (dataCount/numberOfBlocks)*sizeof(float), dev_result, pitch, (dataCount/numberOfBlocks)*sizeof(float), sampleCount/numberOfBlocks, cudaMemcpyDeviceToHost);
 	if (cudaStatus != cudaSuccess) {
 		fprintf(stderr, "cudaMemcpy failed!");
 		goto Error;
 	}
-
+	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\result.out","w");
+	for(int i = 0; i < sampleCount/numberOfBlocks; i++)
+	{
+		for(int j = 0; j < dataCount/numberOfBlocks; j++)
+		{
+			printf("%.0f ",result[i*dataCount/numberOfBlocks + j]);
+		}
+		printf("\n");	
+	}
 	
 	/*int *data1Dev, *data2Dev, *mask1Dev, *mask2Dev;
 	size_t pitch;
@@ -231,5 +244,7 @@ void Comparing(int *data, int dataCount, int *sample, int sampleCount, int *mask
 		cudaFree(dev_maskData);
 		cudaFree(dev_maskSample);
 		cudaFree(dev_offset);
+		cudaFree(dev_result);
+		cudaDeviceReset();
 	//	return cudaStatus;
 }
