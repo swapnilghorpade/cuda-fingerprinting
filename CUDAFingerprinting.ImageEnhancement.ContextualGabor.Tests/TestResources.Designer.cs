@@ -73,6 +73,16 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap _105_2 {
+            get {
+                object obj = ResourceManager.GetObject("_105_2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap _2 {
             get {
                 object obj = ResourceManager.GetObject("_2", resourceCulture);
@@ -166,16 +176,6 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests {
         internal static System.Drawing.Bitmap sample {
             get {
                 object obj = ResourceManager.GetObject("sample", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
-            }
-        }
-        
-        /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
-        /// </summary>
-        internal static System.Drawing.Bitmap sample1 {
-            get {
-                object obj = ResourceManager.GetObject("sample1", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

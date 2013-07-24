@@ -47,6 +47,20 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
             Normalizer.Normalize(100, 500, img);
             info.AddRange(RidgeFrequencyGenerator.GenerateBlocksInfo(img));
 
+            /*
+            var middle = new ClustersGenerator.ClusterPoint(0, 0, 0);
+
+            foreach (var bl in info)
+            {
+                middle.Amplitude += bl.Amplitude;
+                middle.Frequency += bl.Frequency;
+                middle.Variance += bl.Variance;
+            }
+
+            middle.Amplitude /= info.Count;
+            middle.Frequency /= info.Count;
+            middle.Variance /= info.Count;*/
+
 
             Random rand = new Random();
             for (int i = 0; i < 6; i++)
@@ -56,7 +70,21 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
             var centroids = ClustersGenerator.Clusterization(info, centers);
 
 
+            // Writing result to file
 
+            var path = ClustersGenerator.ClusterPath;
+            using (StreamWriter file = new StreamWriter(path))
+            {
+                for (int i = 0; i < centers.Length; i++)
+                {
+                    file.WriteLine(i);
+                    file.WriteLine(centroids[i].Amplitude);
+                    file.WriteLine(centroids[i].Frequency);
+                    file.WriteLine(centroids[i].Variance);
+                    file.WriteLine();
+                }
+            }
+            Process.Start(path);
 
             img = ImageHelper.LoadImageAsInt(TestResources._1);
             Normalizer.Normalize(100, 500, img);
@@ -79,14 +107,6 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
                     g.DrawString(cl.ToString(), new Font("Times New Roman", 12), Brushes.Black, new PointF(j * W, i * W));
                 }
             }
-
-            /*var path = ClustersGenerator.ClusterPath;
-            Process.Start(path);*/
-            g.Save();
-            string path = Path.GetTempPath() + "clusters.png";
-            var res = ImageHelper.LoadImageAsInt(image);
-            ImageHelper.SaveIntArray(res, path);
-            Process.Start(path);
         }
     }
 }

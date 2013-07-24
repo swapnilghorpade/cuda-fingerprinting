@@ -13,6 +13,11 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 
         public class ClusterPoint
         {
+            // Modificators for distance calculation
+            public const double DA = 55;
+            public const double DF = 19;
+            public const double DV = 1;
+
             public int ClusterNumber { get; set; }
             public double Amplitude { get; set; }
             public double Frequency { get; set; }
@@ -31,7 +36,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                 double da = Amplitude - p.Amplitude;
                 double df = Frequency - p.Frequency;
                 double dv = Variance - p.Variance;
-                return Math.Sqrt(da * da + df * df + dv * dv);
+                return Math.Sqrt(DA * da * da + DF * df * df + DV * dv * dv);
             }
 
             public int FindClosestIndex(ClusterPoint[] centers)
@@ -107,20 +112,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                 Iterate(points, centers);
                 centers = FindCenters(points);
             } while (!IsClustered(centers, newCenters));
-    
-            // Writing result to file
-            using(StreamWriter file = new StreamWriter(ClusterPath))
-            {
-                for (int i = 0; i < centers.Length; i++)
-                {
-                    file.WriteLine(i);
-                    file.WriteLine(centers[i].Amplitude);
-                    file.WriteLine(centers[i].Frequency);
-                    file.WriteLine(centers[i].Variance);
-                    file.WriteLine();
-                }
-            }
-
+            
             return centers;
         }
     }
