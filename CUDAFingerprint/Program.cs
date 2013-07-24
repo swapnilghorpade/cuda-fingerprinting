@@ -589,18 +589,18 @@ namespace CUDAFingerprint
 
         private static void TestCUDAComparing()
         {
-            int dataCount = 48;
+            int dataCount = 39*97;
             int[] data = new int[dataCount];
             int[] maskData = new int[dataCount];
 
-            int sampleCount = 48;
+            int sampleCount = 39*97;
             int[] sample = new int[sampleCount];
             int[] maskSample = new int[sampleCount];
 
             int offsetCount = 1;
             int[] offset = new int[offsetCount];
 
-            float[] result = new float[dataCount * sampleCount / (48 * 48)];
+            float[] result = new float[dataCount * sampleCount / (39 * 39)];
 
             //------------------------------------
 
@@ -710,10 +710,10 @@ namespace CUDAFingerprint
             //------------------------------------
             Comparing(data, dataCount, sample, sampleCount, maskData, maskSample, offset, offsetCount, result);
 
-            for (int i = 0; i < sampleCount/48; i++)
+            for (int i = 0; i < sampleCount/39; i++)
             {
-                for (int j = 0; j < dataCount / 48; j++ )
-                    Console.Write("{0} ",result[i*dataCount/48+ j]);
+                for (int j = 0; j < dataCount / 39; j++ )
+                    Console.Write("{0} ",result[i*dataCount/39+ j]);
                 Console.WriteLine();
             }
         }
