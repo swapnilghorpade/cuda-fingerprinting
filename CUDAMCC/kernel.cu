@@ -109,9 +109,9 @@ __device__ double GetDistance(int x1, int y1, int x2, int y2)
 	return sqrt((double)((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
 }
 
-__device__ double GetSpatialContribution(Minutiae m, Point currentCell)
+__device__ double GetSpatialContribution(Minutiae m, int currentCellX, int currentCellY)
 {
-	double distance = GetDistance(m.x, m.y, currentCell.X, currentCell.Y);
+	double distance = GetDistance(m.x, m.y, currentCellX, currentCellY);
 
 	double commonDenom = cudaSigmaS * cudaSigmaS;
 	commonDenom *= 2;
@@ -126,18 +126,18 @@ __device__ bool IsEqualMinutiae(Minutiae m1, Minutiae m2)
 	return m1.x == m2.x && m1.y == m2.y && m1.angle == m2.angle;
 }
 
-__device__ void GetNeighbourMinutiae(Minutiae* neighbourMinutiae, int& neighbourMinutiaeCount, Minutiae* minutiae, int minutiaeCount, Minutiae minutia, Point currentCell)
+__device__ void GetNeighbourMinutiae(Minutiae* neighbourMinutiae, int& neighbourMinutiaeCount, Minutiae* minutiae, int minutiaeCount, Minutiae minutia, int currentCellX, int currentCellY)
 {
 	for (int i = 0; i < minutiaeCount; i++)
 	{
-		if (!IsEqualMinutiae(minutiae[i], minutia) && GetDistance(minutiae[i].x, minutiae[i].y, currentCell.X, currentCell.Y) <= 3 * cudaSigmaS)
+		if (!IsEqualMinutiae(minutiae[i], minutia) && GetDistance(minutiae[i].x, minutiae[i].y, currentCellX, currentCellY) <= 3 * cudaSigmaS)
 		{
 			neighbourMinutiae[neighbourMinutiaeCount++] = minutiae[i];
 		}
 	}
 }
 
-__device__ void GetCoordinatesInFingerprint(Point point, Minutiae m, int i, int j, double deltaS)
+__device__ void GetCoordinatesInFingerprint(int& pointX, int& pointY, Minutiae m, int i, int j, double deltaS)
 {
 	double halfNs = (1 + cudaNs) / 2;
 	double sinTetta = sin(m.angle);
@@ -145,28 +145,30 @@ __device__ void GetCoordinatesInFingerprint(Point point, Minutiae m, int i, int 
 	double iDelta = cosTetta * (i - halfNs) + sinTetta * (j - halfNs);
 	double jDelta = -sinTetta * (i - halfNs) + cosTetta * (j - halfNs);
     
-	point.X = (int)(m.x + deltaS * iDelta);
-	point.Y = (int)(m.y + deltaS * jDelta);
+	pointX = (int)(m.x + deltaS * iDelta);
+	pointY = (int)(m.y + deltaS * jDelta);
 }
 
 __device__ int CalculateMaskValue(Minutiae m, int i, int j, int rows, int columns, bool* workingArea, double deltaS)
 {
-	Point point = Point();
+	int pointX = 0; 
+	int pointY = 0; 
 	//cudaError_t error = cudaMalloc((void**)&point, sizeof(Point)); /////////
-	GetCoordinatesInFingerprint(point, m, i, j, deltaS);
+	GetCoordinatesInFingerprint(pointX, pointY, m, i, j, deltaS);
             
-	if (point.X < 0 || point.X >= rows ||
-		point.Y < 0 || point.Y >= columns)
+	if (pointX < 0 || pointX >= rows ||
+		pointY < 0 || pointY >= columns)
 	{
 		return 0;
 	}
             
-	return ((GetDistance(m.x, m.y, point.X, point.Y) <= R) && workingArea[point.X, point.Y])
+	return ((GetDistance(m.x, m.y, pointX, pointY) <= R) && workingArea[pointX, pointY])
 		? 1
 		: 0;
 }
 
-__global__ void cudaMCC (CUDAArray<Cell> result, Minutiae* minutiae, int minutiaeCount, double* integralParameters, CUDAArray<double> integralValues, int rows, int columns, bool* workingArea, double deltaS, double deltaD)
+__global__ void cudaMCC (CUDAArray<Cell> result, Minutiae* minutiae, int minutiaeCount, double* integralParameters, 
+	CUDAArray<double> integralValues, int rows, int columns, bool* workingArea, double deltaS, double deltaD, Cell* newCells, Minutiae* neighbourMinutiaeAll)
 {
 	int row = defaultRow(); // J  < ~80
 	int column = defaultColumn(); // I  < 1512 = 16*16*6
@@ -176,32 +178,33 @@ __global__ void cudaMCC (CUDAArray<Cell> result, Minutiae* minutiae, int minutia
 	int j = (row - i*((cudaNs - 1) * (cudaNd - 1))) % (cudaNd - 1);
 	int k = (row - i*((cudaNs - 1) * (cudaNd - 1))) - j * (cudaNd - 1);
 
-	Cell newCell;
-	cudaError_t error = cudaMalloc((void**)&newCell, sizeof(Cell)); /////////
+	//Cell newCell;
+	//cudaError_t error = cudaMalloc((void**)&newCell, sizeof(Cell)); //////////////////////
 
 	// (0)
-	newCell.minutia = minutiae[index];
+	newCells[column + row * cudaNs * cudaNs * cudaNd].minutia = minutiae[index];
 	// (1)
-	newCell.mask = CalculateMaskValue(minutiae[index], i, j, rows, columns, workingArea, deltaS);  //////
+	newCells[column + row * cudaNs * cudaNs * cudaNd].mask = CalculateMaskValue(minutiae[index], i, j, rows, columns, workingArea, deltaS);  
 	// (2)
-	Point currentCoordinate = Point();
-	GetCoordinatesInFingerprint(currentCoordinate, minutiae[index], i, j, deltaS);
+	int currentCoordinateX = 0; 
+	int currentCoordinateY = 0; 
+	GetCoordinatesInFingerprint(currentCoordinateX, currentCoordinateY, minutiae[index], i, j, deltaS);
 
-    Minutiae* neighbourMinutiae = 0;
-	error = cudaMalloc((void**)&neighbourMinutiae, minutiaeCount * sizeof(Minutiae));
+    //Minutiae* neighbourMinutiae = 0;
+	//error = cudaMalloc((void**)&neighbourMinutiae, minutiaeCount * sizeof(Minutiae));
 	int neighbourMinutiaeCount = 0;
-	GetNeighbourMinutiae(neighbourMinutiae, neighbourMinutiaeCount, minutiae, minutiaeCount, minutiae[index], currentCoordinate);
+	GetNeighbourMinutiae(neighbourMinutiaeAll[column + row * cudaNs * cudaNs * cudaNd], neighbourMinutiaeCount, minutiae, minutiaeCount, minutiae[index], currentCoordinateX, currentCoordinateY);
 	
 	double psiParameter = 0;
 
     for (int counter = 0; counter < neighbourMinutiaeCount; counter++)
     {
-        double spatialContribution = GetSpatialContribution(neighbourMinutiae[counter], currentCoordinate);
+        double spatialContribution = GetSpatialContribution(neighbourMinutiae[counter], currentCoordinateX, currentCoordinateY);
         double directionalContribution = GetDirectionalContribution(minutiae[index].angle, neighbourMinutiae[counter].angle, k, integralParameters, integralValues, deltaD);
         psiParameter = psiParameter + spatialContribution * directionalContribution;
     }
 	
-	newCell.value = Psi(psiParameter); 
+	newCells[column + row * cudaNs * cudaNs * cudaNd].value = Psi(psiParameter); 
 
 	//allNeighbours.AddRange(neighbourMinutiae);
 	//allNeighbours = MinutiaListDistinct(allNeighbours);
@@ -282,8 +285,16 @@ void MCCMethod(Minutiae* minutiae, int minutiaeCount, int rows, int columns, boo
 	//}
 
 	CUDAArray<Cell> result = CUDAArray<Cell>(Ns*Ns*Nd, minutiaeCount); // resultData, 
+	
+	Cell* newCells;
+	cudaStatus = cudaMalloc((Cell**)&newCells, Ns * Ns * Nd * minutiaeCount * sizeof(Cell)); 
+
+	Minutiae* neighbourMinutiaeAll = 0;
+	cudaStatus = cudaMalloc((void**)&neighbourMinutiaeAll, Ns * Ns * Nd * minutiaeCount * minutiaeCount * sizeof(Minutiae)); 
+
 	gridSize = dim3(ceilMod(minutiaeCount, defaultThreadCount));
-	cudaMCC<<<gridSize,blockSize>>>(result, minutiae, minutiaeCount, integralParameters, integralValues, rows, columns, workingArea, deltaS, deltaD);
+	cudaMCC<<<gridSize,blockSize>>>(result, minutiae, minutiaeCount, integralParameters, integralValues, 
+		rows, columns, workingArea, deltaS, deltaD, newCells, neighbourMinutiaeAll);
 
 	return result.GetData(resultData);
 }
