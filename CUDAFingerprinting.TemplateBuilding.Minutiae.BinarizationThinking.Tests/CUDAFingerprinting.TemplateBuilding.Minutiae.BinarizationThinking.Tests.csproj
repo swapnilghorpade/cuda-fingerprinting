@@ -105,6 +105,10 @@
       <Project>{9139DE55-F3B0-4118-83A6-9604D83DCBC6}</Project>
       <Name>CUDAFingerprinting.Matching.Minutiae.BasicMatcher</Name>
     </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Matching.Minutiae.MCC\CUDAFingerprinting.Matching.Minutiae.MCC.csproj">
+      <Project>{099B7BDB-DAC5-4666-9829-A3FCCB2C2CFF}</Project>
+      <Name>CUDAFingerprinting.Matching.Minutiae.MCC</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.csproj">
       <Project>{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}</Project>
       <Name>CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking</Name>
