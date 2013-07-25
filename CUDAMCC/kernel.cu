@@ -1,7 +1,10 @@
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-#include "ConvolutionHelper.h"
+//#include "cuda_runtime.h"
+//#include "device_launch_parameters.h"
+//#include "ConvolutionHelper.h"
+/*
 #include "Point.h"
+#include "BuildWorkingArea.h"
+#include "FindMinutiae.h"
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -266,7 +269,7 @@ double* InitializeIntegralParameters()
 	 return integralParameters;
 }
 
-Cell* MCCMethod(Minutiae* minutiae, int minutiaeCount, int rows, int columns, bool* workingArea)
+void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, int columns, bool* workingArea)
 {
 	cudaError_t cudaStatus = cudaSetDevice(0);
 
@@ -296,18 +299,54 @@ Cell* MCCMethod(Minutiae* minutiae, int minutiaeCount, int rows, int columns, bo
 
 	CUDAArray<Minutiae> cudaMinutiae = CUDAArray<Minutiae>(minutiae, minutiaeCount, 1);
 	CUDAArray<bool> cudaWorkingArea = CUDAArray<bool>(workingArea, columns, rows);
-	CUDAArray<Cell> cudaArr = CUDAArray<Cell>(Ns * Ns * Nd, minutiaeCount); // cells for each minutia	
+	CUDAArray<Cell> cudaResult = CUDAArray<Cell>(result, Ns * Ns * Nd, minutiaeCount); // result
 
 	gridSize = dim3(ceilMod(Ns * Ns * Nd, defaultThreadCount), ceilMod(minutiaeCount, defaultThreadCount));
 	
 	cudaMCC<<<gridSize,blockSize>>>(cudaMinutiae, minutiaeCount, cudaIntegralParameters, cudaIntegralValues, 
-		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaArr);
+		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaResult);
 
-	// is it right?
-	return cudaArr.GetData();
+	cudaResult.GetData(result);
 }
 
-CUDAArray<int> loadImage(const char* name, bool sourceIsFloat = false)
+CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
+{
+	FILE* f = fopen(name,"rb");
+			
+	int width;
+	int height;
+	
+	fread(&width,sizeof(int),1,f);			
+	fread(&height,sizeof(int),1,f);
+	
+	float* ar2 = (float*)malloc(sizeof(float)*width*height);
+
+	if(!sourceIsFloat)
+	{
+		float* ar = (float*)malloc(sizeof(float)*width*height);
+		fread(ar,sizeof(float),width*height,f);
+		for(int i=0;i<width*height;i++)
+		{
+			ar2[i]=ar[i];
+		}
+		
+		free(ar);
+	}
+	else
+	{
+		fread(ar2,sizeof(float),width*height,f);
+	}
+	
+	fclose(f);
+
+	CUDAArray<float> sourceImage = CUDAArray<float>(ar2,width,height);
+
+	free(ar2);		
+
+	return sourceImage;
+}
+
+CUDAArray<int> loadImageAsInt(const char* name, bool sourceIsFloat = false)
 {
 	FILE* f = fopen(name,"rb");
 			
@@ -343,54 +382,28 @@ CUDAArray<int> loadImage(const char* name, bool sourceIsFloat = false)
 
 	return sourceImage;
 }
-
+*/
 void main()
 {
 	// MinutiaDetectionSpecial.kernel.cu = > Minutiae *minutiae (array of Minutiae struct), int minutiaeCount(length of array)
 	// CUDAConvexHull.BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutiae,int NoM);
 	// workingArea = WorkingArea.BuildWorkingArea(minutiae, Constants.R, rows, columns);
 
+	/* CUDAArray<int> source = loadImageAsInt("C:\\Users\\Tanya\\Documents\\Studies\\SummerSch0ol2013\\SVN\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150Thinned.phg");
+	 int* sourceInt = source.GetData();
+	 int width = 256;
+	 int height = 364;
 
-	 CUDAArray<int> source = loadImage("C:\\temp\\103_4.bin");
-	 int* sourceFloat = source.GetData();
-	// int[,] mask = Segmentator.Segmetator(img, windowSize, weight, threshold);
+	 Minutiae* minutiae = (Minutiae*)malloc(width*height*sizeof(Minutiae));
+	 int* minutiaeCounter = (int*)malloc(sizeof(int));
+	 int* workingArea = (int*)malloc(width*height*sizeof(int));
+	 Cell* result = (Cell*)malloc(Ns * Ns * Nd * minutiaeCount * sizeof(Cell)); 
 
-
-      /*      double[,] binaryImage = img; //
-            //---------------------------------------
-            double sigma = 1.4d;
-            double[,] smoothing = LocalBinarizationCanny.Smoothing(binaryImage, sigma);
-            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
-            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
-            nonMax = GlobalBinarization.Binarization(nonMax, 60);
-            nonMax = LocalBinarizationCanny.Inv(nonMax);
-            int sizeWin = 16;
-            binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
-            //---------------------------------------
-            binaryImage = Thining.ThiningPicture(binaryImage);
-            //---------------------------------------
-            List<Minutia> minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
-            for (int i = 0; i < minutiae.Count; i++)
-            {
-                if (mask[minutiae[i].Y, minutiae[i].X] == 0)
-                {
-                    minutiae.Remove(minutiae[i]);
-                    i--;
-                }
-            }
-
-            minutiae = MinutiaeDetection.FindBigMinutiae(minutiae);
-
-
+	 FindBigMinutiaeCUDA(sourceInt, width, height, minutiae, minutiaeCounter, R);
+	 BuildWorkingArea(workingArea, height, width, R, minutiae, minutiaeCounter[0]);
+	
+	 MCCMethod(result, minutiae, minutiaeCounter[0], height, width, workingArea);
+	
+	 int q = 0;
 	 */
-
-	 int imgWidth = source.Width;
-	 int imgHeight = source.Height;
-	// Minutiae* minutiae = Mirza.GetMinutiae();
-	// BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutiae,int NoM);
-
-	 // int rows, int columns
-
-	//// MCCMethod(Minutiae* minutiae, int minutiaeCount, int rows, int columns, bool* workingArea)
-	// MCCMethod(minutiae, minutiaeCount, rows, columns, workingArea);
 }

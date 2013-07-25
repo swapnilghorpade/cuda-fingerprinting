@@ -83,10 +83,15 @@ copy "$(CudaToolkitBinDir)\cudart*.dll" "$(OutDir)"</Command>
     <CudaCompile Include="kernel.cu" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="BuildWorkingArea.h" />
     <ClInclude Include="ConvolutionHelper.h" />
     <ClInclude Include="CUDAArray.h" />
+    <ClInclude Include="FindMinutiae.h" />
     <ClInclude Include="Gaussian.h" />
     <ClInclude Include="Point.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="CUDAArray.cuh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
