@@ -596,14 +596,14 @@ namespace CUDAFingerprint
         {
             int number = 0;
             int dataCount;
-            int[] data = new int[39*5*200];
-            int[] maskData = new int[39*5*200];
+            int[] data = new int[39*97];
+            int[] maskData = new int[39*97];
 
             int sampleCount;
-            int[] sample = new int[39*200];
-            int[] maskSample = new int[39*200];
+            int[] sample = new int[39*97];
+            int[] maskSample = new int[39*97];
 
-            int offsetCount = 5;
+            int offsetCount = 1;
             int[] offset = new int[offsetCount];
 
             //------------------------------------
@@ -667,10 +667,11 @@ namespace CUDAFingerprint
             number += Minutiae.Count*39;
 
 
+            dataCount = number;
+            sampleCount = number;
 
 
-
-            startImg = ImageHelper.LoadImage(Resources._15_5);
+            /*startImg = ImageHelper.LoadImage(Resources._15_5);
 
 
 
@@ -892,7 +893,7 @@ namespace CUDAFingerprint
 
 
 
-            sampleCount = 39*97;
+            sampleCount = 39*97;*/
 
             //---------------------------------------
             float[] result = new float[dataCount*sampleCount/(39*39)];
@@ -902,11 +903,17 @@ namespace CUDAFingerprint
             StreamWriter sw = new StreamWriter(fs);
             for (int i = 0; i < offsetCount; i++)
             {
-                double[,] Gamma = new double[(offset[i + 1] - offset[i])/39,sampleCount/39];
-                for (int j = 0; j < (offset[i + 1] - offset[i])/39; j++)
-                    for (int k = 0; k < sampleCount/39; k++)
-                        Gamma[j, k] = result[k*dataCount/39 + offset[i]/39 + j];
-                Console.WriteLine("{0}", LSA.GetScore(Gamma, 12));
+                double[,] Gamma = new double[sampleCount/39,dataCount/39];
+                for (int j = 0; j < sampleCount/39; j++)
+                {
+                    for (int k = 0; k < dataCount/39; k++)
+                    {
+                        Gamma[j, k] = result[j*dataCount/39 + k];
+                        sw.Write("{0} ", Gamma[j, k]);
+                    }
+                    sw.WriteLine();
+                }
+                sw.WriteLine("{0}", LSA.GetScore(Gamma, 1));
                 sw.Close();
             }
 

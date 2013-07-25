@@ -57,10 +57,8 @@ __device__ int CountBits(int x)
 //}
 
 __global__ void GetScore(int *dev_data, int dev_dataCount, int *dev_sample, int dev_sampleCount, int *dev_maskData, int *dev_maskSample, float *dev_result, size_t pitch) {
-	/*int x = blockIdx.y;
-	int y = blockIdx.x* blockDim.x + threadIdx.x;*/
-	int x = threadIdx.x;
-	int y = blockIdx.x;
+	int x = blockIdx.y;
+	int y = blockIdx.x* blockDim.x + threadIdx.x;
 	int Width = pitch / sizeof(float);	
 	if ((x < dev_sampleCount/dev_numberOfBlocks) && (y < dev_dataCount/dev_numberOfBlocks)) {
 		int unityCountOfXOR = 0;
@@ -199,15 +197,15 @@ void Comparing(int *data, int dataCount, int *sample, int sampleCount, int *mask
 		fprintf(stderr, "cudaMemcpy failed!");
 		goto Error;
 	}
-	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\result.out","w");
+	/*FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\result.out","w");
 	for(int i = 0; i < sampleCount/numberOfBlocks; i++)
 	{
 		for(int j = 0; j < dataCount/numberOfBlocks; j++)
 		{
-			printf("%.0f ",result[i*dataCount/numberOfBlocks + j]);
+			fprintf(out,"%.0f ",result[i*dataCount/numberOfBlocks + j]);
 		}
-		printf("\n");	
-	}
+		fprintf(out,"\n");	
+	}*/
 	
 	/*int *data1Dev, *data2Dev, *mask1Dev, *mask2Dev;
 	size_t pitch;
