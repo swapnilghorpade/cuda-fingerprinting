@@ -13,11 +13,10 @@ struct Minutiae
 {
 	int x;
 	int y;
-	int numMinutiaeAround;
 	float angle;
 };
 
-cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter, int radius);
+void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter, int radius);
 
 
 
@@ -169,36 +168,12 @@ int main()
 	//{
 	//	for(int j = 0; j < height; j++)
 	//	{
-	//		printf("%d ",picture[j*width + i]);
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");
-
-
-	//for(int i = 0; i < width; i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{
 	//		fscanf(in,"%d",&picture[j*width + i]);
 	//	}
 	//}
 
-	//for(int i = 0; i < width; i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{
-	//		printf("%d ",picture[j*width + i]);
-	//	}
-	//	printf("\n");
-	//}
-	//printf("\n");
+	FindBigMinutiaeCUDA(picture, width, height, result, minutiaeCounter, radius); 
 
-    cudaError_t cudaStatus = addWithCuda(picture, width, height, result, minutiaeCounter, radius); 
-    if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "addWithCuda failed!");
-        return 1;
-    }
 	//fprintf(out,"%d \n", minutiaeCounter[0]);
 	//for(int j = 0; j < minutiaeCounter[0]; j++)
 	//{
@@ -229,7 +204,7 @@ int main()
 }
 
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter, int radius)
+void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter, int radius)
 {
 	cudaError_t cudaStatus;
 	size_t pitch, pitch1, pitch2;
@@ -307,14 +282,6 @@ cudaError_t addWithCuda(int* picture, int width, int height, Minutiae *result, i
 	    goto Error;
 	}
 
-	for(int i = 0; i < minutiaeCounter[0]; i++)
-	{
-		cudaStatus = cudaMemset(&(dev_result[i]).numMinutiaeAround, 0, sizeof(int));
-		if (cudaStatus != cudaSuccess) {
-			fprintf(stderr, "cudaMemcpy!");
-			goto Error;
-		}
-	}
 
 	// Copy output vector from GPU buffer to host memory.
 	cudaStatus = cudaMemcpy(result, dev_result, minutiaeCounter[0]*sizeof(Minutiae), cudaMemcpyDeviceToHost);
@@ -490,6 +457,4 @@ Error:
 	free(minutiaeCounter1);
 	//free(resultSpecial);
 
-
-    return cudaStatus;
 }
