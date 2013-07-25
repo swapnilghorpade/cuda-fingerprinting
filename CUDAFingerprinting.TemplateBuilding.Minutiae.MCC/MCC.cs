@@ -22,6 +22,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         public static Dictionary<Minutia, Tuple<int[, ,], int[, ,]>> MCCMethod(List<Minutia> minutiae, int rows, int columns)
         {
             integralValues.Clear();
+            response.Clear();
+            neighbourMinutiae.Clear();
             List<Minutia> allNeighbours;
             deltaS = 2 * Constants.R / Constants.Ns;
             deltaD = 2 * Math.PI / Constants.Nd;
