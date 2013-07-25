@@ -292,7 +292,7 @@ Cell* MCCMethod(Minutiae* minutiae, int minutiaeCount, int rows, int columns, bo
 	return cudaArr.GetData();
 }
 
-CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
+CUDAArray<int> loadImage(const char* name, bool sourceIsFloat = false)
 {
 	FILE* f = fopen(name,"rb");
 			
@@ -302,7 +302,7 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	fread(&width,sizeof(int),1,f);			
 	fread(&height,sizeof(int),1,f);
 	
-	float* ar2 = (float*)malloc(sizeof(float)*width*height);
+	int* ar2 = (int*)malloc(sizeof(int)*width*height);
 
 	if(!sourceIsFloat)
 	{
@@ -317,12 +317,12 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	}
 	else
 	{
-		fread(ar2,sizeof(float),width*height,f);
+		fread(ar2,sizeof(int),width*height,f);
 	}
 	
 	fclose(f);
 
-	CUDAArray<float> sourceImage = CUDAArray<float>(ar2,width,height);
+	CUDAArray<int> sourceImage = CUDAArray<int>(ar2,width,height);
 
 	free(ar2);		
 
@@ -336,13 +336,46 @@ void main()
 	// workingArea = WorkingArea.BuildWorkingArea(minutiae, Constants.R, rows, columns);
 
 
-	 CUDAArray<float> source = loadImage("C:\\temp\\103_4.bin");
-	 float* sourceFloat = source.GetData();
+	 CUDAArray<int> source = loadImage("C:\\temp\\103_4.bin");
+	 int* sourceFloat = source.GetData();
+	// int[,] mask = Segmentator.Segmetator(img, windowSize, weight, threshold);
+
+
+      /*      double[,] binaryImage = img; //
+            //---------------------------------------
+            double sigma = 1.4d;
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(binaryImage, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            int sizeWin = 16;
+            binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
+            //---------------------------------------
+            binaryImage = Thining.ThiningPicture(binaryImage);
+            //---------------------------------------
+            List<Minutia> minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
+            for (int i = 0; i < minutiae.Count; i++)
+            {
+                if (mask[minutiae[i].Y, minutiae[i].X] == 0)
+                {
+                    minutiae.Remove(minutiae[i]);
+                    i--;
+                }
+            }
+
+            minutiae = MinutiaeDetection.FindBigMinutiae(minutiae);
+
+
+	 */
 
 	 int imgWidth = source.Width;
 	 int imgHeight = source.Height;
+	// Minutiae* minutiae = Mirza.GetMinutiae();
+	// BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutiae,int NoM);
 
 	 // int rows, int columns
 
-	//MCCMethod(minutiae, minutiaeCount, rows, columns, workingArea)
+	//// MCCMethod(Minutiae* minutiae, int minutiaeCount, int rows, int columns, bool* workingArea)
+	// MCCMethod(minutiae, minutiaeCount, rows, columns, workingArea);
 }
