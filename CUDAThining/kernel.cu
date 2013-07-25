@@ -294,7 +294,6 @@ void DeleteCorners(int *picture, int width, int height)
 //    return 0;
 //}
 
-// Helper function for using CUDA to add vectors in parallel.
 void CUDAThining(int *picture, int width, int height, int *result)
 {
 	int* dev_picture; 
@@ -303,6 +302,15 @@ void CUDAThining(int *picture, int width, int height, int *result)
 	bool hasChanged;
 	bool* dev_hasChanged;
 	int *pictureToRemove = (int*)malloc(width*height*sizeof(int));
+
+	for(int i = 0; i < width; i++)
+	{
+		for(int j = 0; j < height; j++)
+		{
+			picture[j*width + i] = picture[j*width + i] == 255 ? 0 : 1;
+		}
+	}
+
 	for(int i = 0; i < width; i++)
 	{
 		for(int j = 0; j < height; j++)
@@ -310,15 +318,12 @@ void CUDAThining(int *picture, int width, int height, int *result)
 			pictureToRemove[j*width + i] = 1;
 		}
 	}
-	//CUDAArray<int> img = CUDAArray<int>(picture, width, height);
-	//CUDAArray<int> imgout = CUDAArray<int>(dev_pictureThinned, width, height);
-//	img.
+
     cudaError_t cudaStatus;
 	size_t pitch;
     size_t pitch1;
 	size_t pitch2;
 	
-	// Choose which GPU to run on, change this on a multi-GPU system.
     cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
@@ -335,13 +340,13 @@ void CUDAThining(int *picture, int width, int height, int *result)
         fprintf(stderr, "cudaMemcpy!");
         goto Error;
     }
-
-	//Allocate GPU buffers for picture.
+	
 	cudaStatus = cudaMallocPitch((void**)&dev_picture, &pitch, width*sizeof(int), height);
 	if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMallocPitch!");
         goto Error;
     }
+	
 	cudaStatus = cudaMalloc((void**)&dev_hasChanged, sizeof(bool));
 	if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMalloc!");
@@ -354,31 +359,18 @@ void CUDAThining(int *picture, int width, int height, int *result)
         goto Error;
     }
 
-    // Copy input picture from host memory to GPU buffers.
-
     cudaStatus = cudaMemcpy2D(dev_picture, pitch, picture, width*sizeof(int), width*sizeof(int), height, cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy!");
         goto Error;
     }
 
-    // Launch a kernel on the GPU with one thread for each element.
     int dimA = width*height;
     int numThreadsPerBlock = 16;
     int numBlocks = dimA / numThreadsPerBlock;
     
     dim3 dimGrid(numBlocks);
     dim3 dimBlock(numThreadsPerBlock);
-
-	//for(int i = 0; i < pitch1/sizeof(size_t); i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{	
-
-	//			dev_pictureThinned[i*(pitch1/sizeof(size_t)) + j] = 1;
-
-	//	}
-	//}
 
 	do{
 		hasChanged = false;
@@ -398,37 +390,16 @@ void CUDAThining(int *picture, int width, int height, int *result)
 			fprintf(stderr, "cudaMemcpy failed!");
 			goto Error;
 		}
-
-		//for(int i = 0; i < width; i++)
-		//{
-		//	for(int j = 0; j < height; j++)
-		//	{
-		//		printf("%d ",result[j*width + i]);
-		//	}
-		//	printf("\n");
-		//}
-		//printf("\n");
 		
 		ThiningPictureWithCUDA2<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_pictureToRemove, dev_picture, pitch, width, height, dev_hasChanged);
 
 		compare<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_pictureToRemove, dev_picture, pitch, width, height);
-
 
 		cudaStatus = cudaMemcpy2D(result, width*sizeof(int), dev_picture, pitch, width*sizeof(int), height, cudaMemcpyDeviceToHost);
 		if (cudaStatus != cudaSuccess) {
 			fprintf(stderr, "cudaMemcpy failed!");
 			goto Error;
 		}
-
-		//for(int i = 0; i < width; i++)
-		//{
-		//	for(int j = 0; j < height; j++)
-		//	{
-		//		printf("%d ",result[j*width + i]);
-		//	}
-		//	printf("\n");
-		//}
-		//printf("\n");
 
 		cudaStatus = cudaMemcpy(&hasChanged, dev_hasChanged, sizeof(bool), cudaMemcpyDeviceToHost);
 		if (cudaStatus != cudaSuccess) {
@@ -438,17 +409,6 @@ void CUDAThining(int *picture, int width, int height, int *result)
 
 	}while(hasChanged);
 	
-
-	
-	/*ThiningPictureWithCUDA2<<<dim3(2,2),dim3(16,16)>>>(dev_picture, dev_pictureThinned, pitch1, width, height);
-	ThiningPictureWithCUDA<<<dim3(2,2),dim3(16,16)>>>(dev_picture, dev_pictureThinned, pitch1, width, height);
-	ThiningPictureWithCUDA3<<<dim3(2,2),dim3(16,16)>>>(dev_pictureThinned, dev_picture, pitch, width, height);*/
-	
-	//ThiningImgWithCUDA<<<dim3(2,2),dim3(16,16)>>>(img, width, height);
-	//result = img.GetData();
-
-    // cudaDeviceSynchronize waits for the kernel to finish, and returns
-    // any errors encountered during the launch.
 	cudaStatus = cudaDeviceSynchronize();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
@@ -461,19 +421,16 @@ void CUDAThining(int *picture, int width, int height, int *result)
         goto Error;
     }
 
-	
 	DeleteCorners(result, width, height);
 
-    // Copy output vector from GPU buffer to host memory.
+	for(int i = 0; i < width; i++)
+	{
+		for(int j = 0; j < height; j++)
+		{
+			result[j*width + i] = result[j*width + i] == 0 ? 255 : 0;
+		}
+	}
 
-	//for(int i = 0; i < width; i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{
-	//		printf("%d ",result[j*width + i]);
-	//	}
-	//	printf("\n");
-	//}
 
 Error:
     cudaFree(dev_picture);
@@ -481,8 +438,6 @@ Error:
 	cudaFree(dev_pictureToRemove);
 	cudaFree(dev_hasChanged);
 	free(pictureToRemove);
-	//img.Dispose();
-    //cudaFree(dev_b);
     
 
 }

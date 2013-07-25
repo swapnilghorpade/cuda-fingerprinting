@@ -595,20 +595,20 @@ namespace CUDAFingerprint
         private static void TestCUDAComparing()
         {
             int number = 0;
-            int dataCount;
-            int[] data = new int[39*97];
-            int[] maskData = new int[39*97];
+            int dataCount ;
+            int[] data = new int[39*2*200];
+            int[] maskData = new int[39*2*200];
 
             int sampleCount;
             int[] sample = new int[39*97];
             int[] maskSample = new int[39*97];
 
-            int offsetCount = 1;
+            int offsetCount = 2;
             int[] offset = new int[offsetCount];
 
             //------------------------------------
 
-            double[,] startImg = ImageHelper.LoadImage(Resources._104_6);
+            double[,] startImg = ImageHelper.LoadImage(Resources._15_5);
 
 
 
@@ -640,12 +640,6 @@ namespace CUDAFingerprint
             int[,] intImage = ImageHelper.ConvertDoubleToInt(startImg);
             double[,] OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
             MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
-            var path1 = Path.GetTempPath() + "binaryImage.png";
-            ImageHelper.SaveArray(startImg, path1);
-
-            var path2 = Path.GetTempPath() + "checkYourself.png";
-            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
-            Process.Start(path2);
 
 
             var response = MCC.MCCMethod(Minutiae, startImg.GetLength(0), startImg.GetLength(1));
@@ -667,11 +661,9 @@ namespace CUDAFingerprint
             number += Minutiae.Count*39;
 
 
-            dataCount = number;
-            sampleCount = number;
 
-
-            /*startImg = ImageHelper.LoadImage(Resources._15_5);
+           
+            startImg = ImageHelper.LoadImage(Resources._15_5);
 
 
 
@@ -683,7 +675,6 @@ namespace CUDAFingerprint
             nonMax = LocalBinarizationCanny.Inv(nonMax);
             startImg = LocalBinarizationCanny.LocalBinarization(startImg, nonMax, sizeWin, 1.3d);
             startImg = Thining.ThiningPicture(startImg);
-
             minutiaList = MinutiaeDetection.FindMinutiae(startImg);
             Minutiae = new List<Minutia>();
 
@@ -699,12 +690,6 @@ namespace CUDAFingerprint
             intImage = ImageHelper.ConvertDoubleToInt(startImg);
             OrientationField = OrientationFieldGenerator.GenerateOrientationField(intImage);
             MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, intImage, 4);
-            path1 = Path.GetTempPath() + "binaryImage.png";
-            ImageHelper.SaveArray(startImg, path1);
-
-            path2 = Path.GetTempPath() + "checkYourself.png";
-            ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
-            Process.Start(path2);
 
 
             response = MCC.MCCMethod(Minutiae, startImg.GetLength(0), startImg.GetLength(1));
@@ -723,7 +708,7 @@ namespace CUDAFingerprint
             offset[1] = number;
             number += Minutiae.Count*39;
 
-
+            /*
 
 
             startImg = ImageHelper.LoadImage(Resources._48_1);
@@ -882,7 +867,7 @@ namespace CUDAFingerprint
                 }
             }
             offset[4] = number;
-            number += Minutiae.Count*39;
+            number += Minutiae.Count*39;*/
             //------------------------------------
 
 
@@ -893,7 +878,7 @@ namespace CUDAFingerprint
 
 
 
-            sampleCount = 39*97;*/
+            sampleCount = 39*Minutiae.Count;
 
             //---------------------------------------
             float[] result = new float[dataCount*sampleCount/(39*39)];
@@ -903,33 +888,52 @@ namespace CUDAFingerprint
             StreamWriter sw = new StreamWriter(fs);
             for (int i = 0; i < offsetCount; i++)
             {
-                double[,] Gamma = new double[sampleCount/39,dataCount/39];
+                int Width;
+                if (i == offsetCount-1)
+                    Width = (number - offset[i])/39;
+                else
+                    Width = (offset[i+1]-offset[i])/39;
+
+                double[,] Gamma = new double[sampleCount/39,Width];
                 for (int j = 0; j < sampleCount/39; j++)
                 {
-                    for (int k = 0; k < dataCount/39; k++)
-                    {
-                        Gamma[j, k] = result[j*dataCount/39 + k];
-                        sw.Write("{0} ", Gamma[j, k]);
-                    }
-                    sw.WriteLine();
+                    for (int k = 0; k < Width; k++)
+                        Gamma[j, k] = result[offset[i]/39 + j*dataCount/39 + k];
                 }
                 sw.WriteLine("{0}", LSA.GetScore(Gamma, 1));
-                sw.Close();
             }
+            sw.Close();
+            Process.Start(Path.GetTempPath() + "log.txt");
 
         }
-
-
-
-        /*private static void TestCUDAThining()
+  
+        private static void TestCUDAThining()
         {
-            var img = ImageHelper.LoadImageAsInt(Resources._104_6);
-            //var img = ImageHelper.LoadImage(TestResource.ThiningImageTest2);
-            int[] startImg = new int[img.GetLength(0)*img.GetLength(1)]; 
+            var img = ImageHelper.LoadImage(Resources._104_6);
+            GlobalBinarization.Binarization(img, 150);
+            int[] startImg = new int[img.GetLength(0)*img.GetLength(1)];
+            int[] result = new int[img.GetLength(0) * img.GetLength(1)];
+            double[,] thining = new double[img.GetLength(0),img.GetLength(1)];
+            for (int i = 0; i < img.GetLength(0); i++)
+            {
+                for (int j = 0; j < img.GetLength(1); j++)
+                {
+                    startImg[i*img.GetLength(1) + j] = (int)img[i, j];
+                }
+            }
+            CUDAThining(startImg, img.GetLength(1), img.GetLength(0), result);
+            for (int i = 0; i < img.GetLength(0); i++)
+            {
+                for (int j = 0; j < img.GetLength(1); j++)
+                {
+                    thining[i, j] = (double)result[i*img.GetLength(1) + j];
+                }
+            }
+            
             var path = Path.GetTempPath() + "thininig.png";
-            var thining = CUDAThining(img, img.GetLength(0), img.GetLength(1));
+            
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
-        }*/
+        }
     }
 }
