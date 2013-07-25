@@ -64,7 +64,7 @@ __device__ double GetIntegralParameterIndex(double param, CUDAArray<double> inte
 {
     for (int i = 0; i < cudaDictionaryCount; i++)
     {
-        if (abs(integralParameters.At(1, i) - param) <= M_PI / cudaDictionaryCount)
+        if (abs(integralParameters.At(0, i) - param) <= M_PI / cudaDictionaryCount)
         {
             return i;
         }
@@ -101,7 +101,7 @@ __device__ double GetDirectionalContribution(double mAngle, double mtAngle, int 
     double param = NormalizeAngle(angleFromLevel - differenceAngles);
 	int indexOfResult = GetIntegralParameterIndex(param, integralParameters);
 
-    return integralValues.At(1, indexOfResult);
+    return integralValues.At(0, indexOfResult);
 }
 
 __device__ double GetDistance(int x1, int y1, int x2, int y2)
@@ -155,12 +155,27 @@ __device__ int CalculateMaskValue(Minutiae m, int i, int j, int rows, int column
 		: 0;
 }
 
+__global__ void GetallNeighbours(Minutiae* minutiae, CUDAArray<int> numOfNeighbours, int numOfMinutiae)
+{
+	int sum = 0;
+	int current = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
+	for(int i=0; i<numOfMinutiae; i++)
+	{
+		if(GetDistance(minutiae[i].x,minutiae[i].y, minutiae[current].x,minutiae[current].y)<=(R+3*SigmaS)
+			&& (minutiae[i].x!=minutiae[current].x || minutiae[i].y!=minutiae[current].y))
+		{
+			sum ++;
+		}
+	}
+	numOfNeighbours.SetAt(0, current, sum);
+}
+
 __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAArray<double> integralParameters, 
 	CUDAArray<double> integralValues, int rows, int columns, CUDAArray<bool> workingArea, double deltaS, double deltaD, CUDAArray<Cell> arr)
 {
 	Cell result;
 	int row = defaultRow(); // J  < ~80
-	int column = defaultColumn(); // I  < 1512 = 16*16*6
+	int column = defaultColumn(); // I  < 1536 = 16*16*6
 	
 	int index = row;
 	int i = column % ((cudaNs - 1) * (cudaNd - 1));
@@ -173,12 +188,12 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 	double spatialContribution = 0;
 	double directionalContribution = 0;
 
-	GetCoordinatesInFingerprint(coordinateX, coordinateY, minutiae.At(1, index), i, j, deltaS);
+	GetCoordinatesInFingerprint(coordinateX, coordinateY, minutiae.At(0, index), i, j, deltaS);
 
 	if (coordinateX < 0 || coordinateX >= rows ||
 		coordinateY < 0 || coordinateY >= columns)
 	{
-		result.minutia = minutiae.At(1, index);
+		result.minutia = minutiae.At(0, index);
 		result.mask = 0;
 		result.value = 0;
 		arr.SetAt(row, column, result);
@@ -188,19 +203,19 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 
 	for (int i = 0; i < minutiaeCount; i++)
 	{
-		if (!IsEqualMinutiae(minutiae.At(1, i), minutiae.At(1, index)) && 
-			GetDistance((minutiae.At(1, i)).x, (minutiae.At(1, i)).y, coordinateX, coordinateY) <= 3 * cudaSigmaS)
+		if (!IsEqualMinutiae(minutiae.At(0, i), minutiae.At(0, index)) && 
+			GetDistance((minutiae.At(0, i)).x, (minutiae.At(0, i)).y, coordinateX, coordinateY) <= 3 * cudaSigmaS)
 		{
-			spatialContribution = GetSpatialContribution(minutiae.At(1, i), coordinateX, coordinateY);
-			directionalContribution = GetDirectionalContribution((minutiae.At(1, index)).angle, (minutiae.At(1, i)).angle, k, integralParameters, integralValues, deltaD);
+			spatialContribution = GetSpatialContribution(minutiae.At(0, i), coordinateX, coordinateY);
+			directionalContribution = GetDirectionalContribution((minutiae.At(0, index)).angle, (minutiae.At(0, i)).angle, k, integralParameters, integralValues, deltaD);
 			psiParameter = psiParameter + spatialContribution * directionalContribution;
 		}
 	}
 
 	int psiValue = Psi(psiParameter); 
-	int maskValue = CalculateMaskValue(minutiae.At(1, index), i, j, rows, columns, workingArea, deltaS);
+	int maskValue = CalculateMaskValue(minutiae.At(0, index), i, j, rows, columns, workingArea, deltaS);
 	
-	result.minutia = minutiae.At(1, index);
+	result.minutia = minutiae.At(0, index);
 	result.mask = maskValue;
 	result.value = psiValue;
 	arr.SetAt(row, column, result);
@@ -221,7 +236,7 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 __global__ void cudaMakeTableOfIntegrals(CUDAArray<double> integralParameters, CUDAArray<double> integralValues, double factor, double h, double deltaD)
 {
 	int column = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
-	double a = integralParameters.At(1, column) - deltaD / 2;
+	double a = integralParameters.At(0, column) - deltaD / 2;
 	double integrand = 0;
     double result = 0;
 
@@ -232,7 +247,7 @@ __global__ void cudaMakeTableOfIntegrals(CUDAArray<double> integralParameters, C
 		result += h * integrand;    
 	}
 	
-	integralValues.SetAt(1, column, result * factor);
+	integralValues.SetAt(0, column, result * factor);
 }
 
 double* InitializeIntegralParameters()
