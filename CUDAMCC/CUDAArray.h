@@ -24,11 +24,11 @@ public:
 	size_t Width;
 	size_t Stride;
 
-	CUDAArray()
+	__host__ __device__ CUDAArray()
 	{
 	}
 	//Create Cuda 
-	CUDAArray(const CUDAArray& arr)
+	__host__ __device__ CUDAArray(const CUDAArray& arr)
 	{
 		cudaPtr = arr.cudaPtr;
 		Height = arr.Height;
@@ -87,7 +87,7 @@ public:
 		cudaFree(cudaPtr);
 	}
 
-	~CUDAArray()
+	__host__ __device__ ~CUDAArray()
 	{
 		
 	}
