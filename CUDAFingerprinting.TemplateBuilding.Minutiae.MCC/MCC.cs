@@ -14,7 +14,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
         private static int[, ,] mask;
         private static Dictionary<double, double> integralValues = new Dictionary<double, double>();
         private static List<Minutia> neighbourMinutiae = new List<Minutia>();
-        private static Tuple<int, int> currentCoorpinate;
+        private static Tuple<int, int> currentСoordinate;
         private static double deltaS;
         private static double deltaD;
         private static bool[,] workingArea;
@@ -41,9 +41,20 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
                         for (int k = 0; k < Constants.Nd; k++)
                         {
+                            
+                            currentСoordinate = GetCoordinatesInFingerprint(minutiae[index], i, j);
+                            if (currentСoordinate.Item1 < 0 ||
+                                currentСoordinate.Item1 >= rows ||
+                                currentСoordinate.Item2 < 0 ||
+                                currentСoordinate.Item2 >= columns)
+                            {
+                                value[i, j, k] = 0;
+                                mask[i, j, k] = 0;
+                                continue;
+                            }
                             mask[i, j, k] = maskValue;
-                            currentCoorpinate = GetCoordinatesInFingerprint(minutiae[index], i, j);
-                            neighbourMinutiae = GetNeighbourMinutiae(minutiae, minutiae[index], currentCoorpinate);
+
+                            neighbourMinutiae = GetNeighbourMinutiae(minutiae, minutiae[index], currentСoordinate);
 
                             allNeighbours.AddRange(neighbourMinutiae);
                             allNeighbours = MinutiaListDistinct(allNeighbours);
@@ -75,7 +86,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
             for (int counter = 0; counter < neighbourMinutiae.Count; counter++)
             {
-                double spatialContribution = GetSpatialContribution(neighbourMinutiae[counter], currentCoorpinate);
+                double spatialContribution = GetSpatialContribution(neighbourMinutiae[counter], currentСoordinate);
                 double directionalContribution = GetDirectionalContribution(currentMinutia.Angle, neighbourMinutiae[counter].Angle, k);
                 result += spatialContribution * directionalContribution;
             }
@@ -202,6 +213,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
 
         private static double GetSpatialContribution(Minutia m, Tuple<int, int> currentCell)
         {
+            
+
             double distance = GetDistance(m.X, m.Y, currentCell.Item1, currentCell.Item2);
 
             return Gaussian.Gaussian1D(distance, Constants.SigmaS);
