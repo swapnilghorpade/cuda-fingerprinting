@@ -48,6 +48,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //var img = ImageHelper.LoadImage(TestResource._104_6);
             ImageHelper.SaveImageAsBinaryFloat("C:\\Users\\CUDA Fingerprinting2\\Documents\\Fingerprints\\Databases\\FVC2000\\Dbs\\Db2_a\\81_8.tif", "C:\\temp\\81_8.bin");
             ImageHelper.SaveBinaryAsImage("C:\\temp\\81_8.bin", "C:\\temp\\81_8.png", true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\MinutiaeMatched81_81.bin", "C:\\temp\\MinutiaeMatched81_81.png", true);
+            Process.Start("C:\\temp\\MinutiaeMatched81_81.png");
             //ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_MinutiaeBigMatched.bin", "C:\\temp\\104_6_MinutiaeBigMatched.png", true);
             //ImageHelper.SaveIntArray();
             var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150);
