@@ -70,28 +70,28 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC.Tests
         [TestMethod()]
         public void GetScoreTestForLSA1()
         {
-            double[,] Gamma = BinarySerializationHelper.DeserializeObject<double[,]>(Resources.Sample1);
+            float[,] Gamma = BinarySerializationHelper.DeserializeObject<float[,]>(Resources.Sample1);
             int np = 8;
-            double expected = Double.Parse(Resources.LSAAnswer1);
-            double actual = LSA.GetScore(Gamma, np);
+            float expected = float.Parse(Resources.LSAAnswer1);
+            float actual = LSA.GetScore(Gamma, np);
             Assert.AreEqual(expected, actual);
         }
         [TestMethod()]
         public void GetScoreTestForLSA2()
         {
-            double[,] Gamma = BinarySerializationHelper.DeserializeObject<double[,]>(Resources.Sample2);
+            float[,] Gamma = BinarySerializationHelper.DeserializeObject<float[,]>(Resources.Sample2);
             int np = 8;
-            double expected = Double.Parse(Resources.LSAAnswer2);
-            double actual = LSA.GetScore(Gamma, np);
+            float expected = float.Parse(Resources.LSAAnswer2);
+            float actual = LSA.GetScore(Gamma, np);
             Assert.AreEqual(expected, actual);
         }
         [TestMethod()]
         public void GetScoreTestForLSA3()
         {
-            double[,] Gamma = BinarySerializationHelper.DeserializeObject<double[,]>(Resources.Sample3);
+            float[,] Gamma = BinarySerializationHelper.DeserializeObject<float[,]>(Resources.Sample3);
             int np = 8;
-            double expected = Double.Parse(Resources.LSAAnswer3);
-            double actual = LSA.GetScore(Gamma, np);
+            float expected = float.Parse(Resources.LSAAnswer3);
+            float actual = LSA.GetScore(Gamma, np);
             Assert.AreEqual(expected, actual);
         }
     }

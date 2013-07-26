@@ -33,6 +33,7 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -40,9 +41,35 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BuildBase.cs" />
+    <Compile Include="Comparing.cs" />
+    <Compile Include="GetAnswer.cs" />
     <Compile Include="LSA.cs" />
+    <Compile Include="LSSR.cs" />
     <Compile Include="LSS.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.OrientationField\CUDAFingerprinting.Common.OrientationField.csproj">
+      <Project>{5EEC4BD2-E1B0-4794-948A-45732CD41F99}</Project>
+      <Name>CUDAFingerprinting.Common.OrientationField</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.Segmentation\CUDAFingerprinting.Common.Segmentation.csproj">
+      <Project>{6BEF775C-E400-4EA6-A220-15BE47B27148}</Project>
+      <Name>CUDAFingerprinting.Common.Segmentation</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
+      <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
+      <Name>CUDAFingerprinting.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.csproj">
+      <Project>{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}</Project>
+      <Name>CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.MCC\CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.csproj">
+      <Project>{C11C918C-3172-4869-B4A6-50EACFFAFC49}</Project>
+      <Name>CUDAFingerprinting.TemplateBuilding.Minutiae.MCC</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -7,23 +7,23 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
 {
     public static class LSA
     {
-        private static double FindMin(bool[] usedRows, bool[] usedColumns, double[,] arr)
+        private static float FindMin(bool[] usedRows, bool[] usedColumns, float[,] arr)
         {
             int dim = arr.GetLength(0);
-            double min = 5001;
+            float min = 5001;
             for (int i = 0; i < dim; i++)
                 for (int j = 0; j < dim; j++)
                     if ((!usedRows[i]) && (!usedColumns[j]))
                         if (arr[i, j] <min)
                             min = arr[i, j];
             return min;
-        }
-        private static void ReduceMatrix(double[,] arr)
+        } //Find min value
+        private static void ReduceMatrix(float[,] arr)
         {
             int dim = arr.GetLength(0);
             for (int i = 0; i < dim; i++)
             {
-                double min = 5000;
+                float min = 5000;
                 for (int j = 0; j < dim; j++)
                     if (arr[i, j] < min)
                         min = arr[i, j];
@@ -32,26 +32,26 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
             }
             for (int i = 0; i < dim; i++)
             {
-                double min = 5000;
+                float min = 5000;
                 for (int j = 0; j < dim; j++)
                     if (arr[j, i] < min)
                         min = arr[j, i];
                 for (int j = 0; j < dim; j++)
                     arr[j, i] = arr[j, i] - min;
             }
-        }
+        }//Find min value in matrix and reduce matrix by this value
 
-        private static void ReduceMatrixBy(double[,] arr, bool[] usedRows, bool[] usedColumns, double value)
+        private static void ReduceMatrixBy(float[,] arr, bool[] usedRows, bool[] usedColumns, float value)
         {
             int dim = arr.GetLength(0);
             for (int i = 0; i < dim; i++)
                 for (int j = 0; j < dim; j++)
                     if ((!usedRows[i]) && (!usedColumns[j]))
                         arr[i, j] = arr[i, j] - value;
-        }
+        }//Reduce matrix by the value
 
         private static bool FindWay(int FirstPoint, int[] tempUsedRows, int[] tempUsedColumns, bool[] usedRows,
-                                    bool[] usedColumns, double[,] arr)
+                                    bool[] usedColumns, float[,] arr)
         {
             int dim = arr.GetLength(0);
             bool Find = false;
@@ -120,11 +120,11 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
                             }
             }
             return Find;
-        }
+        }// Find Way from left to Right in Graph, that was built on our matrix
 
 
-        private static void BuildMatching(List<double> Result, bool[] usedRows, bool[] usedColumns, double[,] arr,
-                                          double[,] Gamma)
+        private static void BuildMatching(List<float> Result, bool[] usedRows, bool[] usedColumns, float[,] arr,
+                                          float[,] Gamma)
         {
             int dim = arr.GetLength(0);
             int[] tempUsedRows = new int[dim];
@@ -143,14 +143,14 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
                     usedRows[i] = true;
                     usedColumns[tempUsedRows[i]] = true;
                 }
-        }
+        }//Build Maximal Matching for our matrix
 
-        private static double HungarianMethod(double[,] Gamma, int np)
+        private static float HungarianMethod(float[,] Gamma, int np)
         {
-            double sum = 0;
-            double max = 0;
+            float sum = 0;
+            float max = 0;
             int dim = Math.Max(Gamma.GetLength(0), Gamma.GetLength(1));
-            double[,] arr = new double[dim, dim];
+            float[,] arr = new float[dim, dim];
 
             for (int i = 0; i < Gamma.GetLength(0); i++)
                 for (int j = 0; j < Gamma.GetLength(1); j++)
@@ -168,7 +168,7 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
                 }
             }
             ReduceMatrix(arr);
-            List<double> Result = new List<double>();
+            List<float> Result = new List<float>();
             bool[] usedRows = new bool[dim];
             bool[] usedColumns = new bool[dim];
             for (int i = 0; i < dim; i++)
@@ -180,7 +180,7 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
             double min = Math.Min(Gamma.GetLength(0), Gamma.GetLength(1));
             while (Result.Count < min)
             {
-                double minValue = FindMin(usedRows, usedColumns, arr);
+                float minValue = FindMin(usedRows, usedColumns, arr);
                 ReduceMatrixBy(arr, usedRows, usedColumns, minValue);
                 BuildMatching(Result, usedRows, usedColumns, arr, Gamma);
             }
@@ -189,14 +189,14 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
             for (int i = 0; i < np; i++)
                 sum += Result[i];
             return sum;
-        }
+        }  //Hungarian Method
 
 
 
 
-        public static double GetScore(double[,] Gamma, int np)          //Local Similarity Assignment
+        public static float GetScore(float[,] Gamma, int np)          //Local Similarity Assignment
         {
-            double score = HungarianMethod(Gamma, np) / ((double)np);
+            float score = HungarianMethod(Gamma, np) / ((float)np);
             return score;
         }
     }
