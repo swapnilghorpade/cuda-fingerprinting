@@ -5,7 +5,10 @@
 #include <stdlib.h>
 #include "CUDAArray.cuh"
 
-cudaError_t addWithCuda(float border ,float *img_dst, float *img_src, int width, int height);
+
+extern "C"{
+__declspec(dllexport) void CudaGlobalBinarization(float border ,float *img_dst, float *img_src, int width, int height);
+}
 
 __global__ void addKernel(float border, float *img_dst, float *img_src, int width, int height, size_t pitch)
 {
@@ -80,7 +83,7 @@ void SaveArray(float* arTest, int width, int height, const char* fname)
 	free(arTest);
 }
 
-
+/*
 int main()
 {
     float *img_dst, *img_src;
@@ -104,7 +107,7 @@ int main()
 	}*/
 
     // Add vectors in parallel.
-	cudaError_t cudaStatus = addWithCuda(border, img_dst, img_src, width, height);
+	/*cudaError_t cudaStatus = addWithCuda(border, img_dst, img_src, width, height);
 
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "addWithCuda failed!");
@@ -124,7 +127,7 @@ int main()
 		}
 		printf("\n");
 	}*/
-
+/*
 	SaveArray(img_dst, width, height,  "C:\\temp\\104_6_2.bin");
 
 //	free(img_dst);
@@ -140,12 +143,12 @@ int main()
 
     return 0;
 }
-
+*/
 //CUDAArray<float> img = loadImage("C:\\temp\\104_6.bin", true);
 //	SaveArray(img_dst, width, height,  "C:\\temp\\104_6_1.bin");
 
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t addWithCuda(float border ,float *img_dst, float *img_src, int width, int height)
+void CudaGlobalBinarization(float border ,float *img_dst, float *img_src, int width, int height)
 {
     float *dev_img_dst = 0;
     float *dev_img_src = 0;
@@ -207,5 +210,5 @@ Error:
 	cudaFree(dev_img_dst);
 	cudaFree(dev_img_src);
     
-    return cudaStatus;
+//    return cudaStatus;
 }

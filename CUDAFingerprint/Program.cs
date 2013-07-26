@@ -82,6 +82,13 @@ namespace CUDAFingerprint
         [DllImport("CUDAThining.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void CUDAThining(int[] picture, int width, int height, int[] result);
 
+        [DllImport("CUDALocalBinarization.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void localBinarizationCuda(float[] img_dst, float[] img_src, int width, int height);
+
+        [DllImport("CUDABinarization.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void CudaGlobalBinarization(float border, float[] img_dst, float[] img_src, int width, int height);
+
+
         private static void Main(string[] args)
         {
             // TestQuality();

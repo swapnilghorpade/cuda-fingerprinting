@@ -73,6 +73,10 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Debug\CUDABinarization.dll">
+      <Link>CUDABinarization.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\Debug\CUDABitCounter.dll">
       <Link>CUDABitCounter.dll</Link>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -87,6 +91,10 @@
     </Content>
     <Content Include="..\Debug\CUDAFingercode.dll">
       <Link>CUDAFingercode.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Debug\CUDALocalBinarization.dll">
+      <Link>CUDALocalBinarization.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="..\Debug\CUDAMinutiaeDirection.dll">

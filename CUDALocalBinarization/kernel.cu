@@ -10,7 +10,11 @@
 //#include "CUDAArray.cuh"
 #include "Gaussian.cuh"
 
-cudaError_t localBinarizationCuda(float *img_dst, float *img_src, float* img_win,int width, int height);
+extern "C"{
+__declspec(dllexport) void localBinarizationCuda(float *img_dst, float *img_src, int width, int height);
+}
+
+//cudaError_t localBinarizationCuda(float *img_dst, float *img_src, float* img_win,int width, int height);
 
 __device__ int sgn(float num)
 {
@@ -467,7 +471,7 @@ void SaveArray(float* arTest, int width, int height, const char* fname)
 	free(arTest);
 }
 
-int main()
+/*int main()
 {
 	int width = 20;
 	int height = 20;
@@ -514,9 +518,9 @@ int main()
 	
     return 0;
 }
-
+*/
 // Helper function for using CUDA to add vectors in parallel.
-cudaError_t localBinarizationCuda(float *img_dst, float *img_src, float* img_win,  int width, int height)
+void localBinarizationCuda(float *img_dst, float *img_src,  int width, int height)
 {
     float *dev_src = 0;
     float *dev_dst = 0;
@@ -834,5 +838,5 @@ Error:
 	cudaFree(dev_darkestColor);
 	cudaFree(dev_firstWin);
 	cudaFree(dev_secondWin);
-    return cudaStatus;
+    //return cudaStatus;
 }
