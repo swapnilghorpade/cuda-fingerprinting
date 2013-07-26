@@ -168,9 +168,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             double h = deltaD / Constants.N;
             double result = 0;
 
-            for (int i = 0; i < Constants.N; i++)
+            for (int myLovelyCounterInThisCycle = 0; myLovelyCounterInThisCycle < Constants.N; myLovelyCounterInThisCycle++)
             {
-                result += h * Integrand(a + ((2 * i + 1) * h) / 2);
+                result += h * Integrand(a + ((2 * myLovelyCounterInThisCycle + 1) * h) / 2);
             }
 
             return result * factor;

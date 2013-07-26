@@ -257,9 +257,12 @@ __global__ void cudaGetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xG
 {
 	int row = defaultRow();
 	int column = defaultColumn();
-	float newValue = xGradient.At(row,column)*xGradient.At(row,column) +yGradient.At(row,column)*yGradient.At(row,column);
-	newValue = sqrt(newValue);
-	magnitude.SetAt(row,column, newValue);
+	if(row<magnitude.Height&&column<magnitude.Width)
+	{
+		float newValue = xGradient.At(row,column)*xGradient.At(row,column) +yGradient.At(row,column)*yGradient.At(row,column);
+		newValue = sqrt(newValue);
+		magnitude.SetAt(row,column, newValue);
+	}
 }
 
 void GetMagnitude(CUDAArray<float> magnitude, CUDAArray<float> xGradient, CUDAArray<float> yGradient)
