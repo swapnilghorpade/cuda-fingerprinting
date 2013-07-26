@@ -4,6 +4,7 @@
 #include "ConvolutionHelper.h"
 #include "BuildWorkingArea.h"
 #include "FindMinutiae.h"
+#include <string.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
@@ -270,7 +271,7 @@ float* InitializeIntegralParameters()
 	 return integralParameters;
 }
 
-void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, int columns, int* workingArea)
+void MCCMethod(Cell* result, int* resultOfCheck, Minutiae* minutiae, int minutiaeCount, int rows, int columns, int* workingArea)
 {
 	cudaError_t cudaStatus = cudaSetDevice(0);
 
@@ -300,15 +301,24 @@ void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, in
 	CUDAArray<Minutiae> cudaMinutiae = CUDAArray<Minutiae>(minutiae, minutiaeCount, 1);
 	CUDAArray<int> cudaWorkingArea = CUDAArray<int>(workingArea, columns, rows);
 	CUDAArray<Cell> cudaResult = CUDAArray<Cell>(result, Ns * Ns * Nd, minutiaeCount); // result
-	CUDAArray<int> numOfValidMask = CUDAArray<int>(1,1);  // for check
-
+	
+	int* numOfValid = (int*)malloc(sizeof(int)*minutiaeCount);
+	memset (numOfValid, 0, minutiaeCount);
+	CUDAArray<int> numOfValidMask = CUDAArray<int>(numOfValid, 1,minutiaeCount);
+	CUDAArray<int> cudaResultOfCheck = CUDAArray<int>(numOfValid, 1,minutiaeCount);
+	CUDAArray<int> numOfNeighbours = CUDAArray<int>(numOfValid, 1,minutiaeCount);
 	gridSize = dim3(ceilMod(Ns * Ns * Nd, defaultThreadCount), ceilMod(minutiaeCount, defaultThreadCount));
 	
 	cudaMCC<<<gridSize,blockSize>>>(cudaMinutiae, minutiaeCount, cudaIntegralParameters, cudaIntegralValues, 
 		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaResult, numOfValidMask);
+	
 	// call checking for each minutiae
+	gridSize = dim3(ceilMod(minutiaeCount, defaultThreadCount));
+	check<<<gridSize,blockSize>>>(cudaResultOfCheck, numOfValidMask, minutiae, numOfNeighbours, minutiaeCount);
+	
 
 	cudaResult.GetData(result);
+	cudaResultOfCheck.GetData(resultOfCheck);
 
 	cudaIntegralParameters.Dispose();
 	cudaIntegralValues.Dispose();
@@ -420,8 +430,8 @@ void main()
 	 BuildWorkingArea(workingArea, height, width, R, minutiaeAsIntArr, minutiaeCounter[0]);
 	
 	 Cell* result = (Cell*)malloc(Ns * Ns * Nd * minutiaeCounter[0] * sizeof(Cell)); 
-
-	 MCCMethod(result, minutiae, minutiaeCounter[0], height, width, workingArea);
+	 int* resultOfCheck = (int*)malloc(sizeof(int)* minutiaeCounter[0]);
+	 MCCMethod(result, resultOfCheck, minutiae, minutiaeCounter[0], height, width, workingArea);
 	
 	 int q = 0;
 
