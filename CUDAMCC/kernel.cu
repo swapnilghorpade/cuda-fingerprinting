@@ -1,3 +1,4 @@
+
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include "ConvolutionHelper.h"
@@ -162,7 +163,8 @@ __global__ void GetallNeighbours(Minutiae* minutiae, CUDAArray<int> numOfNeighbo
 }
 
 __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAArray<double> integralParameters, 
-	CUDAArray<double> integralValues, int rows, int columns, CUDAArray<int> workingArea, double deltaS, double deltaD, CUDAArray<Cell> arr)
+	CUDAArray<double> integralValues, int rows, int columns, CUDAArray<int> workingArea, 
+	double deltaS, double deltaD, CUDAArray<Cell> arr, CUDAArray<int> numOfValidMask)
 {
 	Cell result;
 	int row = defaultRow(); // J  < ~80
@@ -205,7 +207,10 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 
 	int psiValue = Psi(psiParameter); 
 	int maskValue = CalculateMaskValue(minutiae.At(0, index), i, j, rows, columns, workingArea, deltaS);
-	
+	if(maskValue > 0)
+	{
+		numOfValidMask.SetAt(0, column, numOfValidMask.At(0,column)+1);
+	}
 	result.minutia = minutiae.At(0, index);
 	result.mask = maskValue;
 	result.value = psiValue;
@@ -239,6 +244,14 @@ __global__ void cudaMakeTableOfIntegrals(CUDAArray<double> integralParameters, C
 	}
 	
 	integralValues.SetAt(0, column, result * factor);
+}
+
+__global__ void check(CUDAArray<int> result, CUDAArray<int> numOfValidMask, Minutiae* minutiae, CUDAArray<int> numOfNeighbours, int numOfMinutiae)
+{
+	GetallNeighbours(minutiae, numOfNeighbours,numOfMinutiae);
+	int current = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
+	int res = (numOfValidMask.At(0, current) > cudaMinVC) && (numOfNeighbours.At(0, current) > cudaMinM);
+	result.SetAt(0,current, res);
 }
 
 double* InitializeIntegralParameters()
@@ -284,7 +297,6 @@ void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, in
 	{
 		printf("cudaMakeTableOfIntegrals - ERROR!!!\n");
 	}
-
 	CUDAArray<Minutiae> cudaMinutiae = CUDAArray<Minutiae>(minutiae, minutiaeCount, 1);
 	CUDAArray<int> cudaWorkingArea = CUDAArray<int>(workingArea, columns, rows);
 	CUDAArray<Cell> cudaResult = CUDAArray<Cell>(result, Ns * Ns * Nd, minutiaeCount); // result
@@ -293,6 +305,7 @@ void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, in
 	
 	cudaMCC<<<gridSize,blockSize>>>(cudaMinutiae, minutiaeCount, cudaIntegralParameters, cudaIntegralValues, 
 		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaResult);
+	// call checking for each minutiae
 
 	cudaResult.GetData(result);
 
