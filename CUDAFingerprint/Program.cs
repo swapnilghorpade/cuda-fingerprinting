@@ -82,12 +82,6 @@ namespace CUDAFingerprint
         [DllImport("CUDAThining.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void CUDAThining(int[] picture, int width, int height, int[] result);
 
-        private struct Minutiae
-        {
-            private int x;
-            private int y;
-        }
-
         private static void Main(string[] args)
         {
             // TestQuality();
