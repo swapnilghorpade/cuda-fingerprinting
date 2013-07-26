@@ -24,11 +24,11 @@ public:
 	size_t Stride;
 	size_t deviceStride;
 
-	CUDAArray()
+	__host__ __device__ CUDAArray()
 	{
 	}
 	//Create Cuda 
-	CUDAArray(const CUDAArray& arr)
+	__host__ __device__ CUDAArray(const CUDAArray& arr)
 	{
 		cudaPtr = arr.cudaPtr;
 		Height = arr.Height;
@@ -38,7 +38,7 @@ public:
 		deviceStride = arr.deviceStride;
 	}
 	//Create Cuda array - copy of array in cpu
-	CUDAArray(T* cpuPtr, int width, int height)
+	__host__ __device__ CUDAArray(T* cpuPtr, int width, int height)
 	{
 		Width = width;
 		Height = height;
@@ -51,7 +51,7 @@ public:
 		error = cudaGetLastError();
 	}
 
-	CUDAArray(int width, int height)
+	__host__ __device__ CUDAArray(int width, int height)
 	{
 		Width = width;
 		Height = height;
@@ -88,7 +88,7 @@ public:
 		cudaFree(cudaPtr);
 	}
 
-	~CUDAArray()
+	__host__ __device__ ~CUDAArray()
 	{
 	
 	}

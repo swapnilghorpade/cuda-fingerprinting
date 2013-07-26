@@ -1,5 +1,5 @@
 #include "Gaussian.h"
-#include "CUDAArray.h"
+#include "CUDAArray.cuh"
 #include "cuda_runtime.h"
 #include "device_launch_parameters.h"
 #include <float.h>

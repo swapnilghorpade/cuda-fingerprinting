@@ -4,10 +4,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "CUDAArray.cuh"
 
 #define ceilMod(x, y) (x+y-1)/y
-
 
 struct Minutiae
 {

@@ -1,8 +1,6 @@
-//#include "cuda_runtime.h"
-//#include "device_launch_parameters.h"
-//#include "ConvolutionHelper.h"
-/*
-#include "Point.h"
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+#include "ConvolutionHelper.h"
 #include "BuildWorkingArea.h"
 #include "FindMinutiae.h"
 
@@ -38,13 +36,6 @@ __device__ const double cudaMinME = 0.6;
 __device__ const double cudaSigmaTetta = M_PI / 2;  
 __device__ const int cudaN = 10;
 __device__ const int cudaDictionaryCount = 360; // 720, 1440
-
-struct Minutiae
-{
-	int x;
-	int y;
-	float angle;
-};
 
 __host__ __device__ struct Cell
 {
@@ -140,7 +131,7 @@ __device__ void GetCoordinatesInFingerprint(int& pointX, int& pointY, Minutiae m
 	pointY = (int)(m.y + deltaS * jDelta);
 }
 
-__device__ int CalculateMaskValue(Minutiae m, int i, int j, int rows, int columns, CUDAArray<bool> workingArea, double deltaS)
+__device__ int CalculateMaskValue(Minutiae m, int i, int j, int rows, int columns, CUDAArray<int> workingArea, double deltaS)
 {
 	int pointX = 0; 
 	int pointY = 0; 
@@ -153,7 +144,7 @@ __device__ int CalculateMaskValue(Minutiae m, int i, int j, int rows, int column
 		return 0;
 	}
             
-	return ((GetDistance(m.x, m.y, pointX, pointY) <= R) && workingArea.At(pointY, pointX))
+	return ((GetDistance(m.x, m.y, pointX, pointY) <= R) && (workingArea.At(pointY, pointX) == 1))
 		? 1
 		: 0;
 }
@@ -164,7 +155,7 @@ __global__ void GetallNeighbours(Minutiae* minutiae, CUDAArray<int> numOfNeighbo
 	int current = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
 	for(int i=0; i<numOfMinutiae; i++)
 	{
-		if(GetDistance(minutiae[i].x,minutiae[i].y, minutiae[current].x,minutiae[current].y)<=(R+3*SigmaS)
+		if(GetDistance(minutiae[i].x,minutiae[i].y, minutiae[current].x,minutiae[current].y)<=(R+3*cudaSigmaS)
 			&& (minutiae[i].x!=minutiae[current].x || minutiae[i].y!=minutiae[current].y))
 		{
 			sum ++;
@@ -174,7 +165,7 @@ __global__ void GetallNeighbours(Minutiae* minutiae, CUDAArray<int> numOfNeighbo
 }
 
 __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAArray<double> integralParameters, 
-	CUDAArray<double> integralValues, int rows, int columns, CUDAArray<bool> workingArea, double deltaS, double deltaD, CUDAArray<Cell> arr)
+	CUDAArray<double> integralValues, int rows, int columns, CUDAArray<int> workingArea, double deltaS, double deltaD, CUDAArray<Cell> arr)
 {
 	Cell result;
 	int row = defaultRow(); // J  < ~80
@@ -269,7 +260,7 @@ double* InitializeIntegralParameters()
 	 return integralParameters;
 }
 
-void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, int columns, bool* workingArea)
+void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, int columns, int* workingArea)
 {
 	cudaError_t cudaStatus = cudaSetDevice(0);
 
@@ -298,7 +289,7 @@ void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, in
 	}
 
 	CUDAArray<Minutiae> cudaMinutiae = CUDAArray<Minutiae>(minutiae, minutiaeCount, 1);
-	CUDAArray<bool> cudaWorkingArea = CUDAArray<bool>(workingArea, columns, rows);
+	CUDAArray<int> cudaWorkingArea = CUDAArray<int>(workingArea, columns, rows);
 	CUDAArray<Cell> cudaResult = CUDAArray<Cell>(result, Ns * Ns * Nd, minutiaeCount); // result
 
 	gridSize = dim3(ceilMod(Ns * Ns * Nd, defaultThreadCount), ceilMod(minutiaeCount, defaultThreadCount));
@@ -309,7 +300,7 @@ void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, in
 	cudaResult.GetData(result);
 }
 
-CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
+CUDAArray<float> LoadImageMCC(const char* name, bool sourceIsFloat = false)
 {
 	FILE* f = fopen(name,"rb");
 			
@@ -346,7 +337,7 @@ CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 	return sourceImage;
 }
 
-CUDAArray<int> loadImageAsInt(const char* name, bool sourceIsFloat = false)
+CUDAArray<int> LoadImageAsIntMCC(const char* name, bool sourceIsFloat = false)
 {
 	FILE* f = fopen(name,"rb");
 			
@@ -382,28 +373,42 @@ CUDAArray<int> loadImageAsInt(const char* name, bool sourceIsFloat = false)
 
 	return sourceImage;
 }
-*/
+
 void main()
 {
 	// MinutiaDetectionSpecial.kernel.cu = > Minutiae *minutiae (array of Minutiae struct), int minutiaeCount(length of array)
 	// CUDAConvexHull.BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutiae,int NoM);
 	// workingArea = WorkingArea.BuildWorkingArea(minutiae, Constants.R, rows, columns);
 
-	/* CUDAArray<int> source = loadImageAsInt("C:\\Users\\Tanya\\Documents\\Studies\\SummerSch0ol2013\\SVN\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150Thinned.phg");
+	 CUDAArray<int> source = LoadImageAsIntMCC("C:\\Users\\Tanya\\Documents\\Studies\\SummerSch0ol2013\\SVN\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150Thinned.phg");
 	 int* sourceInt = source.GetData();
 	 int width = 256;
 	 int height = 364;
 
 	 Minutiae* minutiae = (Minutiae*)malloc(width*height*sizeof(Minutiae));
 	 int* minutiaeCounter = (int*)malloc(sizeof(int));
+	 int* minutiaeAsIntArr = (int*)malloc(minutiaeCounter[0] * 2 * sizeof(int));
 	 int* workingArea = (int*)malloc(width*height*sizeof(int));
-	 Cell* result = (Cell*)malloc(Ns * Ns * Nd * minutiaeCount * sizeof(Cell)); 
 
 	 FindBigMinutiaeCUDA(sourceInt, width, height, minutiae, minutiaeCounter, R);
-	 BuildWorkingArea(workingArea, height, width, R, minutiae, minutiaeCounter[0]);
+
+	 for (int i = 0; i < minutiaeCounter[0] * 2; i++)
+	 {
+		 if (i % 2 == 0)
+		 {
+			 minutiaeAsIntArr[i] = minutiae[i / 2].x;
+		 }
+		 else
+		 {
+			 minutiaeAsIntArr[i] = minutiae[i / 2].y;
+		 }
+	 }
+
+	 BuildWorkingArea(workingArea, height, width, R, minutiaeAsIntArr, minutiaeCounter[0]);
 	
+	 Cell* result = (Cell*)malloc(Ns * Ns * Nd * minutiaeCounter[0] * sizeof(Cell)); 
+
 	 MCCMethod(result, minutiae, minutiaeCounter[0], height, width, workingArea);
 	
 	 int q = 0;
-	 */
 }
