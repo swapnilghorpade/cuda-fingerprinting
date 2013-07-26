@@ -1,11 +1,14 @@
 
-#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
+//#include "cuda_runtime.h"
+//#include "device_launch_parameters.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-#include "CUDAArray.cuh"
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <math.h>
+#include <time.h>
+//#include "CUDAArray.cuh"
+#include "Gaussian.cuh"
 
 cudaError_t localBinarizationCuda(float *img_dst, float *img_src, float* img_win,int width, int height);
 
@@ -627,6 +630,8 @@ cudaError_t localBinarizationCuda(float *img_dst, float *img_src, float* img_win
     // Launch a kernel on the GPU with one thread for each element.
 //	localBinarization<<<dim3(xDim, yDim), dim3(numberThread, numberThread)>>>
 //		(dev_dst, dev_src, dev_imgBorder, dev_sobelMaskX, dev_sobelMaskY, dev_theta, dev_sobel, width, height, pitch/sizeof(float), pitchMask/sizeof(float));
+
+	smoothing(dev_dst, dev_src, width, height, pitch/sizeof(float));
 
 	sobel<<<dim3(xDim, yDim), dim3(numberThread, numberThread)>>>
 		(dev_sobel, dev_src, width, height, dev_sobelMaskX, dev_sobelMaskY, dev_theta, pitch/sizeof(float), pitchMask/sizeof(float));
