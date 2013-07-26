@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="LSATest.cs" />
     <Compile Include="LSSTest.cs" />
+    <Compile Include="NumerationTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -67,6 +68,10 @@
     <ProjectReference Include="..\CUDAFingerprinting.Matching.Minutiae.MCC\CUDAFingerprinting.Matching.Minutiae.MCC.csproj">
       <Project>{099B7BDB-DAC5-4666-9829-A3FCCB2C2CFF}</Project>
       <Name>CUDAFingerprinting.Matching.Minutiae.MCC</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.MCC\CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.csproj">
+      <Project>{C11C918C-3172-4869-B4A6-50EACFFAFC49}</Project>
+      <Name>CUDAFingerprinting.TemplateBuilding.Minutiae.MCC</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
