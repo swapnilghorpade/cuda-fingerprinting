@@ -8,6 +8,8 @@
 
 #define ceilMod(x, y) (x+y-1)/y
 
+#define ceilMod(x, y) (x+y-1)/y
+
 
 struct Minutiae
 {
@@ -16,8 +18,14 @@ struct Minutiae
 	float angle;
 };
 
-void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter, int radius);
 
+
+extern "C" {
+__declspec(dllexport) void FindBigMinutiaeCUDA(int* picture, int width, int height, int* coordinatesOfMinutiae, float* anglesOfMinutiae, int* minutiaeCounter, int radius);
+}
+
+
+//void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter, int radius); //need to remake with coordinates and angles
 
 
 CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
@@ -78,7 +86,6 @@ void SaveArray(float* arTest, int width, int height, const char* fname)
 }
 
 
-
 __device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch) 
 {                                               
     // 1 - ending, >2 - branching,                     
@@ -94,7 +101,6 @@ __device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch)
 			}
         }
     }
-	//return counter;
 	return counter == 2?0:counter;
 }
 
@@ -128,83 +134,80 @@ __global__ void ConsiderDistanceBetweenMinutiae(int radius, Minutiae *listMinuti
 	int rowWidthInElements = pitch/sizeof(size_t);
 	int dX = listMinutiae[x].x - listMinutiae[y].x; 
 	int dY = listMinutiae[x].y - listMinutiae[y].y;
-	//result[x + y*rowWidthInElements] = 1;
 	if(dX*dX + dY*dY < radius*radius)
 	{
 		result[x + y*rowWidthInElements] = 1;
-		//int counter = atomicAdd(&listMinutiae[x].numMinutiaeAround, 1);
 	}
 }
 
+//int main()
+//{
+//	int size = 32;
+//	int width; //= size;
+//	int	height;// = size;
+//	CUDAArray<float> img = loadImage("C:\\temp\\Thinned81_81.bin", true);
+//	width = img.Width;
+//	height = img.Height;
+//	int *picture = (int*)malloc(width*height*sizeof(int));
+//	int *minutiaeCounter = (int*)malloc(sizeof(int));
+//	Minutiae *result = (Minutiae*)malloc(width*height*sizeof(Minutiae));
+//	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture2.in","r");
+//	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
+//	int radius = 5;
+//
+//	float* picture1;
+//	picture1 = img.cpuPt;
+//	int* result1 = (int*)malloc(width*height*sizeof(int));
+//	for(int i = 0; i < width; i++)
+//	{
+//		for(int j = 0; j < height; j++)
+//		{
+//			picture[j*width + i] = (int)picture1[j*width + i];
+//			result1[j*width + i] = (int)picture1[j*width + i];
+//		}
+//	}
+//
+//	//for(int i = 0; i < width; i++)
+//	//{
+//	//	for(int j = 0; j < height; j++)
+//	//	{
+//	//		fscanf(in,"%d",&picture[j*width + i]);
+//	//	}
+//	//}
+//
+//	FindBigMinutiaeCUDA(picture, width, height, result, minutiaeCounter, radius); //Need to remake with coordinates, angles
+//
+//	//fprintf(out,"%d \n", minutiaeCounter[0]);
+//	//for(int j = 0; j < minutiaeCounter[0]; j++)
+//	//{
+//	//	fprintf(out,"%d %d \n",result[j].x, result[j].y);
+//	//}
+//		
+//	for(int j = 0; j < minutiaeCounter[0]; j++)
+//	{
+//		picture1[result[j].y*width + result[j].x] = 150;
+//	}
+//	SaveArray(picture1, width, height,"C:\\temp\\MinutiaeMatched81_81.bin");
+//
+//
+//    // cudaDeviceReset must be called before exiting in order for profiling and
+//    // tracing tools such as Nsight and Visual Profiler to show complete traces.
+////    cudaStatus = cudaDeviceReset();
+////    if (cudaStatus != cudaSuccess) {
+////        fprintf(stderr, "cudaDeviceReset failed!");
+////        return 1;
+////    }
+//
+//	free(picture);
+//	free(result);
+//	free(minutiaeCounter);
+//	free(result1);
+//
+//    return 0;
+//}
 
-int main()
-{
-	int size = 32;
-	int width; //= size;
-	int	height;// = size;
-	CUDAArray<float> img = loadImage("C:\\temp\\Thinned81_81.bin", true);
-	width = img.Width;
-	height = img.Height;
-	int *picture = (int*)malloc(width*height*sizeof(int));
-	int *minutiaeCounter = (int*)malloc(sizeof(int));
-	Minutiae *result = (Minutiae*)malloc(width*height*sizeof(Minutiae));
-	FILE *in = fopen("C:\\Users\\CUDA Fingerprinting2\\picture2.in","r");
-	FILE *out = fopen("C:\\Users\\CUDA Fingerprinting2\\picture.out","w");
-	int radius = 5;
 
-	float* picture1;
-	picture1 = img.cpuPt;
-	int* result1 = (int*)malloc(width*height*sizeof(int));
-	for(int i = 0; i < width; i++)
-	{
-		for(int j = 0; j < height; j++)
-		{
-			picture[j*width + i] = (int)picture1[j*width + i];
-			result1[j*width + i] = (int)picture1[j*width + i];
-		}
-	}
-
-	//for(int i = 0; i < width; i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{
-	//		fscanf(in,"%d",&picture[j*width + i]);
-	//	}
-	//}
-
-	FindBigMinutiaeCUDA(picture, width, height, result, minutiaeCounter, radius); 
-
-	//fprintf(out,"%d \n", minutiaeCounter[0]);
-	//for(int j = 0; j < minutiaeCounter[0]; j++)
-	//{
-	//	fprintf(out,"%d %d \n",result[j].x, result[j].y);
-	//}
-		
-	for(int j = 0; j < minutiaeCounter[0]; j++)
-	{
-		picture1[result[j].y*width + result[j].x] = 150;
-	}
-	SaveArray(picture1, width, height,"C:\\temp\\MinutiaeMatched81_81.bin");
-
-
-    // cudaDeviceReset must be called before exiting in order for profiling and
-    // tracing tools such as Nsight and Visual Profiler to show complete traces.
-//    cudaStatus = cudaDeviceReset();
-//    if (cudaStatus != cudaSuccess) {
-//        fprintf(stderr, "cudaDeviceReset failed!");
-//        return 1;
-//    }
-
-	free(picture);
-	free(result);
-	free(minutiaeCounter);
-	free(result1);
-
-    return 0;
-}
-
-// Helper function for using CUDA to add vectors in parallel.
-void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, int* minutiaeCounter, int radius)
+void FindBigMinutiaeCUDA(int* picture, int width, int height, int* coordinatesOfMinutiae, float* anglesOfMinutiae, int* minutiaeCounter, int radius)
 {
 	cudaError_t cudaStatus;
 	size_t pitch, pitch1, pitch2;
@@ -216,9 +219,8 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, 
 	minutiaeCounter[0] = 0;
 	int* dev_minutiaeCounter;
 	int* resultSpecial;
+	Minutiae *result = (Minutiae*)malloc(width*height*sizeof(Minutiae));
     
-
-	// Choose which GPU to run on, change this on a multi-GPU system.
     cudaStatus = cudaSetDevice(0);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaSetDevice failed!  Do you have a CUDA-capable GPU installed?");
@@ -227,48 +229,42 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, 
 
 	cudaStatus = cudaMallocPitch((void**)&dev_picture, &pitch, width*sizeof(int), height);
 	if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMallocPitch!");
+        fprintf(stderr, "cudaMallocPitch! 1");
         goto Error;
     }
 	
 	cudaStatus = cudaMallocPitch((void**)&dev_test, &pitch1, width*sizeof(int), height);
 	if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMallocPitch!");
+        fprintf(stderr, "cudaMallocPitch! 2");
         goto Error;
     }
 	
 	cudaStatus = cudaMalloc((void**)&dev_result,width*height*sizeof(Minutiae));
 	if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMallocPitch!");
+        fprintf(stderr, "cudaMalloc! 1");
         goto Error;
     }
 
 	cudaStatus = cudaMalloc((void**)&dev_minutiaeCounter, sizeof(int));
 	if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMallocPitch!");
+        fprintf(stderr, "cudaMalloc 2!");
         goto Error;
     }
 
 	cudaStatus = cudaMemset(dev_minutiaeCounter, 0, sizeof(int));
     if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy!");
+        fprintf(stderr, "cudaMemset!");
         goto Error;
     }
 
 	cudaStatus = cudaMemcpy2D(dev_picture, pitch, picture, width*sizeof(int), width*sizeof(int), height, cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMemcpy!");
+        fprintf(stderr, "cudaMemcpy! 1");
         goto Error;
     }
 	
-
-
-
-    // Launch a kernel on the GPU with one thread for each element.
     FindMinutiae<<<dim3(ceilMod(width,16),ceilMod(height,16)),dim3(16,16)>>>(dev_picture, pitch, width, height, dev_result, dev_minutiaeCounter, dev_test);
 
-    // cudaDeviceSynchronize waits for the kernel to finish, and returns  
-    // any errors encountered during the launch.
     cudaStatus = cudaDeviceSynchronize();
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaDeviceSynchronize returned error code %d after launching addKernel!\n", cudaStatus);
@@ -282,8 +278,6 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, 
 	    goto Error;
 	}
 
-
-	// Copy output vector from GPU buffer to host memory.
 	cudaStatus = cudaMemcpy(result, dev_result, minutiaeCounter[0]*sizeof(Minutiae), cudaMemcpyDeviceToHost);
 	if (cudaStatus != cudaSuccess) {
 	    fprintf(stderr, "cudaMemcpy failed!");
@@ -295,57 +289,28 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, 
         fprintf(stderr, "cudaMemcpy failed!");
         goto Error;
     }
-	//for(int i = 0; i < width; i++)
-	//{
-	//	for(int j = 0; j < height; j++)
-	//	{
-	//		printf("%d ",test[j*width + i]);
-	//	}
-	//	printf("\n");
-	//}
 
-	//printf("minutiaeCounter[0] = %d \n", minutiaeCounter[0]);
-	//for(int j = 0; j < minutiaeCounter[0]; j++)
-	//{
-	//	printf("%d %d \n",result[j].x, result[j].y);
-	//}
 //__________________________________
 
 	int *minutiaeCounter1 = (int*)malloc(sizeof(int));
 	minutiaeCounter1[0] = minutiaeCounter[0];
 	cudaStatus = cudaMallocPitch((void**)&dev_resultSpecial, &pitch2, minutiaeCounter1[0]*sizeof(int), minutiaeCounter1[0]); //TODO : check pitches
 	if (cudaStatus != cudaSuccess) {
-        fprintf(stderr, "cudaMallocPitch!");
+        fprintf(stderr, "cudaMallocPitch! 4");
         goto Error;
     }
 	
 	int* tableDistance = (int*)calloc(minutiaeCounter1[0]*minutiaeCounter1[0], sizeof(int));
-	//int* tableDistance = (int*)malloc(minutiaeCounter1[0]*minutiaeCounter1[0]*sizeof(int));
-	//for(int i = 0; i < minutiaeCounter1[0]; i++)
-	//{
-	//	for(int j = 0; j < minutiaeCounter1[0]; j++)
-	//	{
-	//		tableDistance[j*minutiaeCounter1[0] + i ] = 0;
-	//
-	//	}
-	//}
+	
 	cudaStatus = cudaMemcpy2D(dev_resultSpecial, pitch2, tableDistance, minutiaeCounter1[0]*sizeof(int), minutiaeCounter1[0]*sizeof(int), minutiaeCounter1[0], cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy!");
         goto Error;
     }
 	ConsiderDistanceBetweenMinutiae<<<dim3(ceilMod(minutiaeCounter1[0],16),ceilMod(minutiaeCounter1[0],16)),dim3(16,16)>>>(radius, dev_result, pitch2, dev_resultSpecial);
-	
-	
-	//resultSpecial = (int*)malloc(minutiaeCounter1[0]*minutiaeCounter1[0]*sizeof(int)); // final answer, later...
 
 	Minutiae *result1 = (Minutiae*)malloc(width*height*sizeof(Minutiae));
 	int countResult1 = 0;
-	//cudaStatus = cudaMemcpy(result, dev_result, minutiaeCounter1[0]*sizeof(Minutiae), cudaMemcpyDeviceToHost);
-	//if (cudaStatus != cudaSuccess) {
-	//    fprintf(stderr, "cudaMemcpy failed!");
-	//    goto Error;
-	//}
 
 	
 	cudaStatus = cudaMemcpy2D(tableDistance, minutiaeCounter1[0]*sizeof(int), dev_resultSpecial, pitch2, minutiaeCounter1[0]*sizeof(int), minutiaeCounter1[0], cudaMemcpyDeviceToHost);
@@ -353,16 +318,7 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, 
         fprintf(stderr, "cudaMemcpy!");
         goto Error;
     }
-	
-	//for(int i = 0; i < minutiaeCounter1[0]; i++)
-	//{
-	//	for(int j = 0; j < minutiaeCounter1[0]; j++)
-	//	{
-	//		printf("%d ",tableDistance[j*minutiaeCounter1[0] + i]);
-	//		//tableDistance[j*minutiaeCounter1[0] + i] == 1 ? result[i].numMinutiaeAround++ : result[i].numMinutiaeAround;
-	//	}
-	//	printf(" %d %d %d \n", result[i].x, result[i].y, result[i].numMinutiaeAround);
-	//}
+
 	int max = 1;
 	for(int q = 0; (q < minutiaeCounter1[0]) && (max != 0); q++)
 	{
@@ -418,8 +374,6 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, 
 						min = locmin;
 						minutiaS1 = result[i];
 					}
-					//tableDistance[numLocMax*minutiaeCounter1[0] + i] = 0;
-					//tableDistance[i*minutiaeCounter1[0] + numLocMax] = 0;
 					for(int w = 0; w < minutiaeCounter1[0]; w++)
 					{
 						tableDistance[i*minutiaeCounter1[0] + w] = 0;
@@ -430,21 +384,12 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, Minutiae *result, 
 			countResult1++;
 		}
 	}
-	//printf("mintutiaeCounter[0] = %d\n", countResult1);
 	for(int i = 0; i < countResult1; i++)
 	{
-		//printf(" %d %d \n", result1[i].x, result1[i].y);
 		result[i] = result1[i];
 	}
 	result = result1;
 	minutiaeCounter[0] = countResult1;
-
-
-	//printf("minutiaeCounter[0] = %d \n", minutiaeCounter[0]);
-	//for(int j = 0; j < minutiaeCounter[0]; j++)
-	//{
-	//	printf("%d %d \n",result[j].x, result[j].y);
-	//}
 
 Error:
     cudaFree(dev_picture);
@@ -455,6 +400,7 @@ Error:
 	free(test);
 	free(tableDistance);
 	free(minutiaeCounter1);
+
 	//free(resultSpecial);
 
 }
