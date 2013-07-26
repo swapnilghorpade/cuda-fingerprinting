@@ -153,7 +153,7 @@ __global__ void GetallNeighbours(Minutiae* minutiae, CUDAArray<int> numOfNeighbo
 {
 	int sum = 0;
 	int current = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
-	for(int i=0; i<numOfMinutiae; i++)
+	for (int i = 0; i < numOfMinutiae; i++)
 	{
 		if(GetDistance(minutiae[i].x,minutiae[i].y, minutiae[current].x,minutiae[current].y)<=(R+3*cudaSigmaS)
 			&& (minutiae[i].x!=minutiae[current].x || minutiae[i].y!=minutiae[current].y))
@@ -298,6 +298,12 @@ void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, in
 		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaResult);
 
 	cudaResult.GetData(result);
+
+	cudaIntegralParameters.Dispose();
+	cudaIntegralValues.Dispose();
+	cudaMinutiae.Dispose();
+	cudaWorkingArea.Dispose();
+	cudaResult.Dispose(); 
 }
 
 CUDAArray<float> LoadImageMCC(const char* name, bool sourceIsFloat = false)
@@ -376,12 +382,8 @@ CUDAArray<int> LoadImageAsIntMCC(const char* name, bool sourceIsFloat = false)
 
 void main()
 {
-	// MinutiaDetectionSpecial.kernel.cu = > Minutiae *minutiae (array of Minutiae struct), int minutiaeCount(length of array)
-	// CUDAConvexHull.BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutiae,int NoM);
-	// workingArea = WorkingArea.BuildWorkingArea(minutiae, Constants.R, rows, columns);
-
 	 CUDAArray<int> source = LoadImageAsIntMCC("C:\\Users\\Tanya\\Documents\\Studies\\SummerSch0ol2013\\SVN\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150Thinned.phg");
-	 int* sourceInt = source.GetData();
+	 int* sourceInt = source.GetData(); ////
 	 int width = 256;
 	 int height = 364;
 
@@ -411,4 +413,10 @@ void main()
 	 MCCMethod(result, minutiae, minutiaeCounter[0], height, width, workingArea);
 	
 	 int q = 0;
+
+	 source.Dispose();
+	 cudaFree(minutiae);
+	 cudaFree(minutiaeCounter);
+	 cudaFree(minutiaeAsIntArr);
+	 cudaFree(workingArea);
 }
