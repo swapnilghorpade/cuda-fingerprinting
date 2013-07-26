@@ -161,27 +161,6 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC
             throw new ArgumentNullException("param");
         }
 
-        private static double GetIntegral_1(double parameter)
-        {
-            double factor = 1 / (Constants.SigmaD * Math.Sqrt(2 * Math.PI));
-            double a = parameter - deltaD / 2;
-            double h = deltaD / Constants.N;
-            double result = Integrand(a) + Integrand(a + (Constants.N - 1) * h);
-
-            for (int i = 1; i < Constants.N; i++)
-            {
-                result += 2 * Integrand(a + i * h);
-            }
-
-            for (int i = 0; i < Constants.N; i++)
-            {
-                result += 4 * Integrand(0.5 * h + a + i * h);
-            }
-
-            return factor * h * result / 6.0;
-
-        }
-
         private static double GetIntegral(double parameter)
         {
             double factor = 1 / (Constants.SigmaD * Math.Sqrt(2 * Math.PI));

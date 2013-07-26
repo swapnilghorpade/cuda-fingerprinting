@@ -13,25 +13,25 @@
 const int R = 70;
 const int Ns = 16; // 8
 const int Nd = 6;
-const double SigmaD = 2* M_PI / 9;
+const float SigmaD = 2* M_PI / 9;
 const int BigSigma = 50; //
-const double MinVC = 0.75; //
+const float MinVC = 0.75; //
 const int MinM = 2; // 
-const double MinME = 0.6; //
-const double SigmaTetta = M_PI / 2;  //
+const float MinME = 0.6; //
+const float SigmaTetta = M_PI / 2;  //
 const int N = 10;
 const int DictionaryCount = 360; // 720, 1440
 
 __device__ const int cudaNs = 16; // 8
 __device__ const int cudaNd = 6;
-__device__ const double cudaSigmaS = 28 / 3;
-__device__ const double cudaSigmaD = 2* M_PI / 9;
-__device__ const double cudaMuPsi = 0.001;
+__device__ const float cudaSigmaS = 28 / 3;
+__device__ const float cudaSigmaD = 2* M_PI / 9;
+__device__ const float cudaMuPsi = 0.001;
 __device__ const int cudaBigSigma = 50; //
-__device__ const double cudaMinVC = 0.75; //
+__device__ const float cudaMinVC = 0.75; //
 __device__ const int cudaMinM = 2; //
-__device__ const double cudaMinME = 0.6; //
-__device__ const double cudaSigmaTetta = M_PI / 2;  //
+__device__ const float cudaMinME = 0.6; //
+__device__ const float cudaSigmaTetta = M_PI / 2;  //
 __device__ const int cudaN = 10;
 __device__ const int cudaDictionaryCount = 360; // 720, 1440
 
@@ -42,7 +42,7 @@ __host__ __device__ struct Cell
 	int mask;
 };
 
-__device__ int Psi(double v)
+__device__ int Psi(float v)
 {
     if (v >= cudaMuPsi) 
 	{
@@ -52,7 +52,7 @@ __device__ int Psi(double v)
 	return 0;
 }
 
-__device__ double GetIntegralParameterIndex(double param, CUDAArray<double> integralParameters)
+__device__ float GetIntegralParameterIndex(float param, CUDAArray<float> integralParameters)
 {
     for (int i = 0; i < cudaDictionaryCount; i++)
     {
@@ -66,12 +66,12 @@ __device__ double GetIntegralParameterIndex(double param, CUDAArray<double> inte
 	return 0;
 }
 
-__device__ double GetAngleFromLevel(int k, double deltaD)
+__device__ float GetAngleFromLevel(int k, float deltaD)
 {
     return M_PI + (k - 1 / 2) * deltaD;
 }
 
-__device__ double NormalizeAngle(double angle)
+__device__ float NormalizeAngle(float angle)
 {
     if (angle < -M_PI)
     {
@@ -86,28 +86,28 @@ __device__ double NormalizeAngle(double angle)
     return -2 * M_PI + angle;
 }
 
-__device__ double GetDirectionalContribution(double mAngle, double mtAngle, int k, CUDAArray<double> integralParameters, CUDAArray<double> integralValues, double deltaD)
+__device__ float GetDirectionalContribution(float mAngle, float mtAngle, int k, CUDAArray<float> integralParameters, CUDAArray<float> integralValues, float deltaD)
 {
-    double angleFromLevel = NormalizeAngle(GetAngleFromLevel(k, deltaD));
-    double differenceAngles = NormalizeAngle(mAngle - mtAngle);
-    double param = NormalizeAngle(angleFromLevel - differenceAngles);
+    float angleFromLevel = NormalizeAngle(GetAngleFromLevel(k, deltaD));
+    float differenceAngles = NormalizeAngle(mAngle - mtAngle);
+    float param = NormalizeAngle(angleFromLevel - differenceAngles);
 	int indexOfResult = GetIntegralParameterIndex(param, integralParameters);
 
     return integralValues.At(0, indexOfResult);
 }
 
-__device__ double GetDistance(int x1, int y1, int x2, int y2)
+__device__ float GetDistance(int x1, int y1, int x2, int y2)
 {
-	return sqrt((double)((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
+	return sqrt((float)((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2)));
 }
 
-__device__ double GetSpatialContribution(Minutiae m, int currentCellX, int currentCellY)
+__device__ float GetSpatialContribution(Minutiae m, int currentCellX, int currentCellY)
 {
-	double distance = GetDistance(m.x, m.y, currentCellX, currentCellY);
+	float distance = GetDistance(m.x, m.y, currentCellX, currentCellY);
 
-	double commonDenom = cudaSigmaS * cudaSigmaS * 2;
-    double denominator = cudaSigmaS * sqrt(M_PI * 2);
-    double result = exp(-(distance * distance) / commonDenom) / denominator;
+	float commonDenom = cudaSigmaS * cudaSigmaS * 2;
+    float denominator = cudaSigmaS * sqrt(M_PI * 2);
+    float result = exp(-(distance * distance) / commonDenom) / denominator;
 
     return result;
 }
@@ -117,19 +117,19 @@ __device__ bool IsEqualMinutiae(Minutiae m1, Minutiae m2)
 	return m1.x == m2.x && m1.y == m2.y && m1.angle == m2.angle;
 }
 
-__device__ void GetCoordinatesInFingerprint(int& pointX, int& pointY, Minutiae m, int i, int j, double deltaS)
+__device__ void GetCoordinatesInFingerprint(int& pointX, int& pointY, Minutiae m, int i, int j, float deltaS)
 {
-	double halfNs = (1 + cudaNs) / 2;
-	double sinTetta = sin(m.angle);
-	double cosTetta = cos(m.angle);
-	double iDelta = cosTetta * (i - halfNs) + sinTetta * (j - halfNs);
-	double jDelta = -sinTetta * (i - halfNs) + cosTetta * (j - halfNs);
+	float halfNs = (1 + cudaNs) / 2;
+	float sinTetta = sin(m.angle);
+	float cosTetta = cos(m.angle);
+	float iDelta = cosTetta * (i - halfNs) + sinTetta * (j - halfNs);
+	float jDelta = -sinTetta * (i - halfNs) + cosTetta * (j - halfNs);
     
 	pointX = (int)(m.x + deltaS * iDelta);
 	pointY = (int)(m.y + deltaS * jDelta);
 }
 
-__device__ int CalculateMaskValue(Minutiae m, int i, int j, int rows, int columns, CUDAArray<int> workingArea, double deltaS)
+__device__ int CalculateMaskValue(Minutiae m, int i, int j, int rows, int columns, CUDAArray<int> workingArea, float deltaS)
 {
 	int pointX = 0; 
 	int pointY = 0; 
@@ -147,7 +147,7 @@ __device__ int CalculateMaskValue(Minutiae m, int i, int j, int rows, int column
 		: 0;
 }
 
-__global__ void GetallNeighbours(Minutiae* minutiae, CUDAArray<int> numOfNeighbours, int numOfMinutiae)
+__device__ void GetallNeighbours(Minutiae* minutiae, CUDAArray<int> numOfNeighbours, int numOfMinutiae)
 {
 	int sum = 0;
 	int current = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
@@ -162,9 +162,9 @@ __global__ void GetallNeighbours(Minutiae* minutiae, CUDAArray<int> numOfNeighbo
 	numOfNeighbours.SetAt(0, current, sum);
 }
 
-__global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAArray<double> integralParameters, 
-	CUDAArray<double> integralValues, int rows, int columns, CUDAArray<int> workingArea, 
-	double deltaS, double deltaD, CUDAArray<Cell> arr, CUDAArray<int> numOfValidMask)
+__global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAArray<float> integralParameters, 
+	CUDAArray<float> integralValues, int rows, int columns, CUDAArray<int> workingArea, 
+	float deltaS, float deltaD, CUDAArray<Cell> arr, CUDAArray<int> numOfValidMask)
 {
 	Cell result;
 	int row = defaultRow(); // J  < ~80
@@ -177,9 +177,9 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 
 	int coordinateX = 0; 
 	int coordinateY = 0; 
-	double psiParameter = 0;
-	double spatialContribution = 0;
-	double directionalContribution = 0;
+	float psiParameter = 0;
+	float spatialContribution = 0;
+	float directionalContribution = 0;
 
 	GetCoordinatesInFingerprint(coordinateX, coordinateY, minutiae.At(0, index), i, j, deltaS);
 
@@ -229,12 +229,12 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 	//response.Add(minutiae[index], new Tuple<int[, ,], int[, ,]>(value, mask));
 }
 
-__global__ void cudaMakeTableOfIntegrals(CUDAArray<double> integralParameters, CUDAArray<double> integralValues, double factor, double h, double deltaD)
+__global__ void cudaMakeTableOfIntegrals(CUDAArray<float> integralParameters, CUDAArray<float> integralValues, float factor, float h, float deltaD)
 {
 	int column = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
-	double a = integralParameters.At(0, column) - deltaD / 2;
-	double integrand = 0;
-    double result = 0;
+	float a = integralParameters.At(0, column) - deltaD / 2;
+	float integrand = 0;
+    float result = 0;
 
     for (int i = 0; i < cudaN; i++)
     {
@@ -254,12 +254,12 @@ __global__ void check(CUDAArray<int> result, CUDAArray<int> numOfValidMask, Minu
 	result.SetAt(0,current, res);
 }
 
-double* InitializeIntegralParameters()
+float* InitializeIntegralParameters()
 {
-	double* integralParameters = (double*)malloc(DictionaryCount*sizeof(double));
+	float* integralParameters = (float*)malloc(DictionaryCount*sizeof(float));
 
-	 double key = -M_PI;
-	 double step = 2 * M_PI / DictionaryCount;
+	 float key = -M_PI;
+	 float step = 2 * M_PI / DictionaryCount;
 
 	 for (int i = 0; i < DictionaryCount; i++)
 	 {
@@ -274,20 +274,20 @@ void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, in
 {
 	cudaError_t cudaStatus = cudaSetDevice(0);
 
-	double deltaS = 2 * R / Ns;
-	double deltaD = 2 * M_PI / Nd;
-	double* integralParameters = InitializeIntegralParameters();
+	float deltaS = 2 * R / Ns;
+	float deltaD = 2 * M_PI / Nd;
+	float* integralParameters = InitializeIntegralParameters();
 	 
-	CUDAArray<double> cudaIntegralParameters = CUDAArray<double>(integralParameters, DictionaryCount, 1);
-	CUDAArray<double> cudaIntegralValues = CUDAArray<double>(DictionaryCount, 1);
+	CUDAArray<float> cudaIntegralParameters = CUDAArray<float>(integralParameters, DictionaryCount, 1);
+	CUDAArray<float> cudaIntegralValues = CUDAArray<float>(DictionaryCount, 1);
 	cudaStatus = cudaGetLastError();
 	if (cudaStatus != cudaSuccess) 
 	{
-		printf("cudaIntegralValues = CUDAArray<double>(DictionaryCount, 1); - ERROR!!!\n");
+		printf("cudaIntegralValues = CUDAArray<float>(DictionaryCount, 1); - ERROR!!!\n");
 	}
 
-	double factor = 1 / (SigmaD * sqrt(2 * M_PI));
-    double h = deltaD / N;
+	float factor = 1 / (SigmaD * sqrt(2 * M_PI));
+    float h = deltaD / N;
 	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
 	dim3 gridSize = dim3(ceilMod(DictionaryCount, defaultThreadCount));
 		 
@@ -300,11 +300,12 @@ void MCCMethod(Cell* result, Minutiae* minutiae, int minutiaeCount, int rows, in
 	CUDAArray<Minutiae> cudaMinutiae = CUDAArray<Minutiae>(minutiae, minutiaeCount, 1);
 	CUDAArray<int> cudaWorkingArea = CUDAArray<int>(workingArea, columns, rows);
 	CUDAArray<Cell> cudaResult = CUDAArray<Cell>(result, Ns * Ns * Nd, minutiaeCount); // result
+	CUDAArray<int> numOfValidMask = CUDAArray<int>(1,1);  // for check
 
 	gridSize = dim3(ceilMod(Ns * Ns * Nd, defaultThreadCount), ceilMod(minutiaeCount, defaultThreadCount));
 	
 	cudaMCC<<<gridSize,blockSize>>>(cudaMinutiae, minutiaeCount, cudaIntegralParameters, cudaIntegralValues, 
-		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaResult);
+		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaResult, numOfValidMask);
 	// call checking for each minutiae
 
 	cudaResult.GetData(result);
