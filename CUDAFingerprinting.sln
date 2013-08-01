@@ -82,6 +82,9 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDABinarization", "CUDABinarization\CUDABinarization.vcxproj", "{812B3753-C0B9-4FE6-B078-10267D5B736D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests", "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests.csproj", "{668CC13B-4839-4CC7-887E-82AC9D95DC7A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{54E311BD-F946-4615-A3A8-443AC8D76F45} = {54E311BD-F946-4615-A3A8-443AC8D76F45}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CUDAMinutiaeDetection", "CUDAMinutiaeDetection\CUDAMinutiaeDetection.vcxproj", "{8397247F-8BB2-4D41-98C8-EF1CC565B19E}"
 EndProject

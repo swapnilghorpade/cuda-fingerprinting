@@ -9,237 +9,211 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 {
     public static class MinutiaeDirection
     {
-        /*private static void FindDirectionOfBifurcationUsingQuadrants(int cur,double Teta,List<Minutia> Minutiae, int[,] BinaryImage)
+        private static double FindDirectionOfBifurcationUsingQuadrants(int curI, int curJ, double Theta, int[,] BinaryImage)
         {
+            double result = 0;
             int radius = 3; //Use squares 7x7
-            int minX = 0;
-            int minY = 0;
-            int curX = Minutiae[cur].Y;
-            int curY = Minutiae[cur].X;
+            int minI = 0;
+            int minJ = 0;
             double minAngle = 0;
             double angle = 0;
-            if (Teta < Math.PI / 2) //Quadrant I or III
-            {
+            if (Theta >= 0) //Step 1
+            {   //Quadrant I or III
+                //Step 2
                 for (int i = 0; i <= radius; i++) //Check Quadrant III
                     for (int j = 0; j >= (-1) * radius; j--)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) && (curJ + j < BinaryImage.GetLength(1)))
                             if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((minX == 0) && (minY == 0))
+                                if (BinaryImage[curI + i, curJ + j] == 0)
+                                    if ((minI == 0) && (minJ == 0))
                                     {
-                                        minX = i;
-                                        minY = j;
-                                        angle = Math.Acos(((double) j)/((double) (i*i + j*j)));
-                                        minAngle = Math.Abs(angle - Teta);
+                                        minI = i;
+                                        minJ = j;
+                                        angle = Math.Atan((double)((-1) * i) / j);
+                                        minAngle = Math.Abs(angle - Theta);
                                     }
                                     else
                                     {
-                                        angle = Math.Acos(((double)j) / ((double)(i * i + j * j)));
-                                        if (Math.Abs(angle - Teta) < minAngle)
+                                        angle = Math.Atan((double)((-1) * i) / j);
+                                        if (Math.Abs(angle - Theta) < minAngle)
                                         {
-                                            minAngle = Math.Abs(angle - Teta);
-                                            minX = i;
-                                            minY = j;
+                                            minAngle = Math.Abs(angle - Theta);
+                                            minI = i;
+                                            minJ = j;
                                         }
                                     }
+
+
                 for (int i = 0; i >= (-1) * radius; i--) //Check Quadrant I
                     for (int j = 0; j <= radius; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) && (curJ + j < BinaryImage.GetLength(1)))
                             if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((minX == 0) && (minY == 0))
+                                if (BinaryImage[curI + i, curJ + j] == 0)
+                                    if ((minI == 0) && (minJ == 0))
                                     {
-                                        minX = i;
-                                        minY = j;
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        minAngle = Math.Abs(angle - Teta);
+                                        minI = i;
+                                        minJ = j;
+                                        angle = Math.Atan((double)((-1) * i) / j);
+                                        minAngle = Math.Abs(angle - Theta);
                                     }
                                     else
                                     {
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        if (Math.Abs(angle - Teta) < minAngle)
+                                        angle = Math.Atan((double)((-1) * i) / j);
+                                        if (Math.Abs(angle - Theta) < minAngle)
                                         {
-                                            minAngle = Math.Abs(angle - Teta);
-                                            minX = i;
-                                            minY = j;
+                                            minAngle = Math.Abs(angle - Theta);
+                                            minI = i;
+                                            minJ = j;
                                         }
                                     }
-                if ((minX >= 0) && (minY <= 0))
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
-                }
+                if ((minI >= 0) && (minJ <= 0)) //Steps 3А, 3Б
+                    result = Theta - Math.PI;
                 else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta;
-                    Minutiae[cur] = temp;
-                }
+                    result = Theta;
 
             }
             else //Quadrant II or IV
             {
                 for (int i = 0; i <= radius; i++) //Check Quadrant  IV
                     for (int j = 0; j <= radius; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) && (curJ + j < BinaryImage.GetLength(1)))
                             if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((minX == 0) && (minY == 0))
+                                if (BinaryImage[curI + i, curJ + j] == 0)
+                                    if ((minI == 0) && (minJ == 0))
                                     {
-                                        minX = i;
-                                        minY = j;
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        minAngle = Math.Abs(angle - Teta);
+                                        minI = i;
+                                        minJ = j;
+                                        angle = Math.Atan((double)((-1) * i) / j);
+                                        minAngle = Math.Abs(angle - Theta);
                                     }
                                     else
                                     {
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        if (Math.Abs(angle - Teta) < minAngle)
+                                        angle = Math.Atan((double)((-1) * i) / j);
+                                        if (Math.Abs(angle - Theta) < minAngle)
                                         {
-                                            minAngle = Math.Abs(angle - Teta);
-                                            minX = i;
-                                            minY = j;
+                                            minAngle = Math.Abs(angle - Theta);
+                                            minI = i;
+                                            minJ = j;
                                         }
                                     }
                 for (int i = 0; i >= (-1) * radius; i--) //Check Quadrant  II
                     for (int j = 0; j >= (-1) * radius; j--)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) && (curJ + j < BinaryImage.GetLength(1)))
                             if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((minX == 0) && (minY == 0))
+                                if (BinaryImage[curI + i, curJ + j] == 0)
+                                    if ((minI == 0) && (minJ == 0))
                                     {
-                                        minX = i;
-                                        minY = j;
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        minAngle = Math.Abs(angle - Teta);
+                                        minI = i;
+                                        minJ = j;
+                                        angle = Math.Atan((double)((-1) * i) / j);
+                                        minAngle = Math.Abs(angle - Theta);
                                     }
                                     else
                                     {
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        if (Math.Abs(angle - Teta) < minAngle)
+                                        angle = Math.Atan((double)((-1) * i) / j);
+                                        if (Math.Abs(angle - Theta) < minAngle)
                                         {
-                                            minAngle = Math.Abs(angle - Teta);
-                                            minX = i;
-                                            minY = j;
+                                            minAngle = Math.Abs(angle - Theta);
+                                            minI = i;
+                                            minJ = j;
                                         }
                                     }
-                if ((minX >= 0) && (minY >= 0))
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
-                }
+                if ((minI >= 0) && (minJ >= 0)) //Steps 3В, 3Г
+                    result = Theta;
                 else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta;
-                    Minutiae[cur] = temp;
-                }
+                    result = Theta + Math.PI;
             }
+            return result;
         }
 
-        private static void CheckPath(int curX, int curY, int prevX, int prevY, int[,] BinaryImage,ref double score,ref
-                                        int number,int radiusOfSearch)
+        private static void GetScoreFromPath(int curI, int curJ, int prevI, int prevJ, int[,] BinaryImage, ref double score, ref
+                                        int number, int radiusOfSearch)
         {
             bool StopSearch = false;
-            int nextX = curX;
-            int nextY = curY;
+            int nextI = curI;
+            int nextJ = curJ;
             number++;
-            double angle = Math.Acos((((double)(curY-prevY))/Math.Sqrt((double)((curY-prevY)*(curY-prevY) + (curX-prevX)*(curX-prevX)))));
-            if ((curX - prevX) > 0)
-                angle = 2*Math.PI - angle;
+            double angle = Math.Atan2((-1) * (curI - prevI), curJ - prevJ);
             score += angle;
             if (number < radiusOfSearch)
                 for (int i = -1; (i < 2) && (!StopSearch); i++)
                     for (int j = -1; (j < 2) && (!StopSearch); j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                        (curY + j < BinaryImage.GetLength(1)))
-                            if (((i != 0) || (j != 0)) && ((curX + i != prevX) || (curY + j != prevY)))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((nextX == curX) && (nextY == curY))
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) &&
+                        (curJ + j < BinaryImage.GetLength(1)))
+                            if (((i != 0) || (j != 0)) && ((curI + i != prevI) || (curJ + j != prevJ)))
+                                if (BinaryImage[curI + i, curJ + j] == 0)
+                                    if ((nextI == curI) && (nextJ == curJ))
                                     {
-                                        nextX = curX + i;
-                                        nextY = curY + j;
+                                        nextI = curI + i;
+                                        nextJ = curJ + j;
                                     }
                                     else
                                         StopSearch = true;
-            if ((nextX == curX) && (nextY == curY))
+            if ((nextI == curI) && (nextJ == curJ))
                 StopSearch = true;
             if (!StopSearch)
-                CheckPath(nextX, nextY, curX, curY, BinaryImage,ref score,ref number, radiusOfSearch);
+                GetScoreFromPath(nextI, nextJ, curI, curJ, BinaryImage, ref score, ref number, radiusOfSearch);
         }
 
-        private static void FindDirectionOfBifurcationUsingAverageValues(int cur, double Teta, List<Minutia> Minutiae,
+        private static double FindDirectionOfBifurcationUsingPathsAndAverageValues(int curI, int curJ, double Theta, List<Point> locality,
                                                                          int[,] BinaryImage)
         {
+            double result = 0;
             int RadiusOfSearch = 7;
-            int curX = Minutiae[cur].Y;
-            int curY = Minutiae[cur].X;
-            double minAngle = 2*Math.PI;
+            double minAngle = 2 * Math.PI;
             int minI = 0;
             int minJ = 0;
-            for (int i = -1; i < 2; i++)
-                for (int j = -1; j < 2; j++)
-                    if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                        (curY + j < BinaryImage.GetLength(1)))
-                        if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 0))
-                        {
-                            int number = 0;
-                            double score = 0;
-                            CheckPath(curX + i, curY + j, curX, curY, BinaryImage,ref score,ref number, RadiusOfSearch);
-                            double angle = score/number;
-                            if (angle > Math.PI)
-                                angle = +Math.PI;
-                            if (Math.Abs(angle - Teta) < minAngle)
-                            {
-                                minI = i;
-                                minJ = j;
-                                minAngle = angle;
-                            }
-                        }
-            if ((minJ <= 0) && (minI >= 0))
+            for (int i = 0; i < locality.Count; i++)
             {
-                var temp = Minutiae[cur];
-                temp.Angle = Teta;
-                Minutiae[cur] = temp;
+                int number = 0;
+                double score = 0;
+                GetScoreFromPath(curI + locality[i].X, curJ + locality[i].Y, curI, curJ, BinaryImage, ref score, ref number, RadiusOfSearch); //Step 1
+                double angle = score / number; //Step 2
+                if (angle > Math.PI / 2)
+                    angle -= Math.PI;
+                if (angle < (-1) * Math.PI / 2)
+                    angle += Math.PI;
+                if (Math.Abs(angle - Theta) < minAngle) //Step 3
+                {
+                    minI = locality[i].X; //Step 4
+                    minJ = locality[i].Y;
+                    minAngle = angle;
+                }
+            }
+            if (minJ < 0)  //Step 5
+            {
+                if (Theta >= 0)
+                    result = Theta - Math.PI;
+                else
+                    result = Theta + Math.PI;
             }
             else
-            {
-                var temp = Minutiae[cur];
-                temp.Angle = Teta + Math.PI;
-                Minutiae[cur] = temp;
-            }      
+                result = Theta;
+            return result;
         }
-        
 
-        private static void FindDirectionOfBifurcationUsingAlignment(int cur, double Teta, List<Minutia> Minutiae,
-                                                                     int[,] BinaryImage,double delta,int step)
+
+        private static double FindDirectionOfBifurcationUsingAlignment(int curI, int curJ, double Theta,
+                                                                     int[,] BinaryImage, List<Point> locality, double delta, int step)
         {
-            int curX = Minutiae[cur].Y;
-            int curY = Minutiae[cur].X;
-            if ((curX > 0) && (curX < BinaryImage.GetLength(0)-1) && (curY < BinaryImage.GetLength(1)-1) && (curY > 0)) {
-                int[] startPointX = new int[3];
-                int[] startPointY = new int[3];
-                int[] curPointX = new int[3];
-                int[] curPointY = new int[3];
-                int[] prevPointX = new int[3];
-                int[] prevPointY = new int[3];
+            double result = 0;
+                int[] startPointI = new int[3];
+                int[] startPointJ = new int[3];
+                int[] curPointI = new int[3];
+                int[] curPointJ = new int[3];
+                int[] prevPointI = new int[3];
+                int[] prevPointJ = new int[3];
                 bool[] StopSteps = new bool[3];
                 int[] Depth = new int[3];
-                int num = 0;
-                for (int i = -1 ; i < 2;i ++)
-                    for (int j = -1 ; j < 2; j++)
-                        if (((j != 0) || (i != 0)) && (BinaryImage[curX + i,curY+  j] == 0))
-                        {
-                            startPointX[num] = curX + i;
-                            startPointY[num] = curY + j;
-                            curPointX[num] = curX + i;
-                            curPointY[num] = curY + j;
-                            prevPointX[num] = curX;
-                            prevPointY[num] = curY;
-                            num++;
-                        }
+                for (int num = 0; num < 3; num++)
+                {
+                    startPointI[num] = curI + locality[num].X;
+                    startPointJ[num] = curJ + locality[num].Y;
+                    curPointI[num] = curI + locality[num].X;
+                    curPointJ[num] = curJ + locality[num].Y;
+                    prevPointI[num] = curI;
+                    prevPointJ[num] = curJ;
+                }
                 StopSteps[0] = false;
                 StopSteps[1] = false;
                 StopSteps[2] = false;
@@ -248,183 +222,161 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                 Depth[2] = 0;
                 int number = 0;
                 double score = 0;
-                bool Find = false;
-                while (((!StopSteps[0]) && (!StopSteps[1]) && (!StopSteps[2])) && (Depth[0] + Depth[1] + Depth[2] < 50) && (!Find))
+                int numberOfSteps = 0;
+                while (((!StopSteps[0]) && (!StopSteps[1]) && (!StopSteps[2])) && (numberOfSteps < 10)) //Step 2
                 {
-                    for (num = 0; num <3 ; num++)
+                    numberOfSteps++;
+                    for (int num = 0; num < 3; num++)
                         if (!StopSteps[num])
                         {
                             score = 0;
                             number = 0;
                             for (int k = 0; (k < step) && (!StopSteps[num]); k++)
                             {
-                                int nextX = 0;
-                                int nextY = 0;
+                                int nextI = 0;
+                                int nextJ = 0;
                                 Depth[num]++;
                                 number++;
-                                double angle = Math.Acos((((double)(curPointY[num]-prevPointY[num]))/Math.Sqrt((double)((curPointY[num]-prevPointY[num])*(curPointY[num]-prevPointY[num]) + (curPointX[num]-prevPointX[num])*(curPointX[num]-prevPointX[num])))));
-                                if ((curPointX[num] - prevPointX[num]) > 0)
-                                    angle = 2*Math.PI - angle;
+                                double angle = Math.Atan2(((double)(prevPointI[num] - curPointI[num])),
+                                                          (curPointJ[num] - prevPointJ[num]));
                                 score += angle;
-                                if (Math.Abs(score/num - Teta) < delta)
+                                double resScore = score / number;
+                                if (resScore > Math.PI / 2)
+                                    resScore = resScore - Math.PI;
+                                if (resScore < (-1) * Math.PI / 2)
+                                    resScore = resScore + Math.PI;
+                                if (Math.Abs(score / Depth[num] - Theta) < delta)
                                     StopSteps[num] = true;
                                 for (int i = -1; (i < 2) && (!StopSteps[num]); i++)
                                     for (int j = -1; (j < 2) && (!StopSteps[num]); j++)
-                                    if ((curPointX[num] + i >= 0) && (curPointX[num] + i < BinaryImage.GetLength(0)) && (curPointY[num] + j >= 0) &&
-                                        (curPointY[num] + j < BinaryImage.GetLength(1)))
-                                        if (((i != 0) || (j != 0)) &&
-                                            (BinaryImage[curPointX[num] + i, curPointY[num] + j] == 0) &&
-                                            ((curPointX[num] + i != prevPointX[num]) ||
-                                         (curPointY[num] + j != prevPointY[num])))
-                                        {
-                                            if ((nextX == 0) && (nextY == 0))
+                                        if ((curPointI[num] + i >= 0) && (curPointI[num] + i < BinaryImage.GetLength(0)) && (curPointJ[num] + j >= 0) &&
+                                            (curPointJ[num] + j < BinaryImage.GetLength(1)))
+                                            if (((i != 0) || (j != 0)) &&
+                                                (BinaryImage[curPointI[num] + i, curPointJ[num] + j] == 0) &&
+                                                ((curPointI[num] + i != prevPointI[num]) ||
+                                             (curPointJ[num] + j != prevPointJ[num])))
                                             {
-                                                nextX = i;
-                                                nextY = j;
+                                                if ((nextI == 0) && (nextJ == 0))
+                                                {
+                                                    nextI = i;
+                                                    nextJ = j;
+                                                }
+                                                else
+                                                {
+                                                    StopSteps[num] = true;
+                                                    Depth[num] = 50;
+                                                }
                                             }
-                                            else
-                                                StopSteps[num] = true;
-                                        }
-                                if ((nextX == 0) && (nextY == 0) && (!StopSteps[num]))
+                                if ((nextI == 0) && (nextJ == 0))
                                 {
-                                    Find = true;
-                                    int p = 0;
-                                    while (((Minutiae[p].X != curPointX[num]) || (Minutiae[p].Y != curPointY[num])) && (p<Minutiae.Count()-1))
-                                        p++;
-                                    if ((Minutiae[p].X == curPointX[num]) && (Minutiae[p].Y == curPointY[num]))
-                                    {
-                                        var temp = Minutiae[cur];
-                                        temp.Angle = Minutiae[p].Angle;
-                                        Minutiae[cur] = temp;
-                                    }
+                                    StopSteps[num] = true;
+                                    Depth[num] = 50;
                                 }
-                                if (((nextX != 0) || (nextY != 0)) && (!StopSteps[num]))
+                                if (((nextI != 0) || (nextJ != 0)) && (!StopSteps[num]))
                                 {
-                                    prevPointX[num] = curPointX[num];
-                                    prevPointY[num] = curPointY[num];
-                                    curPointX[num] = nextX;
-                                    curPointY[num] = nextY;
+                                    prevPointI[num] = curPointI[num];
+                                    prevPointJ[num] = curPointJ[num];
+                                    curPointI[num] = nextI;
+                                    curPointJ[num] = nextJ;
                                 }
                             }
                         }
                 }
-                int maxNum = 0;
-                if (!Find)
+                int maxNum = 0;   //Step 3
+                int max = Depth[0];
+                if (max < Depth[1])
                 {
-                    int max = Depth[0];
-                    if (max < Depth[1])
-                    {
-                        max = Depth[1];
-                        maxNum = 1;
-                    }
-                    if (max < Depth[2])
-                    {
-                        max = Depth[2];
-                        maxNum = 2;
-                    }
+                    max = Depth[1];
+                    maxNum = 1;
                 }
-                double maxAngle = Math.Acos((((double)(startPointY[maxNum] - curY)) / Math.Sqrt((double)((startPointY[maxNum] - curY) * (startPointY[maxNum] - curY) + (startPointX[maxNum] - curX) * (startPointX[maxNum] - curX)))));
-                if ((startPointX[maxNum] - curX) > 0)
-                    maxAngle = 2 * Math.PI - maxAngle;
-                if (Math.Abs(maxAngle - Teta) < Math.PI/2)
+                if (max < Depth[2])
                 {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
+                    max = Depth[2];
+                    maxNum = 2;
+                }
+                double maxAngle = Math.Atan2(curI - startPointI[maxNum], startPointJ[maxNum] - curJ); //Step 4
+                if (Math.Abs(maxAngle - Theta) < Math.PI/2)
+                {
+                    if (Theta >= 0)
+                        result = Theta - Math.PI;
+                    else
+                        result = Theta + Math.PI;
                 }
                 else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta;
-                    Minutiae[cur] = temp;
-                }
-            }
+                    result = Theta;
+            return result;
         }
 
-        private static void FindDirectionOfBifurcationUsingQuadrantsAndAlignment(int cur, double Teta,
-                                                                                 List<Minutia> Minutiae,
+        private static double FindDirectionOfBifurcationUsingQuadrantsAndAverageValues(int curI, int curJ, double Theta,
                                                                                  int[,] BinaryImage)
         {
+            double result = 0;
             int radius = 3; //Use squares 7x7
-            int curX = Minutiae[cur].Y;
-            int curY = Minutiae[cur].X;
             double score1 = 0;
             double score2 = 0;
             double angle = 0;
             double number = 0;
-            if (Teta < Math.PI/2) //Quadrant I or III
-            {
+            if (Theta >= 0) //Step 1
+            {//Quadrant I or III
+                //Step 2
                 for (int i = 0; i <= radius; i++) //Check Quadrant III
-                    for (int j = 0; j >= (-1)*radius; j--)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
+                    for (int j = 0; j >= (-1) * radius; j--)
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) &&
+                            (curJ + j < BinaryImage.GetLength(1)))
                             if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
+                                if (BinaryImage[curI + i, curJ + j] == 0)
                                 {
                                     number++;
                                     if (j == 0)
                                         angle = (-1) * i / Math.Abs(i) * Math.PI / 2;
                                     else
                                         angle = Math.Atan((double)(-1) * i / (double)j);
-                                    if (angle < 0)
-                                        angle += Math.PI;
-                                    score1 += Math.Abs(angle - Teta);
+                                    score1 += Math.Abs(angle - Theta);
                                 }
                 if (number == 0)
                     score1 = Math.PI * 2;
                 else
                     score1 = score1 / number;
                 number = 0;
-                for (int i = 0; i >= (-1)*radius; i--) //Check Quadrant I
+                for (int i = 0; i >= (-1) * radius; i--) //Check Quadrant I
                     for (int j = 0; j <= radius; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) &&
+                            (curJ + j < BinaryImage.GetLength(1)))
                             if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
+                                if (BinaryImage[curI + i, curJ + j] == 0)
                                 {
                                     number++;
                                     if (j == 0)
                                         angle = (-1) * i / Math.Abs(i) * Math.PI / 2;
                                     else
                                         angle = Math.Atan((double)(-1) * i / (double)j);
-                                    if (angle < 0)
-                                        angle += Math.PI;
-                                    score2 += Math.Abs(angle - Teta);
+                                    score2 += Math.Abs(angle - Theta);
                                 }
                 if (number == 0)
                     score2 = Math.PI * 2;
                 else
                     score2 = score2 / number;
-                if (score1 < score2)
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
-                }
+                if (score1 < score2) //Steps 3,4
+                    result = Theta - Math.PI;
                 else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta;
-                    Minutiae[cur] = temp;
-                }
+                    result = Theta;
             }
             else   //Quadrant II or IV
             {
+                //Step 2
                 for (int i = 0; i <= radius; i++) //Check Quadrant IV
                     for (int j = 0; j <= radius; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) &&
+                            (curJ + j < BinaryImage.GetLength(1)))
                             if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
+                                if (BinaryImage[curI + i, curJ + j] == 0)
                                 {
                                     number++;
                                     if (j == 0)
                                         angle = (-1) * i / Math.Abs(i) * Math.PI / 2;
                                     else
                                         angle = Math.Atan((double)(-1) * i / (double)j);
-                                    if (angle < 0)
-                                        angle += Math.PI;
-                                    score1 += Math.Abs(angle - Teta);
+                                    score1 += Math.Abs(angle - Theta);
                                 }
                 if (number == 0)
                     score1 = Math.PI * 2;
@@ -433,46 +385,113 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                 number = 0;
                 for (int i = 0; i >= (-1) * radius; i--) //Check Quadrant II
                     for (int j = 0; j >= (-1) * radius; j--)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) &&
+                            (curJ + j < BinaryImage.GetLength(1)))
                             if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
+                                if (BinaryImage[curI + i, curJ + j] == 0)
                                 {
                                     number++;
                                     if (j == 0)
-                                        angle = (-1)*i/Math.Abs(i)*Math.PI/2;
+                                        angle = (-1) * i / Math.Abs(i) * Math.PI / 2;
                                     else
-                                        angle = Math.Atan((double) (-1)*i/(double) j);
-                                    if (angle < 0)
-                                        angle += Math.PI;
-                                    score2 += Math.Abs(angle - Teta);
+                                        angle = Math.Atan((double)(-1) * i / (double)j);
+                                    score2 += Math.Abs(angle - Theta);
                                 }
                 if (number == 0)
-                    score2 = Math.PI*2;
+                    score2 = Math.PI * 2;
                 else
                     score2 = score2 / number;
-                if (score1 < score2)
+                if (score1 < score2) //Steps 3,4
+                    result = Theta;
+                else
+                    result = Theta + Math.PI;
+            }
+            return result;
+        }
+
+        public static void FindDirection(double[,] OrientationField, int dim, List<Minutia> Minutiae, int[,] BinaryImage, int Version)
+        {
+            for (int cur = 0; cur < Minutiae.Count(); cur++)
+            {
+                int curI = Minutiae[cur].Y;
+                int curJ = Minutiae[cur].X;
+                double Theta = OrientationField[curI / dim, curJ / dim];
+                List<Point> locality = new List<Point>();
+                for (int i = -1; i < 2; i++)
+                    for (int j = -1; j < 2; j++)
+                        if ((curI + i >= 0) && (curI + i < BinaryImage.GetLength(0)) && (curJ + j >= 0) &&
+                            (curJ + j < BinaryImage.GetLength(1)))
+                            if (BinaryImage[curI + i, curJ + j] == 0)
+                                if ((i != 0) || (j != 0))
+                                    locality.Add(new Point(i, j));
+                if (locality.Count == 1) //Ending of Line
                 {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
+                    double angle = Math.Atan2((-1) * locality[0].X, locality[0].Y);
+                    if (Theta >= 0)
+                    {
+                        if (Math.Abs(Theta - angle) < Math.PI / 2)
+                        {
+                            var temp = Minutiae[cur];
+                            temp.Angle = Theta - Math.PI;
+                            Minutiae[cur] = temp;
+                        }
+                        else
+                        {
+                            var temp = Minutiae[cur];
+                            temp.Angle = Theta;
+                            Minutiae[cur] = temp;
+                        }
+                    }
+                    else
+                    {
+                        if (Math.Abs(Theta - angle) < Math.PI / 2)
+                        {
+                            var temp = Minutiae[cur];
+                            temp.Angle = Theta + Math.PI;
+                            Minutiae[cur] = temp;
+                        }
+                        else
+                        {
+                            var temp = Minutiae[cur];
+                            temp.Angle = Theta;
+                            Minutiae[cur] = temp;
+                        }
+                    }
                 }
                 else
-                {
+                {//Bifurcation 
                     var temp = Minutiae[cur];
-                    temp.Angle = Teta;
+                    switch (Version)
+                    {
+
+                        case 1:  
+                            temp.Angle = FindDirectionOfBifurcationUsingQuadrants(curI, curJ, Theta, BinaryImage);
+                            break;
+                        case 2:  
+                            temp.Angle = FindDirectionOfBifurcationUsingPathsAndAverageValues(curI, curJ, Theta, locality, BinaryImage);
+                            break;
+                        case 3:
+                            temp.Angle = FindDirectionOfBifurcationUsingAlignment(curI, curJ, Theta, BinaryImage, locality, Math.PI / 8, 5);
+                            break;
+                        case 4: 
+                            temp.Angle = FindDirectionOfBifurcationUsingQuadrantsAndAverageValues(curI, curJ, Theta, BinaryImage);
+                            break;
+                        default:
+                            break;
+                    }
                     Minutiae[cur] = temp;
                 }
             }
         }
 
-        public static void FindDirection(double[,] OrientationField, int dim, List<Minutia> Minutiae , int[,] BinaryImage,int Version)
+
+        /*public static void FindDirectionVersion2(double[,] OrientationField, int dim, List<Minutia> Minutiae, int[,] BinaryImage)
         {
             for (int cur = 0; cur < Minutiae.Count(); cur++)
             {
                 int curX = Minutiae[cur].Y;
                 int curY = Minutiae[cur].X;
-                double Teta = OrientationField[curX/dim, curY/dim];
+                double Theta = OrientationField[curX / dim, curY / dim];
                 int count = 0;
                 for (int i = -1; i < 2; i++)
                     for (int j = -1; j < 2; j++)
@@ -489,82 +508,20 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                                 (curY + j < BinaryImage.GetLength(1)))
                                 if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 0))
                                 {
-                                    angle = Math.Acos(((double) j)/Math.Sqrt((double) (i*i + j*j)));
+                                    angle = Math.Acos(((double)j) / Math.Sqrt((double)(i * i + j * j)));
                                     if (i > 0)
                                         angle = 2 * Math.PI - angle;
                                 }
-                    if ((Teta - angle < Math.PI/2) && (angle - Teta < Math.PI/2))
+                    if ((Theta - angle < Math.PI / 2) && (angle - Theta < Math.PI / 2))
                     {
                         var temp = Minutiae[cur];
-                        temp.Angle = Teta + Math.PI;
+                        temp.Angle = Theta + Math.PI;
                         Minutiae[cur] = temp;
                     }
                     else
                     {
                         var temp = Minutiae[cur];
-                        temp.Angle = Teta;
-                        Minutiae[cur] = temp;
-                    }
-                }
-                else //Bifurcation
-                    switch (Version)
-                    {
-                        case 1:
-                            FindDirectionOfBifurcationUsingQuadrants(cur, Teta, Minutiae, BinaryImage);
-                            break;
-                        case 2:
-                            FindDirectionOfBifurcationUsingAverageValues(cur,Teta,Minutiae,BinaryImage);
-                            break;
-                        case 3:
-                            FindDirectionOfBifurcationUsingAlignment(cur,Teta,Minutiae,BinaryImage,Math.PI/10,5);
-                            break;
-                        case 4:
-                            FindDirectionOfBifurcationUsingQuadrantsAndAlignment(cur, Teta, Minutiae, BinaryImage);
-                            break;
-                        default:
-                            break;
-                    }
-            }
-        }
-
-
-        public static void FindDirectionVersion2(double[,] OrientationField, int dim, List<Minutia> Minutiae, int[,] BinaryImage)
-        {
-            for (int cur = 0; cur < Minutiae.Count(); cur++)
-            {
-                int curX = Minutiae[cur].Y;
-                int curY = Minutiae[cur].X;
-                double Teta = OrientationField[curX/dim, curY/dim];
-                int count = 0;
-                for (int i = -1; i < 2; i++)
-                    for (int j = -1; j < 2; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
-                            if (BinaryImage[curX + i, curY + j] == 0)
-                                count++;
-                if (count == 2) //Ending of Line
-                {
-                    double angle = 0;
-                    for (int i = -1; i < 2; i++)
-                        for (int j = -1; j < 2; j++)
-                            if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                                (curY + j < BinaryImage.GetLength(1)))
-                                if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 0))
-                                {
-                                    angle = Math.Acos(((double) j)/Math.Sqrt((double) (i*i + j*j)));
-                                    if (i > 0)
-                                        angle = 2*Math.PI - angle;
-                                }
-                    if ((Teta - angle < Math.PI/2) && (angle - Teta < Math.PI/2))
-                    {
-                        var temp = Minutiae[cur];
-                        temp.Angle = Teta + Math.PI;
-                        Minutiae[cur] = temp;
-                    }
-                    else
-                    {
-                        var temp = Minutiae[cur];
-                        temp.Angle = Teta;
+                        temp.Angle = Theta;
                         Minutiae[cur] = temp;
                     }
                 }
@@ -573,7 +530,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             {
                 int curX = Minutiae[cur].Y;
                 int curY = Minutiae[cur].X;
-                double Teta = OrientationField[curX/dim, curY/dim];
+                double Theta = OrientationField[curX / dim, curY / dim];
                 int count = 0;
                 for (int i = -1; i < 2; i++)
                     for (int j = -1; j < 2; j++)
@@ -582,592 +539,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
                             if (BinaryImage[curX + i, curY + j] == 0)
                                 count++;
                 if (count > 2) //Bifurcation
-                    FindDirectionOfBifurcationUsingAlignment(cur, Teta, Minutiae, BinaryImage, Math.PI / 10, 5);
+                    FindDirectionOfBifurcationUsingAlignment(curI,cur, Theta, Minutiae, BinaryImage, Math.PI / 10, 5);
             }
         }*/
-        private static void FindDirectionOfBifurcationUsingQuadrants(int cur,double Teta,List<Minutia> Minutiae, int[,] BinaryImage)
-        {
-            int radius = 3; //Use squares 7x7
-            int minX = 0;
-            int minY = 0;
-            int curX = Minutiae[cur].Y;
-            int curY = Minutiae[cur].X;
-            double minAngle = 0;
-            double angle = 0;
-            if (Teta < Math.PI / 2) //Quadrant I or III
-            {
-                for (int i = 0; i <= radius; i++) //Check Quadrant III
-                    for (int j = 0; j >= (-1) * radius; j--)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
-                            if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((minX == 0) && (minY == 0))
-                                    {
-                                        minX = i;
-                                        minY = j;
-                                        angle = Math.Acos(((double) j)/((double) (i*i + j*j)));
-                                        minAngle = Math.Abs(angle - Teta);
-                                    }
-                                    else
-                                    {
-                                        angle = Math.Acos(((double)j) / ((double)(i * i + j * j)));
-                                        if (Math.Abs(angle - Teta) < minAngle)
-                                        {
-                                            minAngle = Math.Abs(angle - Teta);
-                                            minX = i;
-                                            minY = j;
-                                        }
-                                    }
-                for (int i = 0; i >= (-1) * radius; i--) //Check Quadrant I
-                    for (int j = 0; j <= radius; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
-                            if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((minX == 0) && (minY == 0))
-                                    {
-                                        minX = i;
-                                        minY = j;
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        minAngle = Math.Abs(angle - Teta);
-                                    }
-                                    else
-                                    {
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        if (Math.Abs(angle - Teta) < minAngle)
-                                        {
-                                            minAngle = Math.Abs(angle - Teta);
-                                            minX = i;
-                                            minY = j;
-                                        }
-                                    }
-                if ((minX >= 0) && (minY <= 0))
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
-                }
-                else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta;
-                    Minutiae[cur] = temp;
-                }
-
-            }
-            else //Quadrant II or IV
-            {
-                for (int i = 0; i <= radius; i++) //Check Quadrant  IV
-                    for (int j = 0; j <= radius; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
-                            if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((minX == 0) && (minY == 0))
-                                    {
-                                        minX = i;
-                                        minY = j;
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        minAngle = Math.Abs(angle - Teta);
-                                    }
-                                    else
-                                    {
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        if (Math.Abs(angle - Teta) < minAngle)
-                                        {
-                                            minAngle = Math.Abs(angle - Teta);
-                                            minX = i;
-                                            minY = j;
-                                        }
-                                    }
-                for (int i = 0; i >= (-1) * radius; i--) //Check Quadrant  II
-                    for (int j = 0; j >= (-1) * radius; j--)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) && (curY + j < BinaryImage.GetLength(1)))
-                            if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((minX == 0) && (minY == 0))
-                                    {
-                                        minX = i;
-                                        minY = j;
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        minAngle = Math.Abs(angle - Teta);
-                                    }
-                                    else
-                                    {
-                                        angle = Math.Acos(((double)j) / Math.Sqrt(((double)(i * i + j * j))));
-                                        if (Math.Abs(angle - Teta) < minAngle)
-                                        {
-                                            minAngle = Math.Abs(angle - Teta);
-                                            minX = i;
-                                            minY = j;
-                                        }
-                                    }
-                if ((minX >= 0) && (minY >= 0))
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
-                }
-                else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta;
-                    Minutiae[cur] = temp;
-                }
-            }
-        }
-
-        private static void CheckPath(int curX, int curY, int prevX, int prevY, int[,] BinaryImage,ref double score,ref
-                                        int number,int radiusOfSearch)
-        {
-            bool StopSearch = false;
-            int nextX = curX;
-            int nextY = curY;
-            number++;
-            double angle = Math.Acos((((double)(curY-prevY))/Math.Sqrt((double)((curY-prevY)*(curY-prevY) + (curX-prevX)*(curX-prevX)))));
-            if ((curX - prevX) > 0)
-                angle = 2*Math.PI - angle;
-            score += angle;
-            if (number < radiusOfSearch)
-                for (int i = -1; (i < 2) && (!StopSearch); i++)
-                    for (int j = -1; (j < 2) && (!StopSearch); j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                        (curY + j < BinaryImage.GetLength(1)))
-                            if (((i != 0) || (j != 0)) && ((curX + i != prevX) || (curY + j != prevY)))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                    if ((nextX == curX) && (nextY == curY))
-                                    {
-                                        nextX = curX + i;
-                                        nextY = curY + j;
-                                    }
-                                    else
-                                        StopSearch = true;
-            if ((nextX == curX) && (nextY == curY))
-                StopSearch = true;
-            if (!StopSearch)
-                CheckPath(nextX, nextY, curX, curY, BinaryImage,ref score,ref number, radiusOfSearch);
-        }
-
-        private static void FindDirectionOfBifurcationUsingAverageValues(int cur, double Teta, List<Minutia> Minutiae,
-                                                                         int[,] BinaryImage)
-        {
-            int RadiusOfSearch = 7;
-            int curX = Minutiae[cur].Y;
-            int curY = Minutiae[cur].X;
-            double minAngle = 2*Math.PI;
-            int minI = 0;
-            int minJ = 0;
-            for (int i = -1; i < 2; i++)
-                for (int j = -1; j < 2; j++)
-                    if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                        (curY + j < BinaryImage.GetLength(1)))
-                        if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 0))
-                        {
-                            int number = 0;
-                            double score = 0;
-                            CheckPath(curX + i, curY + j, curX, curY, BinaryImage,ref score,ref number, RadiusOfSearch);
-                            double angle = score/number;
-                            if (angle > Math.PI)
-                                angle = +Math.PI;
-                            if (Math.Abs(angle - Teta) < minAngle)
-                            {
-                                minI = i;
-                                minJ = j;
-                                minAngle = angle;
-                            }
-                        }
-            if ((minJ <= 0) && (minI >= 0))
-            {
-                var temp = Minutiae[cur];
-                temp.Angle = Teta;
-                Minutiae[cur] = temp;
-            }
-            else
-            {
-                var temp = Minutiae[cur];
-                temp.Angle = Teta + Math.PI;
-                Minutiae[cur] = temp;
-            }      
-        }
-        
-
-        private static void FindDirectionOfBifurcationUsingAlignment(int cur, double Teta, List<Minutia> Minutiae,
-                                                                     int[,] BinaryImage,double delta,int step)
-        {
-            int curX = Minutiae[cur].Y;
-            int curY = Minutiae[cur].X;
-            if ((curX > 0) && (curX < BinaryImage.GetLength(0)-1) && (curY < BinaryImage.GetLength(1)-1) && (curY > 0)) {
-                int[] startPointX = new int[3];
-                int[] startPointY = new int[3];
-                int[] curPointX = new int[3];
-                int[] curPointY = new int[3];
-                int[] prevPointX = new int[3];
-                int[] prevPointY = new int[3];
-                bool[] StopSteps = new bool[3];
-                int[] Depth = new int[3];
-                int num = 0;
-                for (int i = -1 ; i < 2;i ++)
-                    for (int j = -1 ; j < 2; j++)
-                        if (((j != 0) || (i != 0)) && (BinaryImage[curX + i,curY+  j] == 0))
-                        {
-                            startPointX[num] = curX + i;
-                            startPointY[num] = curY + j;
-                            curPointX[num] = curX + i;
-                            curPointY[num] = curY + j;
-                            prevPointX[num] = curX;
-                            prevPointY[num] = curY;
-                            num++;
-                        }
-                StopSteps[0] = false;
-                StopSteps[1] = false;
-                StopSteps[2] = false;
-                Depth[0] = 0;
-                Depth[1] = 0;
-                Depth[2] = 0;
-                int number = 0;
-                double score = 0;
-                bool Find = false;
-                while (((!StopSteps[0]) && (!StopSteps[1]) && (!StopSteps[2])) && (Depth[0] + Depth[1] + Depth[2] < 50) && (!Find))
-                {
-                    for (num = 0; num <3 ; num++)
-                        if (!StopSteps[num])
-                        {
-                            score = 0;
-                            number = 0;
-                            for (int k = 0; (k < step) && (!StopSteps[num]); k++)
-                            {
-                                int nextX = 0;
-                                int nextY = 0;
-                                Depth[num]++;
-                                number++;
-                                double angle = Math.Acos((((double)(curPointY[num]-prevPointY[num]))/Math.Sqrt((double)((curPointY[num]-prevPointY[num])*(curPointY[num]-prevPointY[num]) + (curPointX[num]-prevPointX[num])*(curPointX[num]-prevPointX[num])))));
-                                if ((curPointX[num] - prevPointX[num]) > 0)
-                                    angle = 2*Math.PI - angle;
-                                score += angle;
-                                if (Math.Abs(score/num - Teta) < delta)
-                                    StopSteps[num] = true;
-                                for (int i = -1; (i < 2) && (!StopSteps[num]); i++)
-                                    for (int j = -1; (j < 2) && (!StopSteps[num]); j++)
-                                    if ((curPointX[num] + i >= 0) && (curPointX[num] + i < BinaryImage.GetLength(0)) && (curPointY[num] + j >= 0) &&
-                                        (curPointY[num] + j < BinaryImage.GetLength(1)))
-                                        if (((i != 0) || (j != 0)) &&
-                                            (BinaryImage[curPointX[num] + i, curPointY[num] + j] == 0) &&
-                                            ((curPointX[num] + i != prevPointX[num]) ||
-                                         (curPointY[num] + j != prevPointY[num])))
-                                        {
-                                            if ((nextX == 0) && (nextY == 0))
-                                            {
-                                                nextX = i;
-                                                nextY = j;
-                                            }
-                                            else
-                                                StopSteps[num] = true;
-                                        }
-                                if ((nextX == 0) && (nextY == 0) && (!StopSteps[num]))
-                                {
-                                    Find = true;
-                                    int p = 0;
-                                    while (((Minutiae[p].X != curPointX[num]) || (Minutiae[p].Y != curPointY[num])) && (p<Minutiae.Count()-1))
-                                        p++;
-                                    if ((Minutiae[p].X == curPointX[num]) && (Minutiae[p].Y == curPointY[num]))
-                                    {
-                                        var temp = Minutiae[cur];
-                                        temp.Angle = Minutiae[p].Angle;
-                                        Minutiae[cur] = temp;
-                                    }
-                                }
-                                if (((nextX != 0) || (nextY != 0)) && (!StopSteps[num]))
-                                {
-                                    prevPointX[num] = curPointX[num];
-                                    prevPointY[num] = curPointY[num];
-                                    curPointX[num] = nextX;
-                                    curPointY[num] = nextY;
-                                }
-                            }
-                        }
-                }
-                int maxNum = 0;
-                if (!Find)
-                {
-                    int max = Depth[0];
-                    if (max < Depth[1])
-                    {
-                        max = Depth[1];
-                        maxNum = 1;
-                    }
-                    if (max < Depth[2])
-                    {
-                        max = Depth[2];
-                        maxNum = 2;
-                    }
-                }
-                double maxAngle = Math.Acos((((double)(startPointY[maxNum] - curY)) / Math.Sqrt((double)((startPointY[maxNum] - curY) * (startPointY[maxNum] - curY) + (startPointX[maxNum] - curX) * (startPointX[maxNum] - curX)))));
-                if ((startPointX[maxNum] - curX) > 0)
-                    maxAngle = 2 * Math.PI - maxAngle;
-                if (Math.Abs(maxAngle - Teta) < Math.PI/2)
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
-                }
-                else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta;
-                    Minutiae[cur] = temp;
-                }
-            }
-        }
-
-        private static void FindDirectionOfBifurcationUsingQuadrantsAndAlignment(int cur, double Teta,
-                                                                                 List<Minutia> Minutiae,
-                                                                                 int[,] BinaryImage)
-        {
-            int radius = 3; //Use squares 7x7
-            int curX = Minutiae[cur].Y;
-            int curY = Minutiae[cur].X;
-            double score1 = 0;
-            double score2 = 0;
-            double angle = 0;
-            double number = 0;
-            if (Teta >= 0) //Quadrant I or III
-            {
-                for (int i = 0; i <= radius; i++) //Check Quadrant III
-                    for (int j = 0; j >= (-1)*radius; j--)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
-                            if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                {
-                                    number++;
-                                    if (j == 0)
-                                        angle = (-1) * i / Math.Abs(i) * Math.PI / 2;
-                                    else
-                                        angle = Math.Atan((double)(-1) * i / (double)j);
-                                    score1 += Math.Abs(angle - Teta);
-                                }
-                if (number == 0)
-                    score1 = Math.PI * 2;
-                else
-                    score1 = score1 / number;
-                number = 0;
-                for (int i = 0; i >= (-1)*radius; i--) //Check Quadrant I
-                    for (int j = 0; j <= radius; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
-                            if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                {
-                                    number++;
-                                    if (j == 0)
-                                        angle = (-1) * i / Math.Abs(i) * Math.PI / 2;
-                                    else
-                                        angle = Math.Atan((double)(-1) * i / (double)j);
-                                    score2 += Math.Abs(angle - Teta);
-                                }
-                if (number == 0)
-                    score2 = Math.PI * 2;
-                else
-                    score2 = score2 / number;
-                if (score1 < score2)
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta - Math.PI;
-                    Minutiae[cur] = temp;
-                }
-                else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta;
-                    Minutiae[cur] = temp;
-                }
-            }
-            else   //Quadrant II or IV
-            {
-                for (int i = 0; i <= radius; i++) //Check Quadrant IV
-                    for (int j = 0; j <= radius; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
-                            if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                {
-                                    number++;
-                                    if (j == 0)
-                                        angle = (-1) * i / Math.Abs(i) * Math.PI / 2;
-                                    else
-                                        angle = Math.Atan((double)(-1) * i / (double)j);
-                                    score1 += Math.Abs(angle - Teta);
-                                }
-                if (number == 0)
-                    score1 = Math.PI * 2;
-                else
-                    score1 = score1 / number;
-                number = 0;
-                for (int i = 0; i >= (-1) * radius; i--) //Check Quadrant II
-                    for (int j = 0; j >= (-1) * radius; j--)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
-                            if ((i != 0) || (j != 0))
-                                if (BinaryImage[curX + i, curY + j] == 0)
-                                {
-                                    number++;
-                                    if (j == 0)
-                                        angle = (-1)*i/Math.Abs(i)*Math.PI/2;
-                                    else
-                                        angle = Math.Atan((double) (-1)*i/(double) j);
-                                    score2 += Math.Abs(angle - Teta);
-                                }
-                if (number == 0)
-                    score2 = Math.PI*2;
-                else
-                    score2 = score2 / number;
-                if (score1 < score2)
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta ;
-                    Minutiae[cur] = temp;
-                }
-                else
-                {
-                    var temp = Minutiae[cur];
-                    temp.Angle = Teta + Math.PI;
-                    Minutiae[cur] = temp;
-                }
-            }
-        }
-
-        public static void FindDirection(double[,] OrientationField, int dim, List<Minutia> Minutiae , int[,] BinaryImage,int Version)
-        {
-            for (int cur = 0; cur < Minutiae.Count(); cur++)
-            {
-                int curX = Minutiae[cur].Y;
-                int curY = Minutiae[cur].X;
-                double Teta = OrientationField[curX/dim, curY/dim];
-                int count = 0;
-                for (int i = -1; i < 2; i++)
-                    for (int j = -1; j < 2; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
-                            if (BinaryImage[curX + i, curY + j] == 0)
-                                count++;
-                if (count == 2) //Ending of Line
-                {
-                    double angle = 0;
-                    for (int i = -1; i < 2; i++)
-                        for (int j = -1; j < 2; j++)
-                            if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                                (curY + j < BinaryImage.GetLength(1)))
-                                if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 0))
-                                {
-                                    angle = Math.Atan2((-1) * i, j);
-                                }
-                    if (Teta >= 0)
-                    {
-                        if (Math.Abs(Teta - angle) < Math.PI/2)
-                        {
-                            var temp = Minutiae[cur];
-                            temp.Angle = Teta - Math.PI;
-                            Minutiae[cur] = temp;
-                        }
-                        else
-                        {
-                            var temp = Minutiae[cur];
-                            temp.Angle = Teta;
-                            Minutiae[cur] = temp;
-                        }
-                    }
-                    else
-                    {
-                        if (Math.Abs(Teta - angle) < Math.PI / 2)
-                        {
-                            var temp = Minutiae[cur];
-                            temp.Angle = Teta + Math.PI;
-                            Minutiae[cur] = temp;
-                        }
-                        else
-                        {
-                            var temp = Minutiae[cur];
-                            temp.Angle = Teta;
-                            Minutiae[cur] = temp;
-                        }
-                    }
-                }
-                else //Bifurcation
-                    switch (Version)
-                    {
-                        case 1:
-                            FindDirectionOfBifurcationUsingQuadrants(cur, Teta, Minutiae, BinaryImage);
-                            break;
-                        case 2:
-                            FindDirectionOfBifurcationUsingAverageValues(cur,Teta,Minutiae,BinaryImage);
-                            break;
-                        case 3:
-                            FindDirectionOfBifurcationUsingAlignment(cur,Teta,Minutiae,BinaryImage,Math.PI/10,5);
-                            break;
-                        case 4:
-                            FindDirectionOfBifurcationUsingQuadrantsAndAlignment(cur, Teta, Minutiae, BinaryImage);
-                            break;
-                        default:
-                            break;
-                    }
-            }
-        }
-
-
-        public static void FindDirectionVersion2(double[,] OrientationField, int dim, List<Minutia> Minutiae, int[,] BinaryImage)
-        {
-            for (int cur = 0; cur < Minutiae.Count(); cur++)
-            {
-                int curX = Minutiae[cur].Y;
-                int curY = Minutiae[cur].X;
-                double Teta = OrientationField[curX/dim, curY/dim];
-                int count = 0;
-                for (int i = -1; i < 2; i++)
-                    for (int j = -1; j < 2; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
-                            if (BinaryImage[curX + i, curY + j] == 0)
-                                count++;
-                if (count == 2) //Ending of Line
-                {
-                    double angle = 0;
-                    for (int i = -1; i < 2; i++)
-                        for (int j = -1; j < 2; j++)
-                            if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                                (curY + j < BinaryImage.GetLength(1)))
-                                if (((i != 0) || (j != 0)) && (BinaryImage[curX + i, curY + j] == 0))
-                                {
-                                    angle = Math.Acos(((double) j)/Math.Sqrt((double) (i*i + j*j)));
-                                    if (i > 0)
-                                        angle = 2*Math.PI - angle;
-                                }
-                    if ((Teta - angle < Math.PI/2) && (angle - Teta < Math.PI/2))
-                    {
-                        var temp = Minutiae[cur];
-                        temp.Angle = Teta + Math.PI;
-                        Minutiae[cur] = temp;
-                    }
-                    else
-                    {
-                        var temp = Minutiae[cur];
-                        temp.Angle = Teta;
-                        Minutiae[cur] = temp;
-                    }
-                }
-            }
-            for (int cur = 0; cur < Minutiae.Count(); cur++)
-            {
-                int curX = Minutiae[cur].Y;
-                int curY = Minutiae[cur].X;
-                double Teta = OrientationField[curX/dim, curY/dim];
-                int count = 0;
-                for (int i = -1; i < 2; i++)
-                    for (int j = -1; j < 2; j++)
-                        if ((curX + i >= 0) && (curX + i < BinaryImage.GetLength(0)) && (curY + j >= 0) &&
-                            (curY + j < BinaryImage.GetLength(1)))
-                            if (BinaryImage[curX + i, curY + j] == 0)
-                                count++;
-                if (count > 2) //Bifurcation
-                    FindDirectionOfBifurcationUsingAlignment(cur, Teta, Minutiae, BinaryImage, Math.PI / 10, 5);
-            }
-        }
     }
 }
