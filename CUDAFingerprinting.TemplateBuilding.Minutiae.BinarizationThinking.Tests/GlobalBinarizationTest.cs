@@ -21,7 +21,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             var img = ImageHelper.LoadImage(TestResource._104_6_ench);
             double[,] binarization = GlobalBinarization.Binarization(img, board);
             var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
-            ImageHelper.SaveArray(img, path);
+            ImageHelper.SaveArray(binarization, path);
             Process.Start(path);
         }
 
@@ -32,7 +32,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             var img = ImageHelper.LoadImage(TestResource._104_6);
             double[,] binarization = GlobalBinarization.Binarization(img, board);
             var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
-            ImageHelper.SaveArray(img, path);
+            ImageHelper.SaveArray(binarization, path);
             Process.Start(path);
         }
 
@@ -43,7 +43,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             var img = ImageHelper.LoadImage(TestResource._104_6);
             double[,] binarization = GlobalBinarization.Binarization(img, board);
             var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
-            ImageHelper.SaveArray(img, path);
+            ImageHelper.SaveArray(binarization, path);
             Process.Start(path);
         }
 
@@ -54,20 +54,20 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             var img = ImageHelper.LoadImage(TestResource._110_6);
             double[,] binarization = GlobalBinarization.Binarization(img, board);
             var path = Path.GetTempPath() + "globalBinarization" + board + ".png";
-            ImageHelper.SaveArray(img, path);
+            ImageHelper.SaveArray(binarization, path);
             Process.Start(path);
         }
 
-        [TestMethod]
-        public void TestMethodCudaToBin()
-        {
-            ImageHelper.SaveImageAsBinaryFloat("C:\\temp\\104_6_ench.png", "C:\\temp\\104_6.bin");
-        }
+        //[TestMethod]
+        //public void TestMethodCudaToBin()
+        //{
+        //    ImageHelper.SaveImageAsBinaryFloat("C:\\temp\\104_6_ench.png", "C:\\temp\\104_6.bin");
+        //}
 
-        [TestMethod]
-        public void TestMethodCudaToImg()
-        {
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_2.bin", "C:\\temp\\104_6_localBinar60.png", true);
-        }
+        //[TestMethod]
+        //public void TestMethodCudaToImg()
+        //{
+        //    ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_2.bin", "C:\\temp\\104_6_localBinar60.png", true);
+        //}
     }
 }

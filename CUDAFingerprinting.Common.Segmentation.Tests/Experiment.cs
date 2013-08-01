@@ -38,8 +38,8 @@ namespace CUDAFingerprinting.Common.Segmentation.Tests
         {
             double[,] img1 = ImageHelper.LoadImage(Resources._104_6);
             int[,] resultImg1;
-            
-            resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, threshold);
+
+            resultImg1 = Segmentator.Segmetator(img1, windowSize, weight, threshold).Select2D(x => x > 0 ? 255 : 0);
             ImageHelper.SaveIntArray(resultImg1, Path.GetTempPath() + "Segm_104_6" + ".png");                       
         }
 
