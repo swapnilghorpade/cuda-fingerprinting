@@ -19,7 +19,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
             var testInput = new double[,,] { { {10, 3, 7, 3, 10, 1, 1, 1, 1, 1, 1, 12} } };
             double average = RidgeFrequencyGenerator.AverageDistanceBetweenLocalMax(testInput, 0, 0);
            // Assert.IsTrue(average == 2);
-            var img = ImageHelper.LoadImageAsInt(TestResources.goodFP);
+            var img = ImageHelper.LoadImageAsInt(TestResources._1);
             Normalizer.Normalize(100, 500, img);
             // Check it in debug mode
             var x = RidgeFrequencyGenerator.GenerateInterpolatedFrequency(img);

@@ -12,7 +12,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         public const int W = 16;
         // Sigma of Gaussian's blur
         // from 0.34 to 0.65 for recommended size of low-pass filter
-        private const double sigma = 0.7;
+        private const double sigma = 0.65;
 
 
 

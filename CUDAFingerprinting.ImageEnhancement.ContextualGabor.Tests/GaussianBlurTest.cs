@@ -16,7 +16,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
         [TestMethod]
         public void BlurTest()
         {
-            var img = ImageHelper.LoadImageAsInt(TestResources.goodFP);
+            var img = ImageHelper.LoadImageAsInt(TestResources._1);
             var blur = OrientationFieldGenerator.GenerateBlur(img.Select2D(x => (double)x));
             var path = Path.GetTempPath() + "blur.png";
             ImageHelper.SaveIntArray(blur.Select2D(x => (int)x), path);

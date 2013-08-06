@@ -14,8 +14,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         public class ClusterPoint
         {
             // Modificators for distance calculation
-            public const double DA = 55;
-            public const double DF = 19;
+            public const double DA = 47;
+            public const double DF = 23;
             public const double DV = 1;
 
             public int ClusterNumber { get; set; }

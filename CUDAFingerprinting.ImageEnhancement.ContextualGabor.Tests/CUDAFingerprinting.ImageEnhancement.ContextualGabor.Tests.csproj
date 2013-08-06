@@ -73,16 +73,10 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\sample.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\105_2.tif" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\104_6.tif" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\Bikesgray.jpg" />
+    <EmbeddedResource Include="TestResources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>TestResources.Designer.cs</LastGenOutput>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\1.tif" />
@@ -100,19 +94,7 @@
     <None Include="Resources\5.tif" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\6.tif" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\7.tif" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="Resources\8.tif" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="TestResources.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>TestResources.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
+    <None Include="Resources\Bikesgray.jpg" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
