@@ -64,7 +64,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
             info.AddRange(RidgeFrequencyGenerator.GenerateBlocksInfo(img));
             img = ImageHelper.LoadImageAsInt(TestResources._5);
             Normalizer.Normalize(100, 500, img);
-
+            
            
             var middle = new ClustersGenerator.ClusterPoint(0, 0, 0);
 

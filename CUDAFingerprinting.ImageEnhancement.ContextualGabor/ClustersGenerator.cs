@@ -36,7 +36,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                 double da = Amplitude - p.Amplitude;
                 double df = Frequency - p.Frequency;
                 double dv = Variance - p.Variance;
-                return Math.Sqrt(DA * da * da + DF * df * df + DV * dv * dv);
+                return Math.Sqrt(DA * DA * da * da + DF * DF * df * df + DV * DV * dv * dv);
             }
 
             public int FindClosestIndex(ClusterPoint[] centers)
