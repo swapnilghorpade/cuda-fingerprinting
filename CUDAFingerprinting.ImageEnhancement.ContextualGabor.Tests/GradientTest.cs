@@ -20,7 +20,6 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
             Normalizer.Normalize(100, 500, img);
             var grad = GradientHelper.GenerateGradient(img);
             var path = Path.GetTempPath() + "grad.png";
-            var x = OrientationFieldGenerator.GenerateLeastSquareEstimate(img);
             ImageHelper.SaveIntArray(grad, path);
             Process.Start(path);
         }
