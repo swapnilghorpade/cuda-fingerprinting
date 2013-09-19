@@ -10,7 +10,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         public const int W = 16;
         public const int L = 32;
 
-        public static double[,,] GenerateXSignature(int[,] normalizedImage)
+        private static double[,,] GenerateXSignature(int[,] normalizedImage)
         {
             var lro = OrientationFieldGenerator.GenerateLocalRidgeOrientation(normalizedImage);
             int maxY = lro.GetLength(0);
@@ -33,6 +33,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                             else
                                 result[i, j, k] = -1;
                         }
+
                         if (result[i, j, k] != -1)
                             result[i, j, k] /= (double)W;
                     }
@@ -45,7 +46,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         {
             int size = XSign.GetLength(2);
             var localMaxFlags = new bool[size];
-            const int mask = 1;
+            const int mask = 3;
             for (int i = 0; i < size; i++)
             {
                 localMaxFlags[i] = true;    
@@ -78,7 +79,7 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             return accum / counter;
         }
 
-        public static double AverageDistanceBetweenLocalMin(double[, ,] XSign, int y, int x)
+        public static double AverageDistanceBetweenLocalMin(double[,,] XSign, int y, int x)
         {
             int size = XSign.GetLength(2);
             var localMaxFlags = new bool[size];
@@ -122,15 +123,31 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             int maxX = xSign.GetLength(1);
             var freq = new double[maxY, maxX];
 
+            var debug = new double[maxY, maxX];
+            double s = 0;
+            double c = 0;
+
             for (int i = 0; i < maxY; i++)
             {
                 for (int j = 0; j < maxX; j++)
                 {
                     double denominator = AverageDistanceBetweenLocalMax(xSign, i, j);
+                    /*debug[i, j] = denominator;
+                    if (!double.IsNaN(debug[i, j]))
+                    {
+                        s += debug[i, j];
+                        ++c;
+                    }*/
+
                     if (denominator != 0)
+                    {
                         freq[i, j] = 1 / AverageDistanceBetweenLocalMax(xSign, i, j);
+                        //if (freq[i, j] > 1 / 3 || freq[i, j] < 1 / 25)
+                           // freq[i, j] = -1;
+                    }
                     else
                         freq[i, j] = -1;
+
                 }
             }
             return freq;
@@ -141,44 +158,42 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
             var freq = GenerateFrequency(image);
             int maxY = freq.GetLength(0);
             int maxX = freq.GetLength(1);
-            const int variance = 9;
-            var kernel = OrientationFieldGenerator.GenerateGaussianKernel(Math.Sqrt(variance));
-            int size = kernel.GetLength(0);
+            var kernel = OrientationFieldGenerator.GenerateGaussianKernel(3);
+            int size = kernel.GetLength(0) / 2;
+            int w = 7;//kernel.GetLength(0);
             bool flag = true;
             Func<double, double> m = x => (x <= 0 ? 0 : x);
             Func<double, double> b = x => (x <= 0 ? 0 : 1);
                 
             while (flag)
             {
-
-            for (int i = 0; i < maxY; i++)
-            {
-                for (int j = 0; j < maxX; j++)
+                for (int i = 0; i < maxY; i++)
                 {
-                    if (freq[i, j] == -1)
+                    for (int j = 0; j < maxX; j++)
                     {
-                        // Interpolation
-                        double numerator = 0;
-                        double denominator = 0;
-
-                        for (int u = -size / 2; u <= size / 2; u++)
+                        if (freq[i, j] == -1)
                         {
-                            for (int v = -size / 2; v <= size / 2; v++)
-                            {   
-                                int y = i - u;
-                                int x = j - v;
-                                if (x >= 0 && x < maxX && y >= 0 && y < maxY)
-                                {
-                                    numerator += kernel[u + size / 2, v + size / 2] * m(freq[y, x]);
-                                    denominator += kernel[u + size / 2, v + size / 2] * b(freq[y, x] + 1);
+                            // Interpolation
+                            double numerator = 0;
+                            double denominator = 0;
+
+                            for (int u = -w / 2; u <= w / 2; u++)
+                            {
+                                for (int v = -w / 2; v <= w / 2; v++)
+                                {   
+                                    int y = i - u * w;
+                                    int x = j - v * w;
+                                    if (x >= 0 && x < maxX && y >= 0 && y < maxY)
+                                    {
+                                        numerator += kernel[u + size, v + size] * m(freq[y, x]);
+                                        denominator += kernel[u + size, v + size] * b(freq[y, x] + 1);
+                                    }
                                 }
                             }
+                            freq[i, j] = (denominator == 0 ? -1 : numerator / denominator);
                         }
-                        freq[i, j] = numerator / denominator;
                     }
                 }
-            }
-
 
                 // Check if there exist any -1 frequency
                 flag = false;
@@ -190,33 +205,27 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                             flag = true;
                     }
                 }
-            }
-
-
-
+            }   
 
             var result = new double[maxY, maxX];
-            kernel = OrientationFieldGenerator.GenerateGaussianKernel(1);
-            size = kernel.GetLength(0);
-
             for (int i = 0; i < maxY; i++)
             {
                 for (int j = 0; j < maxX; j++)
                 {
                     result[i, j] = 0;
-                    for (int dy = -size / 2; dy <= size / 2; dy++)
+                    for (int dy = -w / 2; dy <= w / 2; dy++)
                     {
-                        for (int dx = -size / 2; dx <= size / 2; dx++)
+                        for (int dx = -w / 2; dx <= w / 2; dx++)
                         {
-                            int x = j + dx;
-                            int y = i + dy;
+                            int x = j + dx * w;
+                            int y = i + dy * w;
                             if (x >= 0 && x < maxX && y >= 0 && y < maxY)
-                                result[i, j] += freq[y, x] * kernel[dy + size / 2, dx + size / 2];
+                                result[i, j] += freq[y, x] * kernel[dy + size, dx + size];
+                            
                         }
                     }
                 }
             }
-
 
             return result;
         }

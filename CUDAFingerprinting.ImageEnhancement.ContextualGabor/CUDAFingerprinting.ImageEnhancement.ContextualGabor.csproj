@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClustersGenerator.cs" />
+    <Compile Include="FilteredImageGenerator.cs" />
     <Compile Include="GradientHelper.cs" />
     <Compile Include="Normalizer.cs" />
     <Compile Include="OrientationFieldGenerator.cs" />

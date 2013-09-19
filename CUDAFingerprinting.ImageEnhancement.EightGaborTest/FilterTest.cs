@@ -18,15 +18,11 @@ namespace CUDAFingerprinting.ImageEnhancement.EightGaborTest
         {
             var img = ImageHelper.LoadImageAsInt(Resources._5);
             Normalizer.Normalize(100, 500, img);
-            var radialOrientation = new double[8] { 0, 22.5, 45, 67.5, 90, 112.5, 135, 157.5 };
-            for (int i = 0; i < 8; i++)
-            {
-                // 0.0174532925 - deg to rads
-                var result = GaborGenerator.GenerateGaborFilter(img, radialOrientation[i] * 0.0174532925);
-                string path = Path.GetTempPath() + radialOrientation[i].ToString() + ".png";
-                ImageHelper.SaveArray(result, path);
-                Process.Start(path);
-            }
+            // 0.0174532925 - deg to rads
+            var result = GaborGenerator.GenerateGaborFilter(img, 0);
+            string path = Path.GetTempPath() + "0.png";
+            ImageHelper.SaveArray(result, path);
+            Process.Start(path);
         }
     }
 }

@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="ClusterizationTest.cs" />
+    <Compile Include="GaborTest.cs" />
     <Compile Include="GaussianBlurTest.cs" />
     <Compile Include="GradientTest.cs" />
     <Compile Include="LocalRidgeOrientationTest.cs" />
@@ -95,6 +96,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Bikesgray.jpg" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\101_1.tif" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -45,6 +45,12 @@
     <Compile Include="Normalizer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CUDAFingerprinting.ImageEnhancement.ContextualGabor\CUDAFingerprinting.ImageEnhancement.ContextualGabor.csproj">
+      <Project>{8E0B3659-1BED-4580-B777-FE45D6840175}</Project>
+      <Name>CUDAFingerprinting.ImageEnhancement.ContextualGabor</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

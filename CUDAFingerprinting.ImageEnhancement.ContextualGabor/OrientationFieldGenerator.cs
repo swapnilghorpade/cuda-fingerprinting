@@ -16,19 +16,19 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 
 
 
-        public static double[,] GenerateLeastSquareEstimate(int[,] image)
+        private static double[,] GenerateLeastSquareEstimate(int[,] image)
         {
             int maxY = image.GetLength(0);
             int maxX = image.GetLength(1);
-            var result = new double[maxY / W, maxX / W];
+            var result = new double[maxY, maxX];
             var gradX = GradientHelper.GenerateXGradient(image);
             var gradY = GradientHelper.GenerateYGradient(image);
-            double[,] vx = new double[maxY / W, maxX / W];
-            double[,] vy = new double[maxY / W, maxX / W];
+            double[,] vx = new double[maxY, maxX];
+            double[,] vy = new double[maxY, maxX];
 
-            for (int i = 0; i < maxY / W; i++)
+            for (int i = 0; i < maxY; i++)
             {
-                for (int j = 0; j < maxX / W; j++)
+                for (int j = 0; j < maxX; j++)
                 {
                     vx[i, j] = 0;
                     vy[i, j] = 0;
@@ -38,8 +38,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                         for (int dx = -W / 2; dx <= W / 2; dx++)
                         {
                             // Middle of the block with specified offset
-                            int y = i * W + W / 2 + dy;
-                            int x = j * W + W / 2 + dx;
+                            int y = i + dy;
+                            int x = j + dx;
 
                             if (x >= 0 && y >= 0 && x < maxX && y < maxY)
                             {
@@ -54,22 +54,26 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
                     vy[i, j] = vy[i, j] / hypotenuse;
 
                     result[i, j] = 0.5 * Math.Atan2(vy[i, j], vx[i, j]);
-                    result[i, j] = (result[i, j] < 0) ? result[i, j] + Math.PI : (result[i, j] > Math.PI ? result[i, j] - Math.PI : result[i, j]);
+                   // result[i, j] = (result[i, j] < 0) ? result[i, j] + Math.PI : (result[i, j] > Math.PI ? result[i, j] - Math.PI : result[i, j]);
                 }
             }
 
-            for (int x = 0; x < maxX / W; x++)
+            for (int x = 0; x < maxX; x++)
             {
-                for (int y = 0; y < maxY / W; y++)
+                for (int y = 0; y < maxY; y++)
                 {
-                    double resultX = 0, resultY = 0;
+                    double resultX = 0;
+                    double resultY = 0;
                     int count = 0;
+
                     for (int i = -1; i < 2; i++)
                     {
-                        if (y + i < 0 || y + i >= maxY / W) continue;
+                        if (y + i < 0 || y + i >= maxY) 
+                            continue;
                         for (int j = -1; j < 2; j++)
                         {
-                            if (x + j < 0 || x + j >= maxX / W) continue;
+                            if (x + j < 0 || x + j >= maxX) 
+                                continue;
                             resultX += vx[y + i, x + j];
                             resultY += vy[y + i, x + j];
                             count++;
@@ -132,10 +136,10 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
         }
 
         // (x, y) pairs of continious vector field
-        public static Tuple<double, double>[,] GenerateLowPassFilteredContiniousVectorField(int[,] image)
+        private static Tuple<double, double>[,] GenerateLowPassFilteredContiniousVectorField(int[,] image)
         {
-            int maxY = image.GetLength(0) / W;
-            int maxX = image.GetLength(1) / W;
+            int maxY = image.GetLength(0);
+            int maxX = image.GetLength(1);
             var cvf = new Tuple<double, double>[maxY, maxX];
             var lsq = GenerateLeastSquareEstimate(image);
 
@@ -152,8 +156,8 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor
 
         public static double[,] GenerateLocalRidgeOrientation(int[,] image)
         {
-            int maxY = image.GetLength(0) / W;
-            int maxX = image.GetLength(1) / W;
+            int maxY = image.GetLength(0);
+            int maxX = image.GetLength(1);
             double[,] lro = new double[maxY, maxX];
             var cvf = GenerateLowPassFilteredContiniousVectorField(image);
 

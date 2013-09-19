@@ -17,15 +17,15 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
         [TestMethod]
         public void LROTest()
         {
-            var img = ImageHelper.LoadImageAsInt(TestResources._2);
+            var img = ImageHelper.LoadImageAsInt(TestResources._3);
             Normalizer.Normalize(100, 500, img);
             var path = Path.GetTempPath() + "numbers.png";
             var lro = OrientationFieldGenerator.GenerateLocalRidgeOrientation(img);
             var image = ImageHelper.SaveArrayToBitmap(img.Select2D(x => (double)x));
 
             const int W = OrientationFieldGenerator.W;  
-            int maxY = img.GetLength(0) / W;
-            int maxX = img.GetLength(1) / W;
+            int maxY = img.GetLength(0);
+            int maxX = img.GetLength(1);
             var p = new Pen(Color.White);
             var g = Graphics.FromImage(image);
                       
@@ -35,14 +35,14 @@ namespace CUDAFingerprinting.ImageEnhancement.ContextualGabor.Tests
             g = Graphics.FromImage(image);
 
             // Draw grid and lines with specified tangent
-            for (int i = 0; i < maxY; i++)
+            for (int i = 0; i < maxY / W; i++)
             {
-                for (int j = 0; j < maxX; j++)
+                for (int j = 0; j < maxX / W; j++)
                 {
                     // point in the middle of block
                     var middle = new Point(j * W + W / 2, i * W + W / 2);
                     // y = (x - m.x)*tan(a) + y1 
-                    double angle = lro[i, j];
+                    double angle = lro[i * W + W / 2, j * W + W / 2];
 
                     if (angle < 0)
                         angle += 2 * Math.PI;

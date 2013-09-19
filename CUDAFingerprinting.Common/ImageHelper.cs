@@ -271,7 +271,7 @@ namespace CUDAFingerprinting.Common
                 bmp.SetPixel(column, row, Color.FromArgb(gray, gray, gray));
                 return value;
             });
-            return bmp;
+            return bmp;  
         }
 
         public static void SaveArray(double[,] data, string path)
