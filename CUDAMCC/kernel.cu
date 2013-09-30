@@ -174,11 +174,6 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 	CUDAArray<float> integralValues, int rows, int columns, CUDAArray<int> workingArea, 
 	float deltaS, float deltaD, CUDAArray<Cell> arr, CUDAArray<int> numOfValidMask)
 {
-
-
-
-
-
 	Cell result;
 	int row = defaultRow(); // J  < ~80
 	int column = defaultColumn(); // I  < 1536 = 16*16*6
@@ -387,11 +382,11 @@ void main()
 
 	//FindBigMinutiaeCUDA(sourceInt, width, height, minutiae, minutiaeCounter, 5);
 	minutiae[0].x =  40;
-	minutiae[0].x =  60;
+	minutiae[0].y =  60;
 	minutiae[0].angle = 0;
 
 	minutiae[1].x =  70;
-	minutiae[1].x =  100;
+	minutiae[1].y =  100;
 	minutiae[1].angle = M_PI/6;
 
 	minutiaeCounter[0] = 2;

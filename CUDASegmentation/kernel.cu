@@ -383,26 +383,26 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 	  
 	  CUDAArray<float> source = CUDAArray<float>(img, imgWidth, imgHeight);
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("CUDAArray<float> source = loadImage(...) - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("CUDAArray<float> source = loadImage(...) - ERROR!!!\n");
+	 // }
 
 	  // Sobel :	  
 	  CUDAArray<float> xGradient = CUDAArray<float>(imgWidth,imgHeight);
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("Create xGradient[] - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("Create xGradient[] - ERROR!!!\n");
+	 // }
 
 	  CUDAArray<float> yGradient = CUDAArray<float>(imgWidth,imgHeight);
 
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("Create yGradient[] - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("Create yGradient[] - ERROR!!!\n");
+	 // }
 	 
 	  float xKernelCPU[3][3] = {{-1,0,1},
 							{-2,0,2},
@@ -410,10 +410,10 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 
 	  CUDAArray<float> xKernel = CUDAArray<float>((float*)&xKernelCPU,3,3);	  
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("Create xKernel[] - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("Create xKernel[] - ERROR!!!\n");
+	 // }
 
 	  float yKernelCPU[3][3] = {{-1,-2,-1},
 							{0,0,0},
@@ -421,10 +421,10 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 
 	  CUDAArray<float> yKernel = CUDAArray<float>((float*)&yKernelCPU,3,3);	  
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("Create yKernel[] - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("Create yKernel[] - ERROR!!!\n");
+	 // }
 
 	  Convolve(xGradient, source, xKernel);
 	  Convolve(yGradient, source, yKernel);
@@ -432,17 +432,17 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 	  //magnitude of gradient
 	  CUDAArray<float> magnitude = CUDAArray<float>(imgWidth,imgHeight);
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("Create magnitude[] - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("Create magnitude[] - ERROR!!!\n");
+	 // }
 
 	  GetMagnitude(magnitude, xGradient, yGradient);
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("cudaGetMask - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("cudaGetMask - ERROR!!!\n");
+	 // }
 
 	  xGradient.Dispose();
 	  yGradient.Dispose();
@@ -459,23 +459,23 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 		//mask creation
 	  CUDAArray<int> CUDAmask = CUDAArray<int>(mask, maskWidth, maskHight);
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("create Mask - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("create Mask - ERROR!!!\n");
+	 // }
 	  
 	  cudaGetMask<<<gridSize,blockSize>>>(magnitude, CUDAmask, windowSize, average*weightConstant);
 	  cudaStatus = cudaGetLastError();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("cudaGetMask - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("cudaGetMask - ERROR!!!\n");
+	 // }
 
 	  cudaStatus = cudaDeviceSynchronize();
-	  if (cudaStatus != cudaSuccess) 
-	  {
-		printf("Synchronize - ERROR!!!\n");
-	  }
+	 // if (cudaStatus != cudaSuccess) 
+	 // {
+		//printf("Synchronize - ERROR!!!\n");
+	 // }
 
 	  magnitude.Dispose();
 

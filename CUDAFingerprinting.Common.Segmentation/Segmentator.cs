@@ -90,7 +90,7 @@ namespace CUDAFingerprinting.Common.Segmentation
             N = (int)Math.Ceiling(((double)img.GetLength(0)) / windowSize);
             M = (int)Math.Ceiling(((double)img.GetLength(1)) / windowSize);
 
-            bool[,] mask = new bool[N, M];
+            int[,] mask = new int[N, M];
 
             for (int i = 0; i < N; i++)
             {
@@ -109,21 +109,22 @@ namespace CUDAFingerprinting.Common.Segmentation
 
                     if (KernelHelper.Average(window) < averege * weight)
                     {
-                        mask[i, j] = false;
+                        mask[i, j] = 0;
                     }
                     else
                     {
-                        mask[i, j] = true;
+                        mask[i, j] = 1;
                     }
                 }
             }
 
-            mask = PostProcessing(mask, threshold);
+            PostProcessing(mask, threshold);
+
             return GetBigMask(mask, img.GetLength(0), img.GetLength(1),windowSize);
             //return ColorImage(img, mask, windowSize);
         }
 
-        private static int[,] GetBigMask(bool[,] mask, int imgX, int imgY, int windowSize)
+        private static int[,] GetBigMask(int[,] mask, int imgX, int imgY, int windowSize)
         {
             int[,] bigMask = new int[imgX, imgY];
 
@@ -131,225 +132,116 @@ namespace CUDAFingerprinting.Common.Segmentation
             {
                 int xBlock = (int)(((double)x) / windowSize);
                 int yBlock = (int)(((double)y) / windowSize);
-                return mask[xBlock , yBlock]? 1:0;
+                return mask[xBlock , yBlock];
             });
 
             return bigMask;
         }
 
-        public static double[,] ColorImage(double[,] img, bool[,] mask, int windowSize)
+        // mask is supposed to be the size of the image
+        public static double[,] ColorImage(double[,] img, int[,] mask)
         {
-            img = img.Select2D((value, x, y) =>
-                {
-                    int xBlock = (int)(((double)x) / windowSize);
-                    int yBlock = (int)(((double)y) / windowSize);
-                    return mask[xBlock, yBlock] ? img[x, y] : 0;
-                });
-
-            return img;
+            return img.Select2D((value, x, y) => mask[x, y]>0 ? img[x, y] : 255);
         }
 
-        private static bool[,] PostProcessing(bool[,] mask, int threshold)
+        public static void PostProcessing(int[,] mask, int threshold)
         {
-            var blackAreas = GenerateBlackAreas(mask);
-            var toRestore = new List<Tuple<int, int>>();
+            var blackAreas = GenerateAreas(mask,true);
 
-
-            foreach (var blackArea in blackAreas)
+            foreach (
+                var blackArea in
+                    blackAreas.Where(x => x.Count < threshold && !IsNearBorder(x, mask.GetLength(0), mask.GetLength(1)))
+                )
             {
-                if (blackArea.Value.Count < threshold &&
-                    !IsNearBorder(blackArea.Value, mask.GetLength(0), mask.GetLength(1)))
                 {
-                    toRestore.AddRange(blackArea.Value);
+                    foreach (var point in blackArea)
+                    {
+                        mask[point.X, point.Y] = 1;
+                    }
                 }
             }
-
-            var newMask = ChangeColor(toRestore, mask);
-            var imageAreas = GenerateImageAreas(newMask);
-            toRestore.Clear();
-
-
-            foreach (var imageArea in imageAreas)
+            
+            var imageAreas = GenerateAreas(mask, false);
+            
+            foreach (var imageArea in imageAreas.Where(x => x.Count < threshold && !IsNearBorder(x, mask.GetLength(0), mask.GetLength(1))))
             {
-                if (imageArea.Value.Count < threshold &&
-                    !IsNearBorder(imageArea.Value, mask.GetLength(0), mask.GetLength(1)))
+                foreach (var point in imageArea)
                 {
-                    toRestore.AddRange(imageArea.Value);
+                    mask[point.X, point.Y] = 0;
                 }
             }
-
-            return ChangeColor(toRestore, newMask);
         }
 
-        private static Dictionary<int, List<Tuple<int, int>>> GenerateBlackAreas(bool[,] mask)
+        private static List<List<Point>> GenerateAreas(int[,] mask, bool black)
         {
-            Dictionary<int, List<Tuple<int, int>>> areas = new Dictionary<int, List<Tuple<int, int>>>();
+            var lengthX = mask.GetLength(0);
+            var lengthY = mask.GetLength(1);
 
-            int areaIndex = 0;
+            List<Point>[,] bucketsMap = new List<Point>[mask.GetLength(0), mask.GetLength(1)];
 
-            for (int i = 0; i < mask.GetLength(0); i++)
+            List<List<Point>> buckets = new List<List<Point>>();
+
+            for (int x = 0; x < lengthX; x++)
             {
-                for (int j = 0; j < mask.GetLength(1); j++)
+                for (int y = 0; y < lengthY; y++)
                 {
-                    if (mask[i, j])
+                    if (black?mask[x, y]==0:mask[x,y]>0)
                     {
-                        continue;
-                    }
-                    if (i - 1 >= 0 && !mask[i - 1, j] //left block is black
-                        && (j - 1 >= 0 && mask[i, j - 1] || j - 1 < 0)) //top block is not black or not exist
-                    {
-                        foreach (var area in areas)
+                        var validTop = x > 0 && (black ? mask[x - 1, y]==0 : mask[x - 1, y]>0);
+                        var validLeft = y > 0 && (black ? mask[x, y - 1]==0 : mask[x, y - 1]>0);
+
+                        if (!validLeft && !validTop)
                         {
-                            if (area.Value.Contains(new Tuple<int, int>(i - 1, j)))
+                            buckets.Add(new List<Point>());
+                            bucketsMap[x, y] = buckets.Last();
+                        }
+                        else if (validLeft ^ validTop)
+                        {
+                            if (validLeft)
                             {
-                                area.Value.Add((new Tuple<int, int>(i, j)));
+                                bucketsMap[x, y] = bucketsMap[x, y - 1];
+                            }
+                            else
+                            {
+                                bucketsMap[x, y] = bucketsMap[x - 1, y];
                             }
                         }
-                        continue;
-                    }
-                    if (j - 1 >= 0 && !mask[i, j - 1] //top block is black 
-                        && (i - 1 >= 0 && mask[i - 1, j] || i - 1 < 0)) //left block is not black or not exist
-                    {
-                        foreach (var area in areas)
+                        else //both true
                         {
-                            if (area.Value.Contains(new Tuple<int, int>(i, j - 1)))
+                            if (bucketsMap[x - 1, y] == bucketsMap[x, y - 1])
                             {
-                                area.Value.Add((new Tuple<int, int>(i, j)));
+                                bucketsMap[x, y] = bucketsMap[x - 1, y];
+                            }
+                            else
+                            {
+                                var leftBucket = bucketsMap[x - 1, y];
+                                var topBucket = bucketsMap[x , y-1];
+
+                                foreach (var point in leftBucket)
+                                {
+                                    bucketsMap[point.X, point.Y] = topBucket;
+                                }
+                                buckets.Remove(leftBucket);
+                                topBucket.AddRange(leftBucket);
+
+                                bucketsMap[x, y] = topBucket;
+
                             }
                         }
-                        continue;
-
+                        bucketsMap[x, y].Add(new Point(x, y));
                     }
-                    if (j - 1 >= 0 && !mask[i, j - 1] //top block is black 
-                        && i - 1 >= 0 && !mask[i - 1, j]) //left block is black
-                    {
-                        int areaNumberi = 0;
-                        int areaNumberj = 0;
-                        foreach (var area in areas)
-                        {
-                            if (area.Value.Contains(new Tuple<int, int>(i, j - 1)))
-                            {
-                                areaNumberj = area.Key;
-                            }
-                            if (area.Value.Contains(new Tuple<int, int>(i - 1, j)))
-                            {
-                                areaNumberi = area.Key;
-                            }
-                        }
-
-                        if (areaNumberi != areaNumberj)
-                        {
-                            areas[areaNumberi].AddRange(areas[areaNumberj]);
-                            areas[areaNumberi] = new List<Tuple<int, int>>(areas[areaNumberi].Distinct());
-                            areas.Remove(areaNumberj);
-                        }
-
-                        areas[areaNumberi].Add(new Tuple<int, int>(i, j));
-                        continue;
-                    }
-                    areas.Add(areaIndex, new List<Tuple<int, int>>());
-                    areas[areaIndex].Add(new Tuple<int, int>(i, j));
-                    areaIndex++;
-                }
-
-            }
-            return areas;
-        }
-
-        private static Dictionary<int, List<Tuple<int, int>>> GenerateImageAreas(bool[,] mask)
-        {
-            var areas = new Dictionary<int, List<Tuple<int, int>>>();
-            int areaIndex = 0;
-
-            for (int i = 0; i < mask.GetLength(0); i++)
-            {
-                for (int j = 0; j < mask.GetLength(1); j++)
-                {
-                    if (!mask[i, j])
-                    {
-                        continue;
-                    }
-
-                    if (i - 1 >= 0 && mask[i - 1, j] && (j - 1 >= 0 && !mask[i, j - 1] || j - 1 < 0))
-                    {
-                        foreach (var area in areas)
-                        {
-                            if (area.Value.Contains(new Tuple<int, int>(i - 1, j)))
-                            {
-                                area.Value.Add((new Tuple<int, int>(i, j)));
-                            }
-                        }
-                        continue;
-                    }
-
-                    if (j - 1 >= 0 && mask[i, j - 1] && (i - 1 >= 0 && !mask[i - 1, j] || i - 1 < 0))
-                    {
-                        foreach (var area in areas)
-                        {
-                            if (area.Value.Contains(new Tuple<int, int>(i, j - 1)))
-                            {
-                                area.Value.Add((new Tuple<int, int>(i, j)));
-                            }
-                        }
-                        continue;
-
-                    }
-
-                    if (j - 1 >= 0 && mask[i, j - 1] && i - 1 >= 0 && mask[i - 1, j])
-                    {
-                        int areaNumberi = 0;
-                        int areaNumberj = 0;
-
-                        foreach (var area in areas)
-                        {
-                            if (area.Value.Contains(new Tuple<int, int>(i, j - 1)))
-                            {
-                                areaNumberj = area.Key;
-                            }
-                            if (area.Value.Contains(new Tuple<int, int>(i - 1, j)))
-                            {
-                                areaNumberi = area.Key;
-                            }
-                        }
-
-                        if (areaNumberi != areaNumberj)
-                        {
-                            areas[areaNumberi].AddRange(areas[areaNumberj]);
-                            areas[areaNumberi] = new List<Tuple<int, int>>(areas[areaNumberi].Distinct());
-                            areas.Remove(areaNumberj);
-                        }
-                        areas[areaNumberi].Add(new Tuple<int, int>(i, j));
-                        continue;
-                    }
-
-                    areas.Add(areaIndex, new List<Tuple<int, int>>());
-                    areas[areaIndex].Add(new Tuple<int, int>(i, j));
-                    areaIndex++;
                 }
             }
-
-            return areas;
+            return buckets;
         }
 
-        private static bool IsNearBorder(List<Tuple<int, int>> areas, int xBorder, int yBorder)
+        private static bool IsNearBorder(List<Point> areas, int xBorder, int yBorder)
         {
-            return areas.FindAll(area => area.Item1 == 0 ||
-                                         area.Item2 == 0 ||
-                                         area.Item1 == xBorder ||
-                                         area.Item2 == yBorder
-                ).Any();
+            return areas.Any(area => area.X == 0 ||
+                                         area.Y == 0 ||
+                                         area.X == xBorder ||
+                                         area.Y == yBorder);
         }
-
-        private static bool[,] ChangeColor(List<Tuple<int, int>> areas, bool[,] mask)
-        {
-            foreach (var area in areas)
-            {
-                mask[area.Item1, area.Item2] = !mask[area.Item1, area.Item2];
-            }
-
-            return mask;
-        }
-
     }
 }
 

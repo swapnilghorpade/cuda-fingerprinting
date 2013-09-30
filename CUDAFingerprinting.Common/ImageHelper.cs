@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -247,7 +248,7 @@ namespace CUDAFingerprinting.Common
             {
                 value = Math.Abs(value);
                 value = (value < 0) ? 0 : (value > 255 ? 255 : value);
-                bmp.SetPixel(column, row, Color.FromArgb(value, value, value));
+                lock(bmp)bmp.SetPixel(column, row, Color.FromArgb(value, value, value));
                 return value;
             });
             return bmp;
@@ -268,10 +269,17 @@ namespace CUDAFingerprinting.Common
             data.Select2D((value, row, column) =>
             {
                 var gray = (int)((value - min) / (max - min) * 255);
-                bmp.SetPixel(column, row, Color.FromArgb(gray, gray, gray));
+                lock(bmp)
+                    bmp.SetPixel(column, row, Color.FromArgb(gray, gray, gray));
                 return value;
             });
             return bmp;  
+        }
+
+        public static void SaveArrayAndOpen(double[,] data, string path)
+        {
+            SaveArray(data, path);
+            Process.Start(path);
         }
 
         public static void SaveArray(double[,] data, string path)

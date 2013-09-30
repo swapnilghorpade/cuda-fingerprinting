@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using System.Threading.Tasks;
 
 namespace CUDAFingerprinting.Common
 {
@@ -164,14 +165,14 @@ namespace CUDAFingerprinting.Common
         public static U[,] Select2D<T, U>(this T[,] array, Func<T, U> f)
         {
             var result = new U[array.GetLength(0),array.GetLength(1)];
-
-            for (int x = 0; x < array.GetLength(0); x++)
+            Parallel.For(0, array.GetLength(0), new ParallelOptions(){MaxDegreeOfParallelism = Environment.ProcessorCount}, (x,state) =>
             {
+
                 for (int y = 0; y < array.GetLength(1); y++)
                 {
                     result[x, y] = f(array[x, y]);
                 }
-            }
+            });
 
             return result;
         }
@@ -180,13 +181,14 @@ namespace CUDAFingerprinting.Common
         {
             var result = new U[array.GetLength(0), array.GetLength(1)];
 
-            for (int row = 0; row < array.GetLength(0); row++)
-            {
-                for (int column = 0; column < array.GetLength(1); column++)
+            Parallel.For(0, array.GetLength(0),
+                new ParallelOptions() {MaxDegreeOfParallelism = Environment.ProcessorCount}, (row, state) =>
                 {
-                    result[row, column] = f(array[row, column], row, column);
-                }
-            }
+                    for (int column = 0; column < array.GetLength(1); column++)
+                    {
+                        result[row, column] = f(array[row, column], row, column);
+                    }
+                });
 
             return result;
         }
