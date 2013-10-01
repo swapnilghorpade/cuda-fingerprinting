@@ -68,20 +68,22 @@ namespace Obedience.Tests
             }
         }
 
-        //[TestMethod]
-        //public void TestSegmentationPlusBigun()
-        //{
-        //    var fp = new FingerprintProcessor();
+        [TestMethod]
+        public void TestSegmentationPlusBigunPlusGlobalBinarization()
+        {
+            var fp = new FingerprintProcessor();
 
-        //    int[,] mask;
+            int[,] mask;
 
-        //    var result = fp.SegmentImage(ImageHelper.LoadImage(Resources.SampleFinger1), out mask);
+            var result = fp.SegmentImage(ImageHelper.LoadImage(Resources.SampleFinger1), out mask);
 
-        //    var path = Constants.Path + Guid.NewGuid() + ".png";
+            result = fp.BinarizeImage(result);
 
-        //    ImageHelper.SaveArray(result, path);
+            var path = Constants.Path + Guid.NewGuid() + ".png";
 
-        //    Process.Start(path);
-        //}
+            ImageHelper.SaveArray(result, path);
+
+            Process.Start(path);
+        }
     }
 }

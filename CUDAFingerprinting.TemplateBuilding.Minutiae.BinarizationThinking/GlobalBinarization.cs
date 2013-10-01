@@ -9,9 +9,9 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
 {
     public static class GlobalBinarization
     {
-        public static double[,] Binarization(double [,] img, double border)
+        public static double[,] Binarization(double [,] img, double threshold)
         {
-            return img.Select2D(x => x > border ? 255.0 : 0);
+            return img.Select2D(x => x > threshold ? 255.0 : 0);
         }
     }
 }

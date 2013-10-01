@@ -9,6 +9,7 @@ using System.Linq;
 using System.IO;
 using CUDAFingerprinting.Common;
 using CUDAFingerprinting.Common.Segmentation;
+using CUDAFingerprinting.ImageEnhancement.LinearSymmetry;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -218,6 +219,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
                 
             }
             //  Graphics graphics = Graphics.FromImage(Resources._104_6);
+        }
+
+        [TestMethod]
+        public void ProcessImg()
+        {
+            ImageHelper.SaveArray(ImageEnhancementHelper.EnhanceImage(ImageHelper.LoadImage("C:\\temp\\acd.png")), "C:\\temp\\acd_enh.bmp");
         }
     }
 }

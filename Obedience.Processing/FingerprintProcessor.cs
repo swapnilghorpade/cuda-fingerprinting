@@ -6,6 +6,8 @@ using System.Runtime.InteropServices;
 using System.Text;
 using CUDAFingerprinting.Common;
 using CUDAFingerprinting.Common.Segmentation;
+using CUDAFingerprinting.ImageEnhancement.LinearSymmetry;
+using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
 
 namespace Obedience.Processing
 {
@@ -30,6 +32,20 @@ namespace Obedience.Processing
             int[,] mask;
 
             doubleImage = SegmentImage(doubleImage, out mask);
+
+            doubleImage = BinarizeImage(doubleImage);
+        }
+
+        public double[,] BinarizeImage(double[,] image, bool UseCUDA = false)
+        {
+            if (UseCUDA)
+            {
+                // TODO: make correct
+                return image;
+            }
+            var newImage = ImageEnhancementHelper.EnhanceImage(image);
+
+            return GlobalBinarization.Binarization(newImage, Constants.BinarizationThreshold);
         }
 
         public double[,] SegmentImage(double[,] image, out int[,] mask, bool UseCUDA = false)
