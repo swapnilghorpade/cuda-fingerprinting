@@ -85,5 +85,49 @@ namespace Obedience.Tests
 
             Process.Start(path);
         }
+
+        [TestMethod]
+        public void TestSegmentationPlusBigunPlusGlobalBinarizationPlusThinning()
+        {
+            var fp = new FingerprintProcessor();
+
+            int[,] mask;
+
+            var result = fp.SegmentImage(ImageHelper.LoadImage(Resources.SampleFinger1), out mask);
+
+            result = fp.BinarizeImage(result);
+
+            result = fp.ThinImage(result);
+
+            var path = Constants.Path + Guid.NewGuid() + ".png";
+
+            ImageHelper.SaveArray(result, path);
+
+            Process.Start(path);
+        }
+
+        [TestMethod]
+        public void TestFullCycleUpToMinutiae()
+        {
+            var fp = new FingerprintProcessor();
+
+            int[,] mask;
+
+            var segment = fp.SegmentImage(ImageHelper.LoadImage(Resources.SampleFinger1), out mask);
+
+            var result = fp.BinarizeImage(segment);
+
+            result = fp.ThinImage(result);
+
+            var minutiae = fp.FindMinutiae(result);
+
+            minutiae = fp.FilterMinutiae(minutiae, mask);
+
+            var path = Constants.Path + Guid.NewGuid() + ".png";
+
+            ImageHelper.MarkMinutiae(Resources.SampleFinger1, minutiae, path);
+
+            Process.Start(path);
+        }
     }
 }

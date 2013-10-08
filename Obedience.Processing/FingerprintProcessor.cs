@@ -34,11 +34,36 @@ namespace Obedience.Processing
             doubleImage = SegmentImage(doubleImage, out mask);
 
             doubleImage = BinarizeImage(doubleImage);
+
+            doubleImage = ThinImage(doubleImage);
+
+            List<Minutia> minutiae = FindMinutiae(doubleImage);
+
+
         }
 
-        public double[,] BinarizeImage(double[,] image, bool UseCUDA = false)
+        public List<Minutia> FindMinutiae(double[,] doubleImage, bool useCuda = false)
         {
-            if (UseCUDA)
+            if (useCuda)
+            {
+                return new List<Minutia>();
+            }
+
+            return MinutiaeDetection.FindBigMinutiae(MinutiaeDetection.FindMinutiae(doubleImage));
+        }
+
+        public double[,] ThinImage(double[,] doubleImage, bool useCUDA = false)
+        {
+            if (useCUDA)
+            {
+                return doubleImage; // TODO: Replace
+            }
+            return Thining.ThinPicture(doubleImage);
+        }
+
+        public double[,] BinarizeImage(double[,] image, bool useCUDA = false)
+        {
+            if (useCUDA)
             {
                 // TODO: make correct
                 return image;
@@ -81,23 +106,67 @@ namespace Obedience.Processing
                 }
 
                 Segmentator.PostProcessing(mask, Constants.SegmentationThreshold);
-                var newMask = new int[imageX, imageY];
-                for (int x = 0; x < imageX; x++)
-                {
-                    for (int y = 0; y < imageY; y++)
-                    {
-                        int xBlock = (int)(((double)x) / Constants.SegmentationWindowSize);
-                        int yBlock = (int)(((double)y) / Constants.SegmentationWindowSize);
-                        newMask[x, y] = mask[xBlock, yBlock];
-                    }
-                }
-                mask = newMask;
             }
             else
                 mask = Segmentator.Segmetator(image, Constants.SegmentationWindowSize, Constants.SegmentationWeight,
                     Constants.SegmentationThreshold);
 
-            return Segmentator.ColorImage(image, mask);
+            return Segmentator.ColorImage(image,
+                Segmentator.GetBigMask(mask, image.GetLength(0), image.GetLength(1), Constants.SegmentationWindowSize));
+        }
+
+        public List<Minutia> FilterMinutiae(List<Minutia> result, int[,] segment)
+        {
+            var size = Constants.SegmentationWindowSize;
+
+            var maxX = segment.GetLength(0);
+            var maxY = segment.GetLength(1);
+
+            var output = new List<Minutia>();
+
+            foreach (var minutia in result)
+            {
+                var y = minutia.X/size;
+                var x = minutia.Y/size;
+
+                try
+                {
+                    if (segment[x, y] == 1)
+                    {
+
+                        if (x > 0)
+                        {
+                            if (segment[x - 1, y] == 0) continue;
+                            if (y > 0) if (segment[x - 1, y - 1] == 0) continue;
+                            if (y < maxY) if (segment[x - 1, y + 1] == 0) continue;
+                        }
+                        if (x < maxX)
+                        {
+                            if (segment[x + 1, y] == 0) continue;
+                            if (y > 0) if (segment[x + 1, y - 1] == 0) continue;
+                            if (y < maxY) if (segment[x + 1, y + 1] == 0) continue;
+                        }
+                        if (y > 0)
+                        {
+                            if (segment[x, y - 1] == 0) continue;
+                        }
+                        if (y < maxY)
+                        {
+                            if (segment[x, y + 1] == 0) continue;
+                        }
+
+                        output.Add(minutia);
+                    }
+                }
+                catch (Exception)
+                {
+                    
+                    throw;
+                }
+               
+            }
+
+            return output;
         }
     }
 }

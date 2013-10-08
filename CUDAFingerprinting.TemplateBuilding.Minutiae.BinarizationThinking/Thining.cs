@@ -51,7 +51,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             return counter;
         }
 
-        public static double[,] ThiningPicture(double[,] newPicture)
+        public static double[,] ThinPicture(double[,] newPicture)
         {
             
             double[,] picture = new double[newPicture.GetLength(0) + 2,newPicture.GetLength(1) + 2];

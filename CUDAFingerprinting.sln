@@ -57,7 +57,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Matching", "Matching", "{FD
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{035755C9-6E6C-4124-A5B3-A5E9D5F5DA21}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking", "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.csproj", "{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning", "CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.csproj", "{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CUDAFingerprinting.ImageEnhancement.ContextualGabor", "CUDAFingerprinting.ImageEnhancement.ContextualGabor\CUDAFingerprinting.ImageEnhancement.ContextualGabor.csproj", "{8E0B3659-1BED-4580-B777-FE45D6840175}"
 EndProject

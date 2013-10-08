@@ -483,7 +483,7 @@ namespace CUDAFingerprint
             int sizeWin = 16;
             binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
             //---------------------------------------
-            binaryImage = Thining.ThiningPicture(binaryImage);
+            binaryImage = Thining.ThinPicture(binaryImage);
             //---------------------------------------
             List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
             for (int i = 0; i < Minutiae.Count; i++)
@@ -543,7 +543,7 @@ namespace CUDAFingerprint
             int sizeWin = 16;
             binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
             //---------------------------------------
-            binaryImage = Thining.ThiningPicture(binaryImage);
+            binaryImage = Thining.ThinPicture(binaryImage);
             //---------------------------------------
             List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
             for (int i = 0; i < Minutiae.Count; i++)

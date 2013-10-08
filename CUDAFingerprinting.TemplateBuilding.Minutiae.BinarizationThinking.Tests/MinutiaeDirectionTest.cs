@@ -117,7 +117,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
                 startImg = GlobalBinarization.Binarization(startImg, 150);
                 //-------------------------------
 
-                startImg = Thining.ThiningPicture(startImg);
+                startImg = Thining.ThinPicture(startImg);
 
                 //-------------------------------
                 for (int i = 0; i < imgHeight; i++)

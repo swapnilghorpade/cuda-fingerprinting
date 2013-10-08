@@ -28,7 +28,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
         public void TestMcc()
         {
             int[,] maskOfSegmentation2D = Segmentator.Segmetator(img, windowSize, weight, threshold);
-            var thining = Thining.ThiningPicture(GlobalBinarization.Binarization(img, board));
+            var thining = Thining.ThinPicture(GlobalBinarization.Binarization(img, board));
             List<Minutia> minutiaList = MinutiaeDetection.FindMinutiae(thining);
             List<Minutia> validMinutiae = new List<Minutia>();
 
@@ -81,7 +81,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.Test
             int sizeWin = 16;
             binaryImage = LocalBinarizationCanny.LocalBinarization(binaryImage, nonMax, sizeWin, 1.3d);
             //---------------------------------------
-            binaryImage = Thining.ThiningPicture(binaryImage);
+            binaryImage = Thining.ThinPicture(binaryImage);
             //---------------------------------------
             List<Minutia> minutiae = MinutiaeDetection.FindMinutiae(binaryImage);
             for (int i = 0; i < minutiae.Count; i++)

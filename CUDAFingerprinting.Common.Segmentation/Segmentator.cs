@@ -120,11 +120,11 @@ namespace CUDAFingerprinting.Common.Segmentation
 
             PostProcessing(mask, threshold);
 
-            return GetBigMask(mask, img.GetLength(0), img.GetLength(1),windowSize);
+            return mask; // GetBigMask(mask, img.GetLength(0), img.GetLength(1), windowSize);
             //return ColorImage(img, mask, windowSize);
         }
 
-        private static int[,] GetBigMask(int[,] mask, int imgX, int imgY, int windowSize)
+        public static int[,] GetBigMask(int[,] mask, int imgX, int imgY, int windowSize)
         {
             int[,] bigMask = new int[imgX, imgY];
 

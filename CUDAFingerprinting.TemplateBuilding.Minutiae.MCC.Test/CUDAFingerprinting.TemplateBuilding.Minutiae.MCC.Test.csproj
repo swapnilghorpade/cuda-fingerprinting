@@ -67,9 +67,9 @@
       <Project>{83EBBA4F-41BD-4103-92DA-8923AEC11EFA}</Project>
       <Name>CUDAFingerprinting.ImageEnhancement.LinearSymmetry</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.csproj">
+    <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.csproj">
       <Project>{74B7C604-38C8-475D-AD0E-0A5D1519FEC9}</Project>
-      <Name>CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking</Name>
+      <Name>CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning</Name>
     </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.TemplateBuilding.Minutiae.MCC\CUDAFingerprinting.TemplateBuilding.Minutiae.MCC.csproj">
       <Project>{C11C918C-3172-4869-B4A6-50EACFFAFC49}</Project>

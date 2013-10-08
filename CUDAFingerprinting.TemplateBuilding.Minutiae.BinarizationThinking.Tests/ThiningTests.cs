@@ -18,7 +18,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //var img = ImageHelper.LoadImage(TestResource._104_6);
             var img = ImageHelper.LoadImage(TestResource.ThiningImageTest);
             var path = Path.GetTempPath() + "thininig.png";
-            var thining = Thining.ThiningPicture(img);
+            var thining = Thining.ThinPicture(img);
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
         }
@@ -28,7 +28,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //var img = ImageHelper.LoadImage(TestResource._104_6);
             var img = ImageHelper.LoadImage(TestResource.ThiningImageTest2);
             var path = Path.GetTempPath() + "thininig.png";
-            var thining = Thining.ThiningPicture(img);
+            var thining = Thining.ThinPicture(img);
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
         }
@@ -38,7 +38,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //var img = ImageHelper.LoadImage(TestResource._104_6);
             var img = ImageHelper.LoadImage(TestResource.ThiningImageTest3);
             var path = Path.GetTempPath() + "thininig.png";
-            var thining = Thining.ThiningPicture(img); 
+            var thining = Thining.ThinPicture(img); 
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
         }
@@ -54,7 +54,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //ImageHelper.SaveIntArray();
             var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150);
             var path = Path.GetTempPath() + "thininig.png";
-            var thining = Thining.ThiningPicture(img);
+            var thining = Thining.ThinPicture(img);
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
         }
@@ -98,7 +98,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
                                      {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 
                                      }; 
             //var path = "C:\\Users\\CUDA Fingerprinting2\\" + "thininig.png";
-            var thining = Thining.ThiningPicture(img);
+            var thining = Thining.ThinPicture(img);
 
             //var img1 = ImageHelper.LoadImage(TestResource.ThiningImageTest3);
             var img2 = ImageHelper.LoadImageAsInt(TestResource._104_61globalBinarization150); 
@@ -142,7 +142,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //ImageHelper.SaveIntArray();
             var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150);
             var path = Path.GetTempPath() + "thininig.png";
-            var thining = Thining.ThiningPicture(img);
+            var thining = Thining.ThinPicture(img);
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
         }
@@ -156,7 +156,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //ImageHelper.SaveIntArray();
             var img = ImageHelper.LoadImage(TestResource._104_61globalBinarization150);
             var path = Path.GetTempPath() + "thininig.png";
-            var thining = Thining.ThiningPicture(img);
+            var thining = Thining.ThinPicture(img);
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
         }

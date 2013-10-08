@@ -32,7 +32,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //var img = ImageHelper.LoadImage(TestResource._104_6);
             var img = ImageHelper.LoadImage(TestResource._104_6);
             double board = 5;
-            var thining = Thining.ThiningPicture(GlobalBinarization.Binarization(img, board));
+            var thining = Thining.ThinPicture(GlobalBinarization.Binarization(img, board));
             var path = Path.GetTempPath() + "MinutiaeMarkedThinnedBinarizated"+ board +".png";
 
             ImageHelper.MarkMinutiae(ImageHelper.SaveArrayToBitmap(thining), MinutiaeDetection.FindMinutiae(thining), path);
@@ -91,7 +91,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
             var path2 = Path.GetTempPath() + "Thinned81_7.png";
-            var resImg2 = Thining.ThiningPicture(resImg);
+            var resImg2 = Thining.ThinPicture(resImg);
             ImageHelper.SaveArray(resImg2, path2);
             Process.Start(path2);
             var list = MinutiaeDetection.FindMinutiae(resImg2);
@@ -119,7 +119,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
             var path2 = Path.GetTempPath() + "Thinned90_3.png";
-            var resImg2 = Thining.ThiningPicture(resImg);
+            var resImg2 = Thining.ThinPicture(resImg);
             ImageHelper.SaveArray(resImg2, path2);
             Process.Start(path2);
             var list = MinutiaeDetection.FindMinutiae(resImg2);
@@ -147,7 +147,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
             var path2 = Path.GetTempPath() + "Thinned85_1.png";
-            var resImg2 = Thining.ThiningPicture(resImg);
+            var resImg2 = Thining.ThinPicture(resImg);
             ImageHelper.SaveArray(resImg2, path2);
             Process.Start(path2);
             var list = MinutiaeDetection.FindMinutiae(resImg2);
@@ -175,7 +175,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
             var path2 = Path.GetTempPath() + "Thinned81_4.png";
-            var resImg2 = Thining.ThiningPicture(resImg);
+            var resImg2 = Thining.ThinPicture(resImg);
             ImageHelper.SaveArray(resImg2, path2);
             Process.Start(path2);
             var list = MinutiaeDetection.FindMinutiae(resImg2);
@@ -203,7 +203,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
             var path2 = Path.GetTempPath() + "Thinned81_8.png";
-            var resImg2 = Thining.ThiningPicture(resImg);
+            var resImg2 = Thining.ThinPicture(resImg);
             ImageHelper.SaveArray(resImg2, path2);
             Process.Start(path2);
             var list = MinutiaeDetection.FindMinutiae(resImg2);
