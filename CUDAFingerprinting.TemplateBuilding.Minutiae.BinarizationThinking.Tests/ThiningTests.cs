@@ -1,13 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using CUDAFingerprinting.Common;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests
+namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Tests
 {
     [TestClass]
     public class ThiningTests
@@ -16,7 +12,15 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         public void TestMethod1()
         {
             //var img = ImageHelper.LoadImage(TestResource._104_6);
-            var img = ImageHelper.LoadImage(TestResource.ThiningImageTest);
+            double sigma = 1.4d;
+            var img = ImageHelper.LoadImage(TestResource._90_3);
+            double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
+            double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
+            double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
+            nonMax = GlobalBinarization.Binarization(nonMax, 60);
+            nonMax = LocalBinarizationCanny.Inv(nonMax);
+            int sizeWin = 16;
+            double[,] resImg = LocalBinarizationCanny.LocalBinarization(img, nonMax, sizeWin, 1.3d);
             var path = Path.GetTempPath() + "thininig.png";
             var thining = Thining.ThinPicture(img);
             ImageHelper.SaveArray(thining, path);
@@ -58,6 +62,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             ImageHelper.SaveArray(thining, path);
             Process.Start(path);
         }
+
         [TestMethod]
         public void TestMethod5()
         {
@@ -100,27 +105,27 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
             //var path = "C:\\Users\\CUDA Fingerprinting2\\" + "thininig.png";
             var thining = Thining.ThinPicture(img);
 
-            //var img1 = ImageHelper.LoadImage(TestResource.ThiningImageTest3);
-            var img2 = ImageHelper.LoadImageAsInt(TestResource._104_61globalBinarization150); 
+        //    //var img1 = ImageHelper.LoadImage(TestResource.ThiningImageTest3);
+        //    var img2 = ImageHelper.LoadImageAsInt(TestResource._104_61globalBinarization150); 
             
-            for (int j = 0; j < img2.GetLength(0); j++)
-            {
-                for (int i = 0; i < img2.GetLength(1); i++)
-                {
-                    Console.Write(img2[j, i] + " ");
-                }
-                Console.WriteLine();
-            }
+        //    for (int j = 0; j < img2.GetLength(0); j++)
+        //    {
+        //        for (int i = 0; i < img2.GetLength(1); i++)
+        //        {
+        //            Console.Write(img2[j, i] + " ");
+        //        }
+        //        Console.WriteLine();
+        //    }
             
-            //for (int j = 0; j < thining.GetLength(0); j++)
-            //{
-            //    for (int i = 0; i < thining.GetLength(1); i++)
-            //    {
-            //        Console.Write(thining[j, i] + " ");
-            //    }
-            //    Console.WriteLine();
-            //}
-            //Process.Start();
+        //    //for (int j = 0; j < thining.GetLength(0); j++)
+        //    //{
+        //    //    for (int i = 0; i < thining.GetLength(1); i++)
+        //    //    {
+        //    //        Console.Write(thining[j, i] + " ");
+        //    //    }
+        //    //    Console.WriteLine();
+        //    //}
+        //    //Process.Start();
         }
         //[TestMethod]
         //public void TestMethod6()

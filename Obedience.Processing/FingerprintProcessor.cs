@@ -7,7 +7,7 @@ using System.Text;
 using CUDAFingerprinting.Common;
 using CUDAFingerprinting.Common.Segmentation;
 using CUDAFingerprinting.ImageEnhancement.LinearSymmetry;
-using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
+using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning;
 
 namespace Obedience.Processing
 {

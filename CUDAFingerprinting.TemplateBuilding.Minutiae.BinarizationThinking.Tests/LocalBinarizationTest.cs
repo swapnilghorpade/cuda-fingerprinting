@@ -1,14 +1,9 @@
-﻿using System;
-using System.IO;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CUDAFingerprinting.Common;
-using System.IO;
 using System.Diagnostics;
 
-namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests
+namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Tests
 {
     [TestClass]
     public class LocalBinarizationTest
@@ -110,17 +105,18 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         public void TestLocalBinarization()
         {
             double sigma = 1.4d;
-            var img = ImageHelper.LoadImage(TestResource._104_6_ench);
+            var img = ImageHelper.LoadImage(TestResource._90_3);
             double[,] smoothing = LocalBinarizationCanny.Smoothing(img, sigma);
             double[,] sobel = LocalBinarizationCanny.Sobel(smoothing);
             double[,] nonMax = LocalBinarizationCanny.NonMaximumSupperession(sobel);
             nonMax = GlobalBinarization.Binarization(nonMax, 60);
             nonMax = LocalBinarizationCanny.Inv(nonMax);
-
+            var path = Path.GetTempPath() + "nonMax"  + ".png";
+            ImageHelper.SaveArray(nonMax, path);
+            Process.Start(path);
             int sizeWin = 16;
             double[,] resImg = LocalBinarizationCanny.LocalBinarization(img, nonMax, sizeWin, 1.3d);
-
-            var path = Path.GetTempPath() + "localSol" + sizeWin + ".png";
+            path = Path.GetTempPath() + "localSol" + sizeWin + ".png";
             ImageHelper.SaveArray(resImg, path);
             Process.Start(path);
         }
@@ -140,24 +136,24 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
         }
 
 
-        [TestMethod]
-        public void TestMethodCudaToBin()
-        {
-            for (int i = 1; i < 101; i++)
-            {
-                for (int j = 1; j < 9; j++)
-                {
-                    ImageHelper.SaveImageAsBinaryFloat("D:\\learn\\learn\\summer_6_5\\from school\\FVC2000\\Dbs\\Db1_a\\" + i + "_" + j + ".tif",
-                        "D:\\temp\\binFromImg\\" + i + "_" + j + ".bin");
-                }
-            }
-        }
+        //[TestMethod]
+        //public void TestMethodCudaToBin()
+        //{
+        //    for (int i = 1; i < 101; i++)
+        //    {
+        //        for (int j = 1; j < 9; j++)
+        //        {
+        //            ImageHelper.SaveImageAsBinaryFloat("D:\\learn\\learn\\summer_6_5\\from school\\FVC2000\\Dbs\\Db1_a\\" + i + "_" + j + ".tif",
+        //                "D:\\temp\\binFromImg\\" + i + "_" + j + ".bin");
+        //        }
+        //    }
+        //}
 
-        [TestMethod]
-        public void TestMethodCudaToImg()
-        {
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_2.bin", "C:\\temp\\104_6_localBinar60.png", true);
-        }
+        //[TestMethod]
+        //public void TestMethodCudaToImg()
+        //{
+        //    ImageHelper.SaveBinaryAsImage("C:\\temp\\104_6_2.bin", "C:\\temp\\104_6_localBinar60.png", true);
+        //}
 
     }
 }

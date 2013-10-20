@@ -35,10 +35,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="CustomDevices">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SondaLab\SenDiag\CustomDevices.dll</HintPath>
+      <HintPath>.\CustomDevices.dll</HintPath>
     </Reference>
     <Reference Include="SondaSDK_NET">
-      <HintPath>..\..\..\..\..\..\..\Program Files (x86)\SondaLab\SenDiag\SondaSDK_NET.dll</HintPath>
+      <HintPath>.\SondaSDK_NET.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

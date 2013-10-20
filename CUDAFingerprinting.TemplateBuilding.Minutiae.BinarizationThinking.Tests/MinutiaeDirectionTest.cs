@@ -1,19 +1,11 @@
 ﻿using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using CUDAFingerprinting.Common.ComplexFilters;
-using CUDAFingerprinting.Common.OrientationField;
-using CUDAFingerprinting.Common.PoreFilter;
-using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System;
 using System.Drawing;
 using CUDAFingerprinting.Common;
-using CUDAFingerprinting.ImageEnhancement.ContextualGabor;
-using OrientationFieldGenerator = CUDAFingerprinting.ImageEnhancement.ContextualGabor.OrientationFieldGenerator;
 
-namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests
+namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Tests
 {
     
     
@@ -130,12 +122,12 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
 
                 int[,] BinaryImage = ImageHelper.ConvertDoubleToInt(startImg);
                 double[,] OrientationField =
-                    CUDAFingerprinting.Common.OrientationField.OrientationFieldGenerator.GenerateOrientationField(
+                    Common.OrientationField.OrientationFieldGenerator.GenerateOrientationField(
                         BinaryImage);
 
                 //-------------------------------
 
-                List<Minutia> Minutiae = BinarizationThinking.MinutiaeDetection.FindMinutiae(startImg);
+                List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(startImg);
                 //--------------------------------
                 for (int i = 0; i < Minutiae.Count; i++)
                 {
@@ -148,7 +140,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Test
 
                 //--------------------------------
 
-                Minutiae = BinarizationThinking.MinutiaeDetection.FindBigMinutiae(Minutiae);
+                Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
 
                 //-------------------------------
 

@@ -1,16 +1,10 @@
-﻿using System;
-using System.Diagnostics;
-using System.Drawing;
+﻿using System.Diagnostics;
 using System.IO;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
 using CUDAFingerprinting.Common;
 using CUDAFingerprinting.Common.PoreFilter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
 
-namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests
+namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Tests
 {
     [TestClass]
     public class MinutiaDetectionTests

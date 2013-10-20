@@ -1,15 +1,10 @@
-﻿using System;
-using System.Text;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using CUDAFingerprinting.Common;
-using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
-//using CUDAFingerprinting.ImageEnhancement.ContextualGabor;
 using System.IO;
 using System.Diagnostics;
+//using CUDAFingerprinting.ImageEnhancement.ContextualGabor;
 
-namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests
+namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Tests
 {
     [TestClass]
     public class GlobalBinarizationTest

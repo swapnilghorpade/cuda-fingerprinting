@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-
-namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
+﻿namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning
 {
     public static class Thining
     {
@@ -164,7 +159,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
             {
                 for (int j = 0; j < picture.GetLength(0); j++)
                 {
-                    picture[j, i] = picture[j, i] == 0 ? picture[j, i] = 255 : picture[j, i] = 0;       // Черным клеткам присваеваем значения 0, белым - 255
+                    picture[j, i] = picture[j, i] == 0 ? 255 : 0;       // Черным клеткам присваеваем значения 0, белым - 255
                 }
             }
             

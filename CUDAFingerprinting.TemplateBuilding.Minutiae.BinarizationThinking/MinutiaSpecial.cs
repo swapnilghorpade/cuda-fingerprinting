@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using CUDAFingerprinting.Common;
-
-namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking
+﻿namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning
 {
     public struct MinutiaSpecial
     {
