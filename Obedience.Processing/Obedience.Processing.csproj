@@ -63,7 +63,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="CUDAMinutiaeMatcher.dll" />
     <Content Include="CUDASegmentation.dll">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="CUDAThining.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

@@ -144,6 +144,11 @@ namespace CUDAFingerprinting.Common.Segmentation
             return img.Select2D((value, x, y) => mask[x, y]>0 ? img[x, y] : 255);
         }
 
+        public static float[] ColorImage(float[] img, int rows, int columns, int[,] mask)
+        {
+            return img.Select2D(rows, columns, (value, x, y) => mask[x, y] > 0 ? img[x*columns + y] : 255);
+        }
+
         public static void PostProcessing(int[,] mask, int threshold)
         {
             var blackAreas = GenerateAreas(mask,true);

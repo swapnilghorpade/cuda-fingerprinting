@@ -11,6 +11,7 @@ __declspec(dllexport) void Init();
 
 __declspec(dllexport) int Identify(float* image, int width, int height);
 
+__declspec(dllexport) void Enhance(float* image, int width, int height);
 }
 
 const float tau1 = 0.1f;
@@ -75,7 +76,16 @@ CUDAArray<float> EnhanceImage(CUDAArray<float> sourceImage)
 	return enhanced;
 }
 
-
+void Enhance(float* image, int width, int height)
+{
+	cudaSetDevice(0);
+	CUDAArray<float> arr = CUDAArray<float>(image, width, height);
+	CUDAArray<float> arr2 = EnhanceImage(arr);
+	arr2.GetData(image);
+	arr.Dispose();
+	arr2.Dispose();
+	cudaDeviceReset();
+}
 
 CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
 {

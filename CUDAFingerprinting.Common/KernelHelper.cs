@@ -177,12 +177,12 @@ namespace CUDAFingerprinting.Common
             return result;
         }
 
-        public static U[,] Select2D<T, U>(this T[,] array, Func<T, int, int, U> f)
+        public static U[,] Select2DParallel<T, U>(this T[,] array, Func<T, int, int, U> f)
         {
             var result = new U[array.GetLength(0), array.GetLength(1)];
 
             Parallel.For(0, array.GetLength(0),
-                new ParallelOptions() {MaxDegreeOfParallelism = Environment.ProcessorCount}, (row, state) =>
+                new ParallelOptions() { MaxDegreeOfParallelism = Environment.ProcessorCount }, (row, state) =>
                 {
                     for (int column = 0; column < array.GetLength(1); column++)
                     {
@@ -190,6 +190,67 @@ namespace CUDAFingerprinting.Common
                     }
                 });
 
+            return result;
+        }
+
+        public static U[,] Select2D<T, U>(this T[,] array, Func<T, int, int, U> f)
+        {
+            var result = new U[array.GetLength(0), array.GetLength(1)];
+
+            for (int row = 0; row < array.GetLength(0); row++)
+            {
+                for (int column = 0; column < array.GetLength(1); column++)
+                {
+                    result[row, column] = f(array[row, column], row, column);
+                }
+            }
+
+            return result;
+        }
+
+        public static U[] Select2D<T, U>(this T[] array, int rows, int columns, Func<T, int, int, U> f)
+        {
+            var result = new U[rows*columns];
+
+            for (int row = 0; row < rows; row++)
+            {
+                for (int column = 0; column < columns; column++)
+                {
+                    result[row*columns + column] = f(array[row*columns + column], row, column);
+                }
+            }
+
+            return result;
+        }
+
+        public static T[] Make1D<T>(this T[,] arr)
+        {
+            var rows = arr.GetLength(0);
+            var columns = arr.GetLength(1);
+
+            var result = new T[rows * columns];
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < columns; j++)
+                {
+                    result[i * columns + j] = arr[i, j];
+                }
+            }
+            return result;
+        }
+
+        public static T[,] Make2D<T>(this T[] arr, int rows, int columns)
+        {
+            var result = new T[rows, columns];
+
+            for (int i = 0; i < rows; i++)
+            {
+                for (int j = 0; j < columns; j++)
+                {
+                    result[i, j] = arr[i * columns + j];
+                }
+            }
             return result;
         }
 
