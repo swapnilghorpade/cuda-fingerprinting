@@ -25,6 +25,15 @@ namespace Obedience.Processing
         [DllImport("CUDAThining.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void CUDAThining(int[] picture, int width, int height, int[] result);
 
+        [DllImport("CUDAMinutiaeMatcher.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void FillDirections();
+
+        [DllImport("CUDAMinutiaeMatcher.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void Enhance(float[] image, int width, int height);
+
+        [DllImport("CUDABinarization.dll", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void CudaGlobalBinarization(float border, float[] img_dst, float[] img_src, int width, int height);
+
         public void LoadTemplates()
         {
 
@@ -40,7 +49,7 @@ namespace Obedience.Processing
 
             doubleImage = SegmentImage(doubleImage, rows, columns, out mask);
 
-            //doubleImage = BinarizeImage(doubleImage, rows, columns);
+            doubleImage = BinarizeImage(doubleImage, rows, columns);
 
             //doubleImage = ThinImage(doubleImage, rows, columns);
 
@@ -81,21 +90,24 @@ namespace Obedience.Processing
         //    return Thining.ThinPicture(doubleImage);
         //}
 
-        //public float[] BinarizeImage(float[] image, int rows, int columns, bool useCUDA = false)
-        //{
-        //    if (useCUDA)
-        //    {
+        public float[] BinarizeImage(float[] image, int rows, int columns, bool useCUDA = false)
+        {
+            if (useCUDA)
+            {
+                Enhance(image, columns, rows);
+                var result = new float[rows*columns];
+                CudaGlobalBinarization((float)Constants.BinarizationThreshold, result, image, columns, rows);
                 
-        //        return image;
-        //    }
-        //    var newImage = ImageEnhancementHelper.EnhanceImage(image.Make2D(rows, columns).Select2D(x => (double) x));
+                return result;
+            }
+            var newImage = ImageEnhancementHelper.EnhanceImage(image.Make2D(rows, columns).Select2D(x => (double)x));
 
-        //    return
-        //        GlobalBinarization.Binarization(newImage, Constants.BinarizationThreshold)
-        //            .Make1D()
-        //            .Select(x => (float) x)
-        //            .ToArray();
-        //}
+            return
+                GlobalBinarization.Binarization(newImage, Constants.BinarizationThreshold)
+                    .Make1D()
+                    .Select(x => (float)x)
+                    .ToArray();
+        }
 
         public float[] SegmentImage(float[] image, int rows, int columns, out int[,] mask, bool UseCUDA = false)
         {

@@ -6,7 +6,7 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
 {
     public static class LSS
     {
-        private static void TryToAdd(float[] arr, float value)
+        private static void TryToAdd(double[] arr, double value)
         {
             bool InsertionOccurred = false;
             for (int i = 0; (i < arr.GetLength(0)) && (!InsertionOccurred); i++)
@@ -20,35 +20,19 @@ namespace CUDAFingerprinting.Matching.Minutiae.MCC
         }
 
 
-        public static float GetScore(float[,] Gamma, int np)        //Local Similarity Sort
+        public static double GetScore(double[,] Gamma, int np)        //Local Similarity Sort
         {
-            float[] arrOfMax = new float[np];
+            double[] arrOfMax = new double[np];
             for (int i = 0; i < np; i++)
                 arrOfMax[i] = 0;
             for (int i = 0; i < Gamma.GetLength(0); i++)
                 for (int j = 0; j < Gamma.GetLength(1); j++)
                     TryToAdd(arrOfMax, Gamma[i, j]);
-            float score = 0;
+            double score = 0;
             for (int i = 0; i < np; i++)
                 score += arrOfMax[i];
-            score = score/((float) np);
+            score = score/((double) np);
                 return score;
-        }
-
-        public static float GetScoreVersion2(float[,] Gamma, int np)
-        {
-            float[] arr = new float[Gamma.GetLength(0) * Gamma.GetLength(1)];
-            for (int i = 0; i < Gamma.GetLength(0); i++)
-                for (int j = 0; j < Gamma.GetLength(1); j++)
-                    arr[i*Gamma.GetLength(1) + j] = Gamma[i, j];
-            Array.Sort(arr);
-            Array.Reverse(arr);
-            float score = 0;
-            int count = Math.Min(np, arr.Length);
-            for (int i = 0; i < count; i++)
-                score += arr[i];
-            score = score / (float)count;
-            return score;
         }
     }
 }

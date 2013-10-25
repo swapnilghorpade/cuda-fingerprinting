@@ -63,8 +63,16 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="CUDAMinutiaeMatcher.dll" />
-    <Content Include="CUDASegmentation.dll">
+    <Content Include="..\Release\CUDABinarization.dll">
+      <Link>CUDABinarization.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Release\CUDAMinutiaeMatcher.dll">
+      <Link>CUDAMinutiaeMatcher.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Release\CUDASegmentation.dll">
+      <Link>CUDASegmentation.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="CUDAThining.dll">

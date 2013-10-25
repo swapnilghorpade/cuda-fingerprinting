@@ -114,6 +114,7 @@ __global__ void cudaDirectionalFiltering(CUDAArray<float> result, CUDAArray<floa
 
 void FillDirections()
 {
+	cudaSetDevice(0);
 	int* directionsX = (int*)malloc(sizeof(int)*DirectionsNumber*KernelSize);
 	int* directionsY = (int*)malloc(sizeof(int)*DirectionsNumber*KernelSize);
 	//float* fX = (float*)malloc(sizeof(float)*DirectionsNumber*KernelSize);

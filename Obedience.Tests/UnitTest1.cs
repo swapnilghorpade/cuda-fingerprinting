@@ -34,7 +34,7 @@ namespace Obedience.Tests
                 var result = fp.SegmentImage(src, rows, columns, out mask, true);
 
                 sw.Stop();
-                Trace.WriteLine("Segmentation with CPU took " + sw.ElapsedMilliseconds + " ms");
+                Trace.WriteLine("Segmentation with GPU took " + sw.ElapsedMilliseconds + " ms");
 
                 var path = Constants.Path + Guid.NewGuid() + ".png";
 
@@ -45,51 +45,40 @@ namespace Obedience.Tests
             }
         }
 
-        //[TestMethod]
-        //public void TestCUDASegmentation()
-        //{
-        //    for (int i = 0; i < 20; i++)
-        //    {
-        //        var fp = new FingerprintProcessor();
+        [TestMethod]
+        public void TestSegmentationPlusBigunPlusGlobalBinarization()
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                var fp = new FingerprintProcessor();
 
-        //        int[,] mask;
+                int[,] mask;
 
-        //        var image = ImageHelper.LoadImage(Resources.SampleFinger1);
+                var image = ImageHelper.LoadImage(Resources.SampleFinger1);
 
-        //        Stopwatch sw = new Stopwatch();
-        //        sw.Start();
+                int rows = image.GetLength(0);
+                int columns = image.GetLength(1);
 
-        //        var result = fp.SegmentImage(image, out mask, true);
+                var src = image.Select2D(x => (float) x).Make1D();
 
-        //        sw.Stop();
-        //        Trace.WriteLine("Segmentation with GPU took " + sw.ElapsedMilliseconds + " ms");
+                var result = fp.SegmentImage(src, rows, columns, out mask, true);
 
-        //        var path = Constants.Path + Guid.NewGuid() + ".png";
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
 
-        //        ImageHelper.SaveArray(result, path);
+                result = fp.BinarizeImage(result, rows, columns, true);
 
-        //        // should result in the cropped fp
-        //        Process.Start(path);
-        //    }
-        //}
 
-        //[TestMethod]
-        //public void TestSegmentationPlusBigunPlusGlobalBinarization()
-        //{
-        //    var fp = new FingerprintProcessor();
+                sw.Stop();
+                Trace.WriteLine("Binarization with GPU took " + sw.ElapsedMilliseconds + " ms");
 
-        //    int[,] mask;
+                var path = Constants.Path + Guid.NewGuid() + ".png";
 
-        //    var result = fp.SegmentImage(ImageHelper.LoadImage(Resources.SampleFinger1), out mask);
+                ImageHelper.SaveArray(result.Make2D(rows, columns).Select2D(x => (double) x), path);
 
-        //    result = fp.BinarizeImage(result);
-
-        //    var path = Constants.Path + Guid.NewGuid() + ".png";
-
-        //    ImageHelper.SaveArray(result, path);
-
-        //    Process.Start(path);
-        //}
+                Process.Start(path);
+            }
+        }
 
         //[TestMethod]
         //public void TestSegmentationPlusBigunPlusGlobalBinarizationPlusThinning()

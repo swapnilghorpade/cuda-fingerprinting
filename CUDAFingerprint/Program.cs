@@ -12,7 +12,7 @@ using CUDAFingerprinting.Common;
 using CUDAFingerprinting.Common.OrientationField;
 using CUDAFingerprinting.Common.Segmentation;
 using CUDAFingerprinting.Matching.Minutiae.MCC;
-using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking;
+using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.MCC;
 
 
@@ -97,7 +97,7 @@ namespace CUDAFingerprint
             // TestHull();
             //TestDirectionsWithSegmentator();
             //TestCUDADirections();
-            TestCUDAComparing();
+            
             //TestCUDAThining();
         }
 
@@ -597,30 +597,6 @@ namespace CUDAFingerprint
             var path2 = Path.GetTempPath() + "checkYourself.png";
             ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path2);
             Process.Start(path2);
-        }
-
-        private static void TestCUDAComparing()
-        {
-            int numberOfBlocks = 39;
-            int NumberOfPictures = 5;
-            int np = 20;
-            int[] offset = new int[NumberOfPictures];
-            int[] data = new int[1];
-            int[] dataMask = new int[1];
-            int[] sample = new int[1];
-            int[] sampleMask = new int[1];
-            //------------------------------------
-
-            var path = "D:\\MyData\\Documents\\Projects\\";   //Directory for images
-            CreateCylinders.BuildBase(path, NumberOfPictures,ref data,ref dataMask, offset,numberOfBlocks);
-            CreateCylinders.BuildSample(path + 0 + ".png",ref sample,ref sampleMask, numberOfBlocks);
-
-            
-            float[] result = new float[data.Length * sample.Length / (numberOfBlocks * numberOfBlocks)];
-            Comparing(data, data.Length, sample, sample.Length, dataMask, sampleMask, offset, offset.Length, result,numberOfBlocks);
-
-            float[] resultOfMatching = new float[NumberOfPictures];
-            GetAnswer.ResultOfMatching(resultOfMatching, result, np, offset, data, sample, numberOfBlocks);
         }
 
         private static void TestCUDAThining()

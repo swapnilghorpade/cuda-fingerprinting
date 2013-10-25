@@ -2,6 +2,7 @@
 #include "device_launch_parameters.h"
 #include "ConvolutionHelper.h"
 #include <stdio.h>
+#include <time.h>
 
 extern "C"{
 
@@ -482,32 +483,33 @@ void CUDASegmentator(float* img, int imgWidth, int imgHeight, float weightConsta
 	 CUDAmask.GetData(mask);
 
 	 CUDAmask.Dispose();
-	 cudaDeviceReset();
+	 //cudaDeviceReset();
 }
 
-//void main()
-//{
-//	 CUDAArray<float> source = loadImage("C:\\temp\\103_4.bin");
-//	 float* sourceFloat = source.GetData();
-//
-//	 int imgWidth = source.Width;
-//	 int imgHeight = source.Height;
-//
-//	 float weightConstant = 0.3; 
-//	 int windowSize = 12;
-//	 int threshold = 5;
-//
-//	 int maskX = (int)ceil(((double)imgWidth) / windowSize);
-//	 int maskY = (int)ceil(((double)imgHeight) / windowSize);
-//
-//	 int* mask = 0;
-//	 mask = (int*)malloc(maskX*maskY*sizeof(int));
-//
-//	 CUDASegmentator(sourceFloat, imgWidth, imgHeight, weightConstant, windowSize, mask, maskX, maskY);
-//	 SaveMask(mask, maskX, maskY, "C:\\temp\\maskCUDASegmentator.txt");
-//
-//	 PostProcessing(mask, maskX, maskY, threshold);
-//	 SaveMask(mask,maskX, maskY, "C:\\temp\\maskPostProcessing.txt");
-//
-//	 free(mask);
-//}
+void main()
+{
+	 CUDAArray<float> source = loadImage("C:\\temp\\103_4.bin");
+	 float* sourceFloat = source.GetData();
+
+	 int imgWidth = source.Width;
+	 int imgHeight = source.Height;
+
+	 float weightConstant = 0.3; 
+	 int windowSize = 12;
+	 int threshold = 5;
+
+	 int maskX = (int)ceil(((double)imgWidth) / windowSize);
+	 int maskY = (int)ceil(((double)imgHeight) / windowSize);
+
+	 int* mask = 0;
+	 mask = (int*)malloc(maskX*maskY*sizeof(int));
+	 clock_t time = clock();
+	 CUDASegmentator(sourceFloat, imgWidth, imgHeight, weightConstant, windowSize, mask, maskX, maskY);
+	 time = clock() - time;
+	 SaveMask(mask, maskX, maskY, "C:\\temp\\maskCUDASegmentator.txt");
+
+	 PostProcessing(mask, maskX, maskY, threshold);
+	 SaveMask(mask,maskX, maskY, "C:\\temp\\maskPostProcessing.txt");
+
+	 free(mask);
+}

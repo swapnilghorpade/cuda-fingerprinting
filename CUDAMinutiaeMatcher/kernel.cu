@@ -1,18 +1,20 @@
-﻿#include "cuda_runtime.h"
-#include "device_launch_parameters.h"
-
-#include <stdio.h>
-#include "MinutiaExtraction.h"
-#include <time.h>
-
-extern "C"{
+﻿extern "C"{
 
 __declspec(dllexport) void Init();
+
+__declspec(dllexport) void FillDirections();
 
 __declspec(dllexport) int Identify(float* image, int width, int height);
 
 __declspec(dllexport) void Enhance(float* image, int width, int height);
 }
+
+#include "cuda_runtime.h"
+#include "device_launch_parameters.h"
+
+#include <stdio.h>
+#include "MinutiaExtraction.h"
+#include <time.h>
 
 const float tau1 = 0.1f;
 const float tau2 = 0.3f;
@@ -79,12 +81,13 @@ CUDAArray<float> EnhanceImage(CUDAArray<float> sourceImage)
 void Enhance(float* image, int width, int height)
 {
 	cudaSetDevice(0);
+	FillDirections();
 	CUDAArray<float> arr = CUDAArray<float>(image, width, height);
 	CUDAArray<float> arr2 = EnhanceImage(arr);
 	arr2.GetData(image);
 	arr.Dispose();
 	arr2.Dispose();
-	cudaDeviceReset();
+	//cudaDeviceReset();
 }
 
 CUDAArray<float> loadImage(const char* name, bool sourceIsFloat = false)
@@ -140,9 +143,10 @@ int main()
 			i++;
 		}
 	}
-
-	int result = Identify(image, img.Width, img.Height);
-
+	clock_t clk = clock();
+	FillDirections();
+	Enhance(image, img.Width, img.Height);
+	clk = clock() - clk;
 	// Choose which GPU to run on, change this on a multi-GPU system.
 	cudaSetDevice(0);
 
