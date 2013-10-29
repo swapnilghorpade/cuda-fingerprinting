@@ -194,9 +194,8 @@
     <None Include="Resources\104_61.png" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\Debug\CUDASegmentation.dll">
-      <Link>CUDASegmentation.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    <Content Include="..\Release\CUDAThining.dll">
+      <Link>CUDAThining.dll</Link>
     </Content>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

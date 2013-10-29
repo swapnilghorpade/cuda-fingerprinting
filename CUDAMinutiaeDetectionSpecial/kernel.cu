@@ -86,7 +86,7 @@ void SaveArray(float* arTest, int width, int height, const char* fname)
 }
 
 
-__device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch) 
+__device__ int CheckMinutiae(float *picture, int x, int y, size_t pitch) 
 {                                               
     // 1 - ending, >2 - branching,                     
     int counter = 0;
@@ -104,7 +104,7 @@ __device__ int CheckMinutiae(int *picture, int x, int y, size_t pitch)
 	return counter == 2?0:counter;
 }
 
-__global__  void FindMinutiae(int* picture, size_t pitch, int width, int height, Minutiae *result, int* minutiaeCounter, int* test)
+__global__  void FindMinutiae(float* picture, size_t pitch, int width, int height, Minutiae *result, int* minutiaeCounter, int* test)
 {
 	int x = threadIdx.x + blockIdx.x*blockDim.x;
     int y = threadIdx.y + blockIdx.y*blockDim.y;
@@ -207,11 +207,11 @@ __global__ void ConsiderDistanceBetweenMinutiae(int radius, Minutiae *listMinuti
 //}
 
 
-void FindBigMinutiaeCUDA(int* picture, int width, int height, int* coordinatesOfMinutiae, float* anglesOfMinutiae, int* minutiaeCounter, int radius)
+void FindBigMinutiaeCUDA(float* picture, int width, int height, int* coordinatesX, int* coordinatesY, int* minutiaeCounter, int radius)
 {
 	cudaError_t cudaStatus;
 	size_t pitch, pitch1, pitch2;
-	int* dev_picture;
+	float* dev_picture;
 	int *dev_test;
 	int* test = (int*)malloc(width*height*sizeof(int));
 	int* dev_resultSpecial;
@@ -227,7 +227,7 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, int* coordinatesOf
         goto Error;
     }
 
-	cudaStatus = cudaMallocPitch((void**)&dev_picture, &pitch, width*sizeof(int), height);
+	cudaStatus = cudaMallocPitch((void**)&dev_picture, &pitch, width*sizeof(float), height);
 	if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMallocPitch! 1");
         goto Error;
@@ -257,7 +257,7 @@ void FindBigMinutiaeCUDA(int* picture, int width, int height, int* coordinatesOf
         goto Error;
     }
 
-	cudaStatus = cudaMemcpy2D(dev_picture, pitch, picture, width*sizeof(int), width*sizeof(int), height, cudaMemcpyHostToDevice);
+	cudaStatus = cudaMemcpy2D(dev_picture, pitch, picture, width*sizeof(float), width*sizeof(float), height, cudaMemcpyHostToDevice);
     if (cudaStatus != cudaSuccess) {
         fprintf(stderr, "cudaMemcpy! 1");
         goto Error;

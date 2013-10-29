@@ -75,7 +75,8 @@
       <Link>CUDASegmentation.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="CUDAThining.dll">
+    <Content Include="..\Release\CUDAThining.dll">
+      <Link>CUDAThining.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

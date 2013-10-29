@@ -80,25 +80,41 @@ namespace Obedience.Tests
             }
         }
 
-        //[TestMethod]
-        //public void TestSegmentationPlusBigunPlusGlobalBinarizationPlusThinning()
-        //{
-        //    var fp = new FingerprintProcessor();
+        [TestMethod]
+        public void TestThinning()
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                var fp = new FingerprintProcessor();
 
-        //    int[,] mask;
+                int[,] mask;
 
-        //    var result = fp.SegmentImage(ImageHelper.LoadImage(Resources.SampleFinger1), out mask);
+                var image = ImageHelper.LoadImage(Resources.SampleFinger1);
 
-        //    result = fp.BinarizeImage(result);
+                int rows = image.GetLength(0);
+                int columns = image.GetLength(1);
 
-        //    result = fp.ThinImage(result);
+                var src = image.Select2D(x => (float)x).Make1D();
 
-        //    var path = Constants.Path + Guid.NewGuid() + ".png";
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
 
-        //    ImageHelper.SaveArray(result, path);
+                var result = fp.SegmentImage(src, rows, columns, out mask, true);
 
-        //    Process.Start(path);
-        //}
+                result = fp.BinarizeImage(result, rows, columns, true);
+
+                result = fp.ThinImage(result, rows, columns, true);
+
+                sw.Stop();
+                Trace.WriteLine("Binarization with GPU took " + sw.ElapsedMilliseconds + " ms");
+
+                var path = Constants.Path + Guid.NewGuid() + ".png";
+
+                ImageHelper.SaveArray(result.Make2D(rows, columns).Select2D(x => (double)x), path);
+
+                Process.Start(path);
+            }
+        }
 
         //[TestMethod]
         //public void TestFullCycleUpToMinutiae()
@@ -130,6 +146,20 @@ namespace Obedience.Tests
         {
             var path = Constants.Path + Guid.NewGuid() + ".png";
             ImageHelper.SaveArrayAndOpen(ImageHelper.LoadImage(Resources.SampleFinger1).Make1D().Make2D(Resources.SampleFinger1.Height, Resources.SampleFinger1.Width), path);
+        }
+
+        [TestMethod]
+        public void ShowImage()
+        {
+            var path = Constants.Path + Guid.NewGuid() + ".png";
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\bin.bin",path,true);
+            Process.Start(path);
+        }
+
+        [TestMethod]
+        public void SaveImage()
+        {
+            ImageHelper.SaveImageAsBinaryFloat("C:\\temp\\binarized.png", "C:\\temp\\binarized.bin");
         }
     }
 }

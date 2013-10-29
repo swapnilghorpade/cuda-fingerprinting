@@ -143,10 +143,17 @@ int main()
 			i++;
 		}
 	}
+
+	int w = img.Width;
+	int h = img.Height;
+
 	clock_t clk = clock();
 	FillDirections();
 	Enhance(image, img.Width, img.Height);
 	clk = clock() - clk;
+	img.Dispose();
+	img = CUDAArray<float>(image, w, h);
+	SaveArray(img, "C:\\temp\\bin\\104_6_enh.bin");
 	// Choose which GPU to run on, change this on a multi-GPU system.
 	cudaSetDevice(0);
 
