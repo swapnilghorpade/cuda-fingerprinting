@@ -45,6 +45,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.OrientationField\CUDAFingerprinting.Common.OrientationField.csproj">
+      <Project>{5EEC4BD2-E1B0-4794-948A-45732CD41F99}</Project>
+      <Name>CUDAFingerprinting.Common.OrientationField</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.Common.Segmentation\CUDAFingerprinting.Common.Segmentation.csproj">
       <Project>{6BEF775C-E400-4EA6-A220-15BE47B27148}</Project>
       <Name>CUDAFingerprinting.Common.Segmentation</Name>
@@ -69,6 +73,10 @@
     </Content>
     <Content Include="..\Release\CUDAMinutiaeMatcher.dll">
       <Link>CUDAMinutiaeMatcher.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="..\Release\CUDAOrientationField.dll">
+      <Link>CUDAOrientationField.dll</Link>
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="..\Release\CUDASegmentation.dll">

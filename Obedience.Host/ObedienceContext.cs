@@ -1,9 +1,15 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Windows.Forms;
+using Obedience.Processing;
+using Sonda.ACD.Packets;
+using Sonda.Interop;
 using Sonda.Sensors;
 
 namespace Obedience.Host
@@ -15,12 +21,14 @@ namespace Obedience.Host
 
         private AcdController scanner;
 
+        private FingerprintProcessor _processor = new FingerprintProcessor();
+
         internal ObedienceContext()
         {
             //Instantiate the component Module to hold everything
             _components = new System.ComponentModel.Container();
-
-
+            Trace.Listeners.Add(new TextWriterTraceListener("C:\\temp\\Obedience.log"));
+            
             //Instantiate the NotifyIcon attaching it to the components container and 
             //provide it an icon, note, you can imbed this resource 
             _notifyIcon = new NotifyIcon(_components);
@@ -44,32 +52,80 @@ namespace Obedience.Host
             exitApplication.Text = "Exit";
             exitApplication.Click += mExitApplication_Click;
             contextMenu.Items.Add(exitApplication);
-
-            scanner = new AcdController(new IPEndPoint(new IPAddress(new byte[] {10, 1, 0, 220}), 5003));
-            scanner.Reboot();
+            Trace.WriteLine("Obedience started");
+            scanner = new AcdController(new IPEndPoint(new IPAddress(new byte[] {10, 0, 3, 220}), 5003));
+            //scanner.Reboot();
+            Trace.AutoFlush = true;
             scanner.ConnectedChanged += new ConnectedChangedEventHandler(scanner_ConnectedChanged);
         }
 
         void scanner_ConnectedChanged(bool connectedStatus)
         {
-            if (connectedStatus)
-                scanner.Sensor.Captured += new Sonda.NET.CapturedEventHandler<Sonda.NET.SondaImage>(Sensor_Captured);
-            else scanner.Sensor.Captured -= Sensor_Captured;
+            try
+            {
+                if (connectedStatus)
+                {
+                    scanner.Sensor.Captured += Sensor_Captured;
+                    var response =
+                        scanner.Publisher.Publish<M162DeviceInitResponsePacket>(
+                            new M162DeviceInitPacket(FamExecutiveDevice.None));
+                    response =
+                        scanner.Publisher.Publish<M162DeviceInitResponsePacket>(
+                            new M162DeviceInitPacket(FamExecutiveDevice.Turnstile));
+                }
+                else
+                {
+                    scanner.Sensor.Captured -= Sensor_Captured;
+                }
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
         }
 
         void Sensor_Captured(object sender, Sonda.NET.SondaImage captureResult)
         {
-            var bmp = captureResult.ToBitmap();
-            var endbmp = new Bitmap(256, 364);
-            for (int x = 0; x < 256; x++)
+            int x = 0;
+            int y = 0;
+            try
             {
-                for (int y = 0; y < 364; y++)
-                {
-                    var color = bmp.GetPixel(x + 300 - 256, y + 384 - 364);
-                    endbmp.SetPixel(x, y, color);
-                }   
+                var bmp = captureResult.ToBitmap();
+                int rows = bmp.Height;
+                int columns = bmp.Width;
+                float[] arr = new float[rows * columns];
+
+                for (y = 0; y < rows; y++)
+                    for (x = 0; x < columns; x++)
+                    {
+                        arr[y * columns + x] = bmp.GetPixel(x, y).R;
+                    }
+
+                _processor.ProcessFingerImage(arr, rows, columns);
+                bmp.Dispose();
+                
             }
-            endbmp.Save("C:\\temp\\acd.png", ImageFormat.Png);
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
+            Open();
+        }
+
+        private void Open()
+        {
+            try
+            {
+                scanner.Buzzer.Buzz(50);
+                var response = scanner.Publisher.Publish<TurnstileResponsePacket>(new TurnstilePacket(TurnstileState.SinglePassB));
+
+                Thread.Sleep(500);
+                response = scanner.Publisher.Publish<TurnstileResponsePacket>(new TurnstilePacket(TurnstileState.Stop));
+            }
+            catch (Exception ex)
+            {
+                Trace.WriteLine(ex);
+            }
         }
 
         private void mExitApplication_Click(object sender, EventArgs e)

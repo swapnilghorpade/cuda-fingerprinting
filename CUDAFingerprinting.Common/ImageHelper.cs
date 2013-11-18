@@ -339,43 +339,39 @@ namespace CUDAFingerprinting.Common
             }
         }
 
-        public static void SaveFieldAbove(double[,] data, double[,] orientations, string filename)
+        public static void SaveFieldAbove(double[,] data, double[,] orientations, int blockSize, int overlap,
+                                          string fileName)
         {
-            int X = data.GetLength(0);
-            int Y = data.GetLength(1);
-            var max = double.NegativeInfinity;
-            var min = double.PositiveInfinity;
-            var bmp = new Bitmap(X*5, Y*5);
+            var bmp = SaveArrayToBitmap(data);
 
-            foreach (var num in data)
-            {
-                if (num > max) max = num;
-                if (num < min) min = num;
-            }
-
-            var gfx = Graphics.FromImage(bmp);
-
-            data.Select2D(
-                (value, x, y) =>
+            orientations.Select2D(
+                (value, row, column) =>
                     {
-                        var orientation = orientations[x, y];
-                        var gray = (int)((value - min) / (max - min) * 255);
-                        using (var b = new SolidBrush(Color.FromArgb(gray, gray, gray)))
+                        int rowStart = row*(blockSize - overlap);
+                        int columnStart = column*(blockSize - overlap);
+
+                        int zeroX = columnStart + blockSize/2;
+                        int zeroY = rowStart + blockSize/2;
+
+                        double divisor = Math.Sqrt(1 + value*value);
+
+                        // line equation is Orientation*x - 1*y = 0
+
+                        for (int y = rowStart; y < rowStart + blockSize; y++)
                         {
-                            gfx.FillRectangle(b, new Rectangle(x*5, y*5, 5, 5));
+                            for (int x = columnStart; x < columnStart + blockSize; x++)
+                            {
+                                double d = Math.Abs(value*(x - zeroX) - (y - zeroY))/divisor;
+                                if (d < 1 && x < bmp.Width && y < bmp.Height)
+                                {
+                                    bmp.SetPixel(x, y, Color.Red);
+                                }
+                            }
                         }
-
-                        if (Math.Abs(orientation-Math.PI/2) <= Math.PI/32)
-                        {
-                            gfx.DrawLine(Pens.Red, x*5, y*5, x*5+4, y*5+4);
-                        }
-
-
-                        return value;
+                        return 0;
                     });
-            gfx.Save();
-            bmp.Save(filename,ImageFormat.Png);
-            
+            bmp.Save(fileName, ImageFormat.Png);
+
         }
 
         public static void SaveArrayAsBinary(int[,] grid, string path)

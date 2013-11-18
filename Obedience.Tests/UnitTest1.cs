@@ -4,6 +4,7 @@ using System.Text;
 using System.Collections.Generic;
 using System.Linq;
 using CUDAFingerprinting.Common;
+using CUDAFingerprinting.Common.OrientationField;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Obedience.Processing;
 
@@ -116,6 +117,42 @@ namespace Obedience.Tests
             }
         }
 
+        [TestMethod]
+        public void TestOrField()
+        {
+            var fp = new FingerprintProcessor();
+
+            var image = ImageHelper.LoadImage(Resources._1_1);
+
+
+            int rows = image.GetLength(0);
+            int columns = image.GetLength(1);
+
+            var src = image.Select2D(x => (float) x).Make1D();
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            int regionSize = 17;
+            int overlap = 1;
+
+            var result = fp.MakeOrientationField(src, rows, columns, regionSize, overlap, true);
+
+            sw.Stop();
+
+            Trace.WriteLine("OrField with GPU took " + sw.ElapsedMilliseconds + " ms");
+
+            var path = Constants.Path + Guid.NewGuid() + ".png";
+
+            int orFieldWidth = columns / (regionSize - overlap);
+            int orFieldHeight = rows / (regionSize - overlap);
+
+            ImageHelper.SaveFieldAbove(image, result.Make2D(orFieldHeight, orFieldWidth).Select2D(x => (double) x),
+                                       regionSize, overlap, path);
+
+            Process.Start(path);
+        }
+
         //[TestMethod]
         //public void TestFullCycleUpToMinutiae()
         //{
@@ -152,14 +189,14 @@ namespace Obedience.Tests
         public void ShowImage()
         {
             var path = Constants.Path + Guid.NewGuid() + ".png";
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\bin.bin",path,true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\orField.bin", path, true);
             Process.Start(path);
         }
 
         [TestMethod]
         public void SaveImage()
         {
-            ImageHelper.SaveImageAsBinaryFloat("C:\\temp\\binarized.png", "C:\\temp\\binarized.bin");
+            ImageHelper.SaveImageAsBinaryFloat("C:\\Temp\\enh\\1_1.png", "C:\\temp\\binarized.bin");
         }
     }
 }

@@ -65,6 +65,10 @@
     <None Include="Resources\acd.png" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CUDAFingerprinting.Common.OrientationField\CUDAFingerprinting.Common.OrientationField.csproj">
+      <Project>{5EEC4BD2-E1B0-4794-948A-45732CD41F99}</Project>
+      <Name>CUDAFingerprinting.Common.OrientationField</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CUDAFingerprinting.Common\CUDAFingerprinting.Common.csproj">
       <Project>{6FD094CC-0F63-47BD-A377-F054AE615517}</Project>
       <Name>CUDAFingerprinting.Common</Name>
@@ -73,6 +77,9 @@
       <Project>{A1F77722-102A-4E4C-9C4B-36D4D9AA0276}</Project>
       <Name>Obedience.Processing</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\1_1.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

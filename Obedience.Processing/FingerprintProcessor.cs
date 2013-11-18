@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using CUDAFingerprinting.Common;
+using CUDAFingerprinting.Common.OrientationField;
 using CUDAFingerprinting.Common.Segmentation;
 using CUDAFingerprinting.ImageEnhancement.LinearSymmetry;
 using CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning;
@@ -18,6 +19,9 @@ namespace Obedience.Processing
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "CUDASegmentator")]
         private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant,
                                                 int windowSize, int[] mask, int maskWidth, int maskHight);
+
+        [DllImport("CUDAOrientationField.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "makeOrientationField")]
+        private static extern void CUDAMakeOrientationField (float[] img, int imgWidth, int imgHeight, float[] orField, int regionSize, int overlap);
 
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl, EntryPoint = "PostProcessing")]
         private static extern void PostProcessing(int[] mask, int maskX, int maskY, int threshold);
@@ -39,20 +43,23 @@ namespace Obedience.Processing
 
         }
 
-        public void ProcessFingerImage(int[,] image)
+        public void ProcessFingerImage(float[] image, int rows, int columns)
         {
-            var doubleImage = image.Select2D(x => (float) x).Make1D();
-            var rows = image.GetLength(0);
-            var columns = image.GetLength(1);
-
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
             int[,] mask;
 
-            doubleImage = SegmentImage(doubleImage, rows, columns, out mask);
+            var doubleImage = SegmentImage(image, rows, columns, out mask, true);
 
-            doubleImage = BinarizeImage(doubleImage, rows, columns);
+            doubleImage = BinarizeImage(doubleImage, rows, columns, true);
 
-            doubleImage = ThinImage(doubleImage, rows, columns);
+            doubleImage = ThinImage(doubleImage, rows, columns, true);
+            sw.Stop();
+            // temporary
+            var path = "C:\\temp\\Tercom_Thinned\\" + Guid.NewGuid() + ".png";
 
+            ImageHelper.SaveArray(doubleImage.Make2D(rows, columns).Select2D(x => (double)x), path);
+            Trace.WriteLine(string.Format("Processing of the {0} took {1} ms", path, sw.ElapsedMilliseconds));
             //List<Minutia> minutiae = FindMinutiae(doubleImage, rows, columns);
 
 
@@ -82,6 +89,24 @@ namespace Obedience.Processing
                 Thining.ThinPicture(image.Make2D(rows, columns).Select2D(x => (double) x))
                     .Select2D(x => (float) x)
                     .Make1D();
+        }
+
+        public float[] MakeOrientationField(float[] image, int rows, int columns, int regionSize, int overlap, bool useCUDA = false)
+        {
+            if (useCUDA)
+            {
+                int orFieldWidth = columns / (regionSize - overlap);
+                int orFieldHeight = rows / (regionSize - overlap);
+
+                var result = new float[orFieldWidth * orFieldHeight];
+                CUDAMakeOrientationField(image, columns, rows, result, regionSize, overlap);
+                return result;
+            }
+            return
+                OrientationFieldGenerator.GenerateOrientationField(image.Select(x => (int) x)
+                                                                        .ToArray()
+                                                                        .Make2D(rows, columns))
+                                         .Make1D().Select(x => (float) x).ToArray();
         }
 
         public float[] BinarizeImage(float[] image, int rows, int columns, bool useCUDA = false)

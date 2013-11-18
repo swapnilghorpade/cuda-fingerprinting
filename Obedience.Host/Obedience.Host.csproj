@@ -91,6 +91,12 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Obedience.Processing\Obedience.Processing.csproj">
+      <Project>{A1F77722-102A-4E4C-9C4B-36D4D9AA0276}</Project>
+      <Name>Obedience.Processing</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
