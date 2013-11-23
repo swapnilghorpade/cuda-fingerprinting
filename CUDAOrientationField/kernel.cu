@@ -21,8 +21,8 @@ __global__ void	makeSmoothedOrientationField(
 	int column = defaultColumn();
 	if(row < orField.Height && column < orField.Width)
 	{
-		//float xMean = 0.0f, yMean = 0.0f;
-		//float xCount = 0.0f, yCount = 0.0f;
+		float xMean = 0.0f, yMean = 0.0f;
+		float xCount = 0.0f, yCount = 0.0f;
 
 		//for(int i = -1; i < 2; i++)
 		//{
