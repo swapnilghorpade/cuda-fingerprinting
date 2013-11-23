@@ -342,34 +342,53 @@ namespace CUDAFingerprinting.Common
         public static void SaveFieldAbove(double[,] data, double[,] orientations, int blockSize, int overlap,
                                           string fileName)
         {
+            int lineLength = blockSize / 2;
             var bmp = SaveArrayToBitmap(data);
-
+            var gfx = Graphics.FromImage(bmp);
+            var pen = new Pen(Brushes.Red) {Width = 2};
             orientations.Select2D(
                 (value, row, column) =>
                     {
-                        int rowStart = row*(blockSize - overlap);
-                        int columnStart = column*(blockSize - overlap);
+                        int x = column * (blockSize - overlap) + blockSize / 2;
+                        int y = row * (blockSize - overlap) + blockSize / 2;
 
-                        int zeroX = columnStart + blockSize/2;
-                        int zeroY = rowStart + blockSize/2;
-
-                        double divisor = Math.Sqrt(1 + value*value);
-
-                        // line equation is Orientation*x - 1*y = 0
-
-                        for (int y = rowStart; y < rowStart + blockSize; y++)
+                        Point p0 = new Point
                         {
-                            for (int x = columnStart; x < columnStart + blockSize; x++)
-                            {
-                                double d = Math.Abs(value*(x - zeroX) - (y - zeroY))/divisor;
-                                if (d < 1 && x < bmp.Width && y < bmp.Height)
-                                {
-                                    bmp.SetPixel(x, y, Color.Red);
-                                }
-                            }
-                        }
+                            X = Convert.ToInt32(x - lineLength * Math.Cos(value)),
+                            Y = Convert.ToInt32(y - lineLength * Math.Sin(value))
+                        };
+
+                        Point p1 = new Point
+                        {
+                            X = Convert.ToInt32(x + lineLength * Math.Cos(value)),
+                            Y = Convert.ToInt32(y + lineLength * Math.Sin(value))
+                        };
+
+                        gfx.DrawLine(pen, p0, p1);
+                        //int rowStart = row*(blockSize - overlap);
+                        //int columnStart = column*(blockSize - overlap);
+
+                        //int zeroX = columnStart + blockSize/2;
+                        //int zeroY = rowStart + blockSize/2;
+
+                        //double divisor = Math.Sqrt(1 + value*value);
+
+                        //// line equation is Orientation*x - 1*y = 0
+
+                        //for (int y = rowStart; y < rowStart + blockSize; y++)
+                        //{
+                        //    for (int x = columnStart; x < columnStart + blockSize; x++)
+                        //    {
+                        //        double d = Math.Abs(value*(x - zeroX) - (y - zeroY))/divisor;
+                        //        if (d < 1 && x < bmp.Width && y < bmp.Height)
+                        //        {
+                        //            bmp.SetPixel(x, y, Color.Red);
+                        //        }
+                        //    }
+                        //}
                         return 0;
                     });
+            gfx.Save();
             bmp.Save(fileName, ImageFormat.Png);
 
         }
