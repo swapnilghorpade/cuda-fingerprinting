@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,6 +18,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Test
     [TestClass()]
     public class MinutiaeDirectionTest
     {
+        public const string Path = "C:\\temp\\TestResults\\";
+
         [DllImport("CUDASegmentation.dll", CallingConvention = CallingConvention.Cdecl)]
         private static extern void CUDASegmentator(float[] img, int imgWidth, int imgHeight, float weightConstant, int windowSize, int[] mask, int maskWidth, int maskHight);
 
@@ -78,8 +82,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Test
         {
             for (int cur = 1; cur <= 10; cur++)
             {
-                var bmp = new Bitmap("D:\\MyData\\Documents\\Results\\Samples\\" + cur + ".png");
-                double[,] startImg = ImageHelper.LoadImage(bmp);
+                double[,] startImg = ImageHelper.LoadImage(TestResource.SampleFinger2);
                 int imgHeight = startImg.GetLength(0);
                 int imgWidth = startImg.GetLength(1);
                 //-------------------------------
@@ -106,7 +109,7 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Test
                 nonMax = LocalBinarizationCanny.Inv(nonMax);
                 int sizeWin = 16;
                 startImg = LocalBinarizationCanny.LocalBinarization(startImg, nonMax, sizeWin, 1.3d);
-                startImg = GlobalBinarization.Binarization(startImg, 150);
+                startImg = GlobalBinarization.Binarization(startImg, 140);
                 //-------------------------------
 
                 startImg = Thining.ThinPicture(startImg);
@@ -116,8 +119,8 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Test
                     for (int j = 0; j < imgWidth; j++)
                         if (mask[i/windowSize*maskWidth + j/windowSize] == 0)
                             startImg[i, j] = 255;
-                var path1 = Path.GetTempPath() + "lol.png";
-                ImageHelper.SaveArray(startImg, path1);
+                //var path1 = System.IO.Path.GetTempPath() + "lol.png";
+                //ImageHelper.SaveArray(startImg, path1);
                 //-------------------------------
 
                 int[,] BinaryImage = ImageHelper.ConvertDoubleToInt(startImg);
@@ -126,22 +129,24 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Test
                         BinaryImage);
 
                 //-------------------------------
-
+                Stopwatch sw = new Stopwatch();
+                
                 List<Minutia> Minutiae = MinutiaeDetection.FindMinutiae(startImg);
                 //--------------------------------
+                List<Minutia> TrueMinutiae = new List<Minutia>();
                 for (int i = 0; i < Minutiae.Count; i++)
                 {
-                    if (mask[Minutiae[i].Y / windowSize * maskWidth + Minutiae[i].X / windowSize] == 0)
+                    if (mask[Minutiae[i].Y / windowSize * maskWidth + Minutiae[i].X / windowSize] != 0)
                     {
-                        Minutiae.Remove(Minutiae[i]);
-                        i--;
+                        TrueMinutiae.Add(Minutiae[i]);
                     }
                 }
-
+                Minutiae = TrueMinutiae;
+                
                 //--------------------------------
-
+                sw.Start();
                 Minutiae = MinutiaeDetection.FindBigMinutiae(Minutiae);
-
+                sw.Stop();
                 //-------------------------------
 
                 /*MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, BinaryImage, 1);
@@ -170,13 +175,15 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning.Test
                 ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path);*/
 
                 //-------------------------------
-
-                MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, BinaryImage, 3);
-
+                
+                MinutiaeDirection.FindDirection(OrientationField, 16, Minutiae, BinaryImage, 4);
+                
+                Trace.WriteLine(string.Format("Minutiae detection and direction took {0} ms", sw.ElapsedMilliseconds));
                 //-------------------------------
 
-                var path = "D:\\MyData\\Documents\\Results\\4\\" + cur + ".png";
-                ImageHelper.MarkMinutiaeWithDirections(path1, Minutiae, path);
+                var path = Path + Guid.NewGuid() + ".png";
+                ImageHelper.MarkMinutiaeWithDirections(TestResource.SampleFinger2, Minutiae, path);
+                Process.Start(path);
             }
         }
     }

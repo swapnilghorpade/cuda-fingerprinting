@@ -87,104 +87,83 @@ namespace CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinning
             return minutiae;
         }
 
-        public class SpecialComparer : IComparer<List<Minutia>>
+        public static List<Minutia> FindBigMinutiae(List<Minutia> source)
         {
-            public int Compare(List<Minutia> list1, List<Minutia> list2)
-            {
-                int result = 1;
-                if (list1.Count > list2.Count)
-                    result = -1;
-                if (list1.Count == list2.Count)
-                    result = 0;
-                return result;
-            }
-        }
-
-        public static List<Minutia> FindBigMinutiae(List<Minutia> listMinutiae)
-        {
-            List<Minutia> listMinutiaSpecial = new List<Minutia>();
-            foreach (var minutia in listMinutiae)
-            {
-                Minutia minutiaS = new Minutia();
-                minutiaS.X = minutia.X;
-                minutiaS.Y = minutia.Y;
-                listMinutiaSpecial.Add(minutiaS);
-            }
-            int dY;
-            int dX;
             int Radius = 5;
-            List<List<Minutia>> listBigMinutiae = new List<List<Minutia>>();
-            for (int i = 0; i < listMinutiaSpecial.Count; i++)
+
+            // this structure is used for storing indices for minutiae
+            // that are closed to the minutia of the selected index
+            // key of the pair is the minutia index that is the center of the circle
+            var listBigMinutiae = new List<KeyValuePair<int, List<int>>>(); 
+
+            for (int i = 0; i < source.Count; i++)
             {
-                List<Minutia> listSmallMinutiae = new List<Minutia>();
-                for (int j = 0; j < listMinutiaSpecial.Count; j++)
+                List<int> listSmallMinutiae = new List<int>();
+                for (int j = 0; j < source.Count; j++)
                 {
-                    dX = listMinutiaSpecial[i].X - listMinutiaSpecial[j].X;
-                    dY = listMinutiaSpecial[i].Y - listMinutiaSpecial[j].Y;
+                    int dX = source[i].X - source[j].X;
+                    int dY = source[i].Y - source[j].Y;
                     if ((dX * dX + dY * dY) < Radius * Radius)
                     {
-                        //var temp = listMinutiaSpecial[j];
-                        //temp.belongToBig = true;
-                        //listMinutiaSpecial[j] = temp;
-                        //var temp = listMinutiaSpecial[j];
-                        //temp.belongToBig = true;
-                        //listMinutiaSpecial[j] = temp;
-
-                        listSmallMinutiae.Add(listMinutiaSpecial[j]);
+                        listSmallMinutiae.Add(j);
                     }
                 }
-                listBigMinutiae.Add(listSmallMinutiae);
+                listBigMinutiae.Add(new KeyValuePair<int, List<int>>(i, listSmallMinutiae));
             }
-            SpecialComparer comparer = new SpecialComparer();
-            listBigMinutiae.Sort(comparer);
-            List<Minutia> newListMinutiae = new List<Minutia>();
+
+            listBigMinutiae = listBigMinutiae.OrderByDescending(x => x.Value.Count).ToList();
+
+            List<Minutia> result = new List<Minutia>();
             for (int i = 0; i < listBigMinutiae.Count; i++)
             {
-                if (listBigMinutiae[i].Any())
+                if (listBigMinutiae[i].Value.Any())
                 {
                     Minutia newMinutia = new Minutia();
-                    newMinutia.X = 0;
-                    newMinutia.Y = 0;
 
-                    for (int j = 0; j < listBigMinutiae[i].Count; j++)
+                    var circleList = listBigMinutiae[i].Value;
+
+                    for (int j = 0; j < listBigMinutiae[i].Value.Count; j++)
                     {
-                            newMinutia.X += listBigMinutiae[i][j].X;
-                            newMinutia.Y += listBigMinutiae[i][j].Y;
-                            foreach (var target in listBigMinutiae[i])
-                            {
-                                for (int k = i + 1; k < listBigMinutiae.Count; k++)
-                                {
-                                    var toCheck = listBigMinutiae[k].Where(x => listBigMinutiae[k].Contains(target));
-                                    listBigMinutiae[k] = listBigMinutiae[k].Except(toCheck).ToList();
-                                }
-                            }
+                            newMinutia.X += source[circleList[j]].X;
+                            newMinutia.Y += source[circleList[j]].Y;
                     }
-                    newMinutia.X = (newMinutia.X + listBigMinutiae[i].Count - 1)/listBigMinutiae[i].Count;
-                    newMinutia.Y = (newMinutia.Y + listBigMinutiae[i].Count - 1)/listBigMinutiae[i].Count;
+                    newMinutia.X /= circleList.Count;
+                    newMinutia.Y /= circleList.Count;
 
-                    dX = newMinutia.X - listBigMinutiae[i][0].X;
-                    dY = newMinutia.Y - listBigMinutiae[i][0].Y;
-                    int min = dX*dX + dY*dY;
-                    Minutia newMinutia1 = new Minutia();
-                    newMinutia1.X = listBigMinutiae[i][0].X;
-                    newMinutia1.Y = listBigMinutiae[i][0].Y;
-                    for (int j = 0; j < listBigMinutiae[i].Count; j++)
+                    for (int j = i + 1; j < listBigMinutiae.Count; j++)
                     {
-                        dX = newMinutia.X - listBigMinutiae[i][j].X;
-                        dY = newMinutia.Y - listBigMinutiae[i][j].Y;
-                        int locmin = dX*dX + dY*dY;
-                        if (min > locmin)
+                        if(circleList.Contains(listBigMinutiae[j].Key))listBigMinutiae[j].Value.Clear();
+                        else
                         {
-                            min = locmin;
-                            newMinutia1.X = listBigMinutiae[i][j].X;
-                            newMinutia1.Y = listBigMinutiae[i][j].Y;
+                            listBigMinutiae[j] = new KeyValuePair<int, List<int>>(listBigMinutiae[j].Key,
+                                                                                  listBigMinutiae[j].Value.Except(
+                                                                                      circleList).ToList());
                         }
-
                     }
-                    newListMinutiae.Add(newMinutia1);
+                    result.Add(newMinutia);
+
+                    //    dX = newMinutia.X - listBigMinutiae[i][0].X;
+                    //dY = newMinutia.Y - listBigMinutiae[i][0].Y;
+                    //int min = dX*dX + dY*dY;
+                    //Minutia newMinutia1 = new Minutia();
+                    //newMinutia1.X = listBigMinutiae[i][0].X;
+                    //newMinutia1.Y = listBigMinutiae[i][0].Y;
+                    //for (int j = 0; j < listBigMinutiae[i].Count; j++)
+                    //{
+                    //    dX = newMinutia.X - listBigMinutiae[i][j].X;
+                    //    dY = newMinutia.Y - listBigMinutiae[i][j].Y;
+                    //    int locmin = dX*dX + dY*dY;
+                    //    if (min > locmin)
+                    //    {
+                    //        min = locmin;
+                    //        newMinutia1.X = listBigMinutiae[i][j].X;
+                    //        newMinutia1.Y = listBigMinutiae[i][j].Y;
+                    //    }
+
+                    //}
                 }
             }
-            return newListMinutiae;
+            return result;
         }
     }
 }

@@ -60,6 +60,7 @@ namespace CUDAFingerprinting.Common
 
             bmp2.Save(path, ImageFormat.Png);
         }
+
         public static void MarkMinutiaeWithDirections(string sourcePath, List<Minutia> minutiae, string path)
         {
             MarkMinutiaeWithDirections(new Bitmap(sourcePath), minutiae, path);

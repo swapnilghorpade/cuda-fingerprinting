@@ -66,9 +66,8 @@ namespace Obedience.Tests
 
                 Stopwatch sw = new Stopwatch();
                 sw.Start();
-
+                FingerprintProcessor.Enhance(result, columns, rows);
                 result = fp.BinarizeImage(result, rows, columns, true);
-
 
                 sw.Stop();
                 Trace.WriteLine("Binarization with GPU took " + sw.ElapsedMilliseconds + " ms");
@@ -120,38 +119,98 @@ namespace Obedience.Tests
         [TestMethod]
         public void TestOrField()
         {
-            var fp = new FingerprintProcessor();
+            for (int i = 0; i < 20; i++)
+            {
+                var fp = new FingerprintProcessor();
 
-            var image = ImageHelper.LoadImage(Resources._1_1);
+                var image = ImageHelper.LoadImage(Resources.SampleFinger1);
 
 
-            int rows = image.GetLength(0);
-            int columns = image.GetLength(1);
+                int rows = image.GetLength(0);
+                int columns = image.GetLength(1);
 
-            var src = image.Select2D(x => (float) x).Make1D();
+                var src = image.Select2D(x => (float) x).Make1D();
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
 
-            int regionSize = 17;
-            int overlap = 1;
+                int regionSize = 17;
+                int overlap = 1;
 
-            var result = fp.MakeOrientationField(src, rows, columns, regionSize, overlap, true);
+                int[,] mask;
 
-            sw.Stop();
+                fp.SegmentImage(src, rows, columns, out mask, true);
 
-            Trace.WriteLine("OrField with GPU took " + sw.ElapsedMilliseconds + " ms");
+                FingerprintProcessor.Enhance(src, columns, rows);
 
-            var path = Constants.Path + Guid.NewGuid() + ".png";
+                var result = fp.MakeOrientationField(src, rows, columns, regionSize, overlap, true);
 
-            int orFieldWidth = columns / (regionSize - overlap);
-            int orFieldHeight = rows / (regionSize - overlap);
+                sw.Stop();
 
-            ImageHelper.SaveFieldAbove(image, result.Make2D(orFieldHeight, orFieldWidth).Select2D(x => (double) x),
-                                       regionSize, overlap, path);
+                Trace.WriteLine("OrField with GPU took " + sw.ElapsedMilliseconds + " ms");
 
-            Process.Start(path);
+                var path = Constants.Path + Guid.NewGuid() + ".png";
+
+                int orFieldWidth = columns/(regionSize - overlap);
+                int orFieldHeight = rows/(regionSize - overlap);
+
+                ImageHelper.SaveFieldAbove(image, result.Make2D(orFieldHeight, orFieldWidth).Select2D(x => (double) x),
+                                           regionSize, overlap, path);
+
+                Process.Start(path);
+            }
         }
+
+        [TestMethod]
+        public void TestMinutiaExtraction()
+        {
+            for (int i = 0; i < 20; i++)
+            {
+                var fp = new FingerprintProcessor();
+
+                int[,] mask;
+
+                var image = ImageHelper.LoadImage(Resources.SampleFinger1);
+
+                int rows = image.GetLength(0);
+                int columns = image.GetLength(1);
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+
+                var src = image.Select2D(x => (float)x).Make1D();
+
+                int regionSize = 17;
+                int overlap = 1;
+
+                var result = fp.SegmentImage(src, rows, columns, out mask, true);
+
+                FingerprintProcessor.Enhance(result, columns, rows);
+
+                var orField = fp.MakeOrientationField(result, rows, columns, regionSize, overlap, true);
+
+                int orFieldWidth = columns / (regionSize - overlap);
+                int orFieldHeight = rows / (regionSize - overlap);
+
+                result = fp.BinarizeImage(result, rows, columns, true);
+
+                result = fp.ThinImage(result, rows, columns, true);
+
+                List<Minutia> mins = fp.FindMinutiae(result, rows, columns, orField, orFieldHeight, orFieldWidth, mask);
+                
+                sw.Stop();
+                Trace.WriteLine("Binarization with GPU took " + sw.ElapsedMilliseconds + " ms");
+
+                var path = Constants.Path + Guid.NewGuid() + ".png";
+
+                ImageHelper.MarkMinutiaeWithDirections(Resources.SampleFinger1, mins, path);
+
+                Process.Start(path);
+            }
+
+           
+        }
+
+        
 
         //[TestMethod]
         //public void TestFullCycleUpToMinutiae()

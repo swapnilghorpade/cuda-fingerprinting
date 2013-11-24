@@ -196,4 +196,10 @@
   <data name="_104_61" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>Resources\104_61.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
   </data>
+  <data name="SampleFinger1" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\acd.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
+  <data name="SampleFinger2" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>Resources\2227b6ea-5077-4322-92b0-8353e5b81bbb.png;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  </data>
 </root>

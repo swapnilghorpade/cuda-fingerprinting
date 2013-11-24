@@ -194,9 +194,16 @@
     <None Include="Resources\104_61.png" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="..\Release\CUDASegmentation.dll">
+      <Link>CUDASegmentation.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="..\Release\CUDAThining.dll">
       <Link>CUDAThining.dll</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <None Include="Resources\2227b6ea-5077-4322-92b0-8353e5b81bbb.png" />
+    <None Include="Resources\acd.png" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
