@@ -7,13 +7,16 @@
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <time.h>
 
 #define ceilMod(x, y) (x+y-1)/y
 
+const int Omega = 50;
 const int R = 70;
 const int Ns = 16; // 8
 const int Nd = 6;
-const float SigmaD = 2* M_PI / 9;
+
+const float SigmaS = 2 * M_PI / 9;
 const int BigSigma = 50; //
 const float MinVC = 0.75; //
 const int MinM = 2; // 
@@ -34,6 +37,12 @@ __device__ const float cudaMinME = 0.6; //
 __device__ const float cudaSigmaTetta = M_PI / 2;  //
 __device__ const int cudaN = 10;
 __device__ const int cudaDictionaryCount = 360; // 720, 1440
+
+
+
+float* integrals = NULL;
+
+
 
 __host__ __device__ struct Cell
 {
@@ -239,100 +248,60 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 
 }
 
-void MCCMethod(Cell* result, int* resultOfCheck, Minutiae* minutiae, int minutiaeCount, int rows, int columns, int* workingArea,
-	float deltaS, float deltaD, CUDAArray<float> cudaIntegralParameters, CUDAArray<float> cudaIntegralValues)
+//void MCCMethod(Cell* result, int* resultOfCheck, Minutiae* minutiae, int minutiaeCount, int rows, int columns, int* workingArea,
+//	float deltaS, float deltaD)
+//{
+//		Init(SigmaS, deltaD);
+//		CUDAArray<Minutiae> cudaMinutiae = CUDAArray<Minutiae>(minutiae, minutiaeCount, 1);
+//		cudaError_t cudaStatus = cudaGetLastError();
+//		CUDAArray<int> cudaWorkingArea = CUDAArray<int>(workingArea, columns, rows);
+//		cudaStatus = cudaGetLastError();
+//		CUDAArray<Cell> cudaResult = CUDAArray<Cell>(result, Ns * Ns * Nd, minutiaeCount); // result
+//		cudaStatus = cudaGetLastError();
+//		int* numOfValid = (int*)malloc(sizeof(int)*minutiaeCount);
+//		memset (numOfValid, 0, minutiaeCount);
+//		CUDAArray<int> numOfValidMask = CUDAArray<int>(numOfValid, minutiaeCount,1);
+//		cudaStatus = cudaGetLastError();
+//
+//		CUDAArray<int> cudaResultOfCheck = CUDAArray<int>(numOfValid, minutiaeCount,1);
+//		cudaStatus = cudaGetLastError();
+//
+//		CUDAArray<int> numOfNeighbours = CUDAArray<int>(numOfValid, minutiaeCount,1);
+//		cudaStatus = cudaGetLastError();
+//		dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
+//		dim3 gridSize = dim3(ceilMod(Ns * Ns * Nd, defaultThreadCount), ceilMod(minutiaeCount, defaultThreadCount));
+// 
+//		cudaMCC<<<gridSize,blockSize>>>(cudaMinutiae, minutiaeCount, cudaIntegralParameters, cudaIntegralValues, 
+//		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaResult, numOfValidMask);
+// cudaStatus = cudaGetLastError();
+//
+//		// call checking for each minutiae
+//		gridSize = dim3(ceilMod(minutiaeCount, defaultThreadCount));
+//		check<<<gridSize,blockSize>>>(cudaResultOfCheck, numOfValidMask, minutiae, numOfNeighbours, minutiaeCount);
+//		cudaStatus = cudaGetLastError();
+//		cudaResult.GetData(result);
+//		cudaStatus = cudaGetLastError();
+//		cudaResultOfCheck.GetData(resultOfCheck);
+//		cudaStatus = cudaGetLastError();
+//
+//		cudaMinutiae.Dispose();
+//		cudaWorkingArea.Dispose();
+//		cudaResult.Dispose();
+//}
+
+float previousSigmaS = -100500.0f, previousDeltaD = -100500.0f;
+
+void Init(float sigmaS, float deltaD)
 {
-		CUDAArray<Minutiae> cudaMinutiae = CUDAArray<Minutiae>(minutiae, minutiaeCount, 1);
-		cudaError_t cudaStatus = cudaGetLastError();
-		CUDAArray<int> cudaWorkingArea = CUDAArray<int>(workingArea, columns, rows);
-		cudaStatus = cudaGetLastError();
-		CUDAArray<Cell> cudaResult = CUDAArray<Cell>(result, Ns * Ns * Nd, minutiaeCount); // result
-		cudaStatus = cudaGetLastError();
-		int* numOfValid = (int*)malloc(sizeof(int)*minutiaeCount);
-		memset (numOfValid, 0, minutiaeCount);
-		CUDAArray<int> numOfValidMask = CUDAArray<int>(numOfValid, minutiaeCount,1);
-		cudaStatus = cudaGetLastError();
-
-		CUDAArray<int> cudaResultOfCheck = CUDAArray<int>(numOfValid, minutiaeCount,1);
-		cudaStatus = cudaGetLastError();
-
-		CUDAArray<int> numOfNeighbours = CUDAArray<int>(numOfValid, minutiaeCount,1);
-		cudaStatus = cudaGetLastError();
-		dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
-		dim3 gridSize = dim3(ceilMod(Ns * Ns * Nd, defaultThreadCount), ceilMod(minutiaeCount, defaultThreadCount));
- 
-		cudaMCC<<<gridSize,blockSize>>>(cudaMinutiae, minutiaeCount, cudaIntegralParameters, cudaIntegralValues, 
-		rows, columns, cudaWorkingArea, deltaS, deltaD, cudaResult, numOfValidMask);
- cudaStatus = cudaGetLastError();
-
-		// call checking for each minutiae
-		gridSize = dim3(ceilMod(minutiaeCount, defaultThreadCount));
-		check<<<gridSize,blockSize>>>(cudaResultOfCheck, numOfValidMask, minutiae, numOfNeighbours, minutiaeCount);
-		cudaStatus = cudaGetLastError();
-		cudaResult.GetData(result);
-		cudaStatus = cudaGetLastError();
-		cudaResultOfCheck.GetData(resultOfCheck);
-		cudaStatus = cudaGetLastError();
-
-		cudaMinutiae.Dispose();
-		cudaWorkingArea.Dispose();
-		cudaResult.Dispose();
-}
-
-__global__ void cudaMakeTableOfIntegrals(CUDAArray<float> integralParameters, CUDAArray<float> integralValues, float factor, float h, float deltaD)
-{
-	int column = blockIdx.x * blockDim.x * blockDim.y + threadIdx.y * blockDim.x + threadIdx.x;
-	float a = integralParameters.At(0, column) - deltaD / 2;
-	float integrand = 0;
-	float result = 0;
-
-	for (int i = 0; i < cudaN; i++)
+	if(sigmaS != previousSigmaS || deltaD != previousDeltaD)
 	{
-		integrand = a + ((2 * i + 1) * h) / 2;
-		integrand = exp((-integrand * integrand) / (2 * cudaSigmaD * cudaSigmaD));
-		result += h * integrand;    
-	}
-	
-	integralValues.SetAt(0, column, result * factor);
-}
+		if(integrals != NULL) free(integrals);
+		integrals = (float*)malloc(sizeof(float)*DictionaryCount);
 
-float* InitializeIntegralParameters()
-{
-	float* integralParameters = (float*)malloc(DictionaryCount*sizeof(float));
-	float key = -M_PI;
-	float step = 2 * M_PI / DictionaryCount;
-	for (int i = 0; i < DictionaryCount; i++)
-	{
-		integralParameters[i] = key;
-		key += step;
-	}
-
-	return integralParameters;
-}
-
-void Init(float& deltaS, float& deltaD, CUDAArray<float> cudaIntegralParameters, CUDAArray<float> cudaIntegralValues)
-{
-	cudaError_t cudaStatus = cudaSetDevice(0);
-
-	deltaS = 2 * R / Ns;
-	deltaD = 2 * M_PI / Nd;
-	
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) 
-	{
-		printf("cudaIntegralValues = CUDAArray<float>(DictionaryCount, 1); - ERROR!!!\n");
-	}
-
-	float factor = 1 / (SigmaD * sqrt(2 * M_PI));
-	float h = deltaD / N;
-	dim3 blockSize = dim3(defaultThreadCount,defaultThreadCount);
-	dim3 gridSize = dim3(ceilMod(DictionaryCount, defaultThreadCount));
-		 
-	cudaMakeTableOfIntegrals<<<gridSize,blockSize>>>(cudaIntegralParameters, cudaIntegralValues, factor, h, deltaD);
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) 
-	{
-		printf("cudaMakeTableOfIntegrals - ERROR!!!\n");
+		float step = M_PI * 2 / DictionaryCount;
+		int i=0;
+		for(float key = -M_PI; i < DictionaryCount; key += step, i++)
+			integrals[i] = expf(-1.0f /2 / sigmaS / SigmaS) / SigmaS / 2.0f / sqrt(2.0f) * (erff(key + deltaD / 2) - erff(key - deltaD / 2.0f));
 	}
 }
 
@@ -404,24 +373,24 @@ void main()
 		}
 	}
 
-	BuildWorkingArea(workingArea, height, width, R, minutiaeAsIntArr, minutiaeCounter[0]);
+	float deltaD = 2 * M_PI / Nd;
+
+	clock_t t1 = clock();
+	Init(SigmaS, deltaD);
+	clock_t t2 = clock() - t1;
+
+	BuildWorkingArea(workingArea, height, width, Omega, minutiaeAsIntArr, minutiaeCounter[0]);
 	
+	
+
 	Cell* result = (Cell*)malloc(Ns * Ns * Nd * minutiaeCounter[0] * sizeof(Cell)); 
 	int* resultOfCheck = (int*)malloc(sizeof(int)* minutiaeCounter[0]);
-	float deltaS;
-	float deltaD;
-
-	float* integralParameters = InitializeIntegralParameters();
-	CUDAArray<float> cudaIntegralParameters = CUDAArray<float>(integralParameters, DictionaryCount, 1);;
-	CUDAArray<float> cudaIntegralValues = CUDAArray<float>(DictionaryCount, 1);
-	
-	Init(deltaS, deltaD, cudaIntegralParameters, cudaIntegralValues);
-	MCCMethod(result, resultOfCheck, minutiae, minutiaeCounter[0], height, width, workingArea, 
-		deltaS, deltaD, cudaIntegralParameters, cudaIntegralValues);
 	
 	
-	cudaIntegralParameters.Dispose();
-	cudaIntegralValues.Dispose();
+	//MCCMethod(result, resultOfCheck, minutiae, minutiaeCounter[0], height, width, workingArea, 
+	//	deltaS, deltaD);
+	
+	
 	//free(sourceInt);
 	cudaFree(minutiae);
 	cudaFree(minutiaeCounter);

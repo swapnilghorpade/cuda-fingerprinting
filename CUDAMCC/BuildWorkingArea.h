@@ -21,9 +21,9 @@ int compare(const void * a, const void * b) {
 void Sorting(Point *arr, int N) {
 	for (int i = 0 ; i < N; i++) {
 		if (arr[i].Y > (FirstPoint).Y)
-            (FirstPoint) = arr[i];
+            FirstPoint = arr[i];
         if ((arr[i].Y == (FirstPoint).Y) && (arr[i].X < (FirstPoint).X))
-            (FirstPoint) = arr[i];
+            FirstPoint = arr[i];
     }
 	qsort(arr, N, sizeof(Point), compare);
 }
@@ -33,12 +33,15 @@ void BuildHull(int *arr, int N,Point *Hull,int *NHull) {
 	Minutiae = (Point*) malloc(N * sizeof(Point));
 	for (int i = 0; i < N; i++)
 		Minutiae[i] = Point(arr[2*i+1],arr[2*i]);
-	Sorting(Minutiae,N);
+
+	Sorting(Minutiae, N);
+
 	Hull[0] = Minutiae[0];
 	Hull[1] = Minutiae[1];
 	int top = 1;
 	int nextToTop = 0;
-    for (int i = 2; i < N; i++)    {
+    for (int i = 2; i < N; i++)    
+	{
 		while ((Minutiae[i].Subtract(Hull[nextToTop]).VectorProduct(Hull[top].Subtract(Hull[nextToTop])) <=0) && (!Hull[top].Equals(FirstPoint))) {
 			 top--;
 			 if (Hull[top].Equals(FirstPoint))
@@ -70,19 +73,28 @@ __global__ void Fill(int *dev_field,Point *dev_Hull,int NHull) {
 void FieldFilling(int *field,int rows, int columns,int *intMinutiae, int N) {
 	int NHull;
 	Point* Hull = (Point*) malloc (N *sizeof(Point));
-	BuildHull(intMinutiae,N,Hull,&NHull);
-	cudaSetDevice(0);
+
+	BuildHull(intMinutiae, N, Hull, &NHull);
+
 	int *dev_field;
+
 	cudaMalloc(&dev_field,(rows*columns)*sizeof(int));
+
 	Point *dev_Hull;
+
 	cudaMalloc(&dev_Hull,N*sizeof(Point));
+
 	cudaMemcpy(dev_Hull,Hull,(size_t)(N * sizeof(Point)), cudaMemcpyHostToDevice);
+
     Fill<<<rows,columns>>>(dev_field,dev_Hull,NHull);
+
 	cudaMemcpy(field,dev_field,(size_t)((rows*columns) * sizeof(int)), cudaMemcpyDeviceToHost);
+
 	cudaFree(dev_field);
+
 	cudaFree(dev_Hull);
+
 	free(Hull);
-	cudaDeviceReset();
 }
 
 //----------------------------------------
@@ -104,18 +116,27 @@ __device__ int fmin(int a,int b) {
 //blockId.x - number of a row
 //threadId.x - number of a column
 __global__ void FindArea(int *dev_field,int *dev_NewField,int radius,int rows,int columns) {
-	int curPoint = blockIdx.x*blockDim.x+threadIdx.x;
-	for (int i = fmax(blockIdx.x-radius,0); (i <= fmin(rows-1,blockIdx.x+radius)) && (!dev_NewField[curPoint]); i++)
-		for (int j = fmax(threadIdx.x-radius,0); (j <= fmin(columns-1,threadIdx.x+radius)) && (!dev_NewField[curPoint]); j++) 
-			if ((threadIdx.x-j)*(threadIdx.x-j) + (blockIdx.x-i)*(blockIdx.x-i) <= radius * radius)
-				if (dev_field[i*blockDim.x+j])
+
+	int curPoint = blockIdx.x * blockDim.x + threadIdx.x;
+
+	for (int i = fmax(blockIdx.x - radius, 0); (i <= fmin(rows - 1, blockIdx.x + radius)) && (!dev_NewField[curPoint]); i++)
+	{
+		for (int j = fmax(threadIdx.x - radius, 0); (j <= fmin(columns - 1, threadIdx.x+radius)) && (!dev_NewField[curPoint]); j++) 
+		{
+			if ((threadIdx.x - j)*(threadIdx.x-j) + (blockIdx.x-i)*(blockIdx.x-i) <= radius * radius)
+				if (dev_field[i * blockDim.x + j])
 					dev_NewField[curPoint] = 1;
+		}
+	}
 }
 
 
 void BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutiae,int NoM) {
-	cudaSetDevice(0);
+	
+	
+	clock_t t1 = clock();
 	FieldFilling(field,rows,columns,IntMinutiae,NoM);
+	
 	int *dev_field;
 	int *dev_NewField;
 	cudaMalloc(&dev_field,rows*columns*sizeof(int));
@@ -126,6 +147,6 @@ void BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutia
 	cudaMemcpy(field,dev_NewField,(size_t)(rows * columns * sizeof(int)), cudaMemcpyDeviceToHost);
 	cudaFree(dev_field);
 	cudaFree(dev_NewField);
-	cudaDeviceReset();
+	clock_t t2 = clock() - t1;
 }
 //----------------------------------------
