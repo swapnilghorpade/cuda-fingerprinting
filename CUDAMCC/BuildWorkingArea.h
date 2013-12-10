@@ -9,8 +9,8 @@ int compare(const void * a, const void * b) {
     int result = 1;
 	Point V1 = *(Point*) a;
 	Point V2 = *(Point*) b;
-    if ((V1.Subtract(FirstPoint).VectorProduct(V2.Subtract(FirstPoint)) < 0) ||
-        ((V1.Subtract(FirstPoint).VectorProduct(V2.Subtract(FirstPoint)) == 0) &&
+    if ((V1.VectorProduct(V2) < 0) ||
+        ((V1.VectorProduct(V2) == 0) &&
 		(V1.Distance(FirstPoint) < V2.Distance(FirstPoint))))
         result = -1;
 	if (V1.Equals(V2))
@@ -18,31 +18,29 @@ int compare(const void * a, const void * b) {
     return result;
 }
 
-void Sorting(Point *arr, int N) {
+void Sort(Point *arr, int N) {
 	for (int i = 0 ; i < N; i++) {
-		if (arr[i].Y > (FirstPoint).Y)
-            FirstPoint = arr[i];
-        if ((arr[i].Y == (FirstPoint).Y) && (arr[i].X < (FirstPoint).X))
+		if (arr[i].Y > (FirstPoint).Y || 
+			arr[i].Y == (FirstPoint).Y && arr[i].X < (FirstPoint).X)
             FirstPoint = arr[i];
     }
+
+	for (int i = 0 ; i < N; i++) arr[i] = arr[i].Subtract(FirstPoint);
+
 	qsort(arr, N, sizeof(Point), compare);
 }
 
-void BuildHull(int *arr, int N,Point *Hull,int *NHull) {
-	Point *Minutiae;
-	Minutiae = (Point*) malloc(N * sizeof(Point));
-	for (int i = 0; i < N; i++)
-		Minutiae[i] = Point(arr[2*i+1],arr[2*i]);
+void BuildHull(Point *arr, int number, Point *Hull,int *NHull) {
 
-	Sorting(Minutiae, N);
+	Sort(arr, number);
 
-	Hull[0] = Minutiae[0];
-	Hull[1] = Minutiae[1];
+	Hull[0] = arr[0];
+	Hull[1] = arr[1];
 	int top = 1;
 	int nextToTop = 0;
-    for (int i = 2; i < N; i++)    
+    for (int i = 2; i < number; i++)    
 	{
-		while ((Minutiae[i].Subtract(Hull[nextToTop]).VectorProduct(Hull[top].Subtract(Hull[nextToTop])) <=0) && (!Hull[top].Equals(FirstPoint))) {
+		while ((arr[i].Subtract(Hull[nextToTop]).VectorProduct(Hull[top].Subtract(Hull[nextToTop])) <=0) && (!Hull[top].Equals(FirstPoint))) {
 			 top--;
 			 if (Hull[top].Equals(FirstPoint))
                  nextToTop = top;
@@ -51,30 +49,42 @@ void BuildHull(int *arr, int N,Point *Hull,int *NHull) {
          }
          top++;
 		 nextToTop = top-1;
-		 Hull[top] = Minutiae[i];
+		 Hull[top] = arr[i];
     }
 	*NHull = top+1;
-	free(Minutiae);
 }
 //----------------------------------------
 
 
 
-__global__ void Fill(int *dev_field,Point *dev_Hull,int NHull) {
+__global__ void Fill(int *dev_field, Point *dev_Hull, int NHull) {
 	int curPoint = blockIdx.x * blockDim.x + threadIdx.x;
-	dev_field[curPoint] = 1;
-	for (int i = NHull-1; (i>0) && (dev_field[curPoint]); i--)
+
+	int result = 1;
+
+	for (int i = NHull-1; (i>0) && dev_field[curPoint]; i--)
+	{
 		if ((dev_Hull[i-1].X-dev_Hull[i].X)*((int)(threadIdx.x) - dev_Hull[i].Y) - (dev_Hull[i-1].Y-dev_Hull[i].Y)*((int)(blockIdx.x) - dev_Hull[i].X) < 0)
-			dev_field[curPoint] = 0;
+			result = 0;
+	}
 	if ((dev_Hull[NHull-1].X-dev_Hull[0].X)*((int)(threadIdx.x) - dev_Hull[0].Y) - (dev_Hull[NHull-1].Y-dev_Hull[0].Y)*((int)(blockIdx.x) - dev_Hull[0].X) < 0)
-			dev_field[curPoint] = 0;
+			result = 0;
+
+	dev_field[curPoint] = result;
 }
 
-void FieldFilling(int *field,int rows, int columns,int *intMinutiae, int N) {
+void FieldFilling(int *field,int rows, int columns,int *minutiaeXs, int* minutiaeYs, int number) {
 	int NHull;
-	Point* Hull = (Point*) malloc (N *sizeof(Point));
+	Point* Hull = (Point*) malloc (number *sizeof(Point));
 
-	BuildHull(intMinutiae, N, Hull, &NHull);
+	Point* minutiae = (Point*) malloc (number *sizeof(Point));
+	for(int i=0; i<number; i++)
+	{
+		minutiae[i].X = minutiaeXs[i];
+		minutiae[i].Y = minutiaeYs[i];
+	}
+
+	BuildHull(minutiae, number, Hull, &NHull);
 
 	int *dev_field;
 
@@ -82,9 +92,9 @@ void FieldFilling(int *field,int rows, int columns,int *intMinutiae, int N) {
 
 	Point *dev_Hull;
 
-	cudaMalloc(&dev_Hull,N*sizeof(Point));
+	cudaMalloc(&dev_Hull, number * sizeof(Point));
 
-	cudaMemcpy(dev_Hull,Hull,(size_t)(N * sizeof(Point)), cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_Hull,Hull,(size_t)(number * sizeof(Point)), cudaMemcpyHostToDevice);
 
     Fill<<<rows,columns>>>(dev_field,dev_Hull,NHull);
 
@@ -131,11 +141,8 @@ __global__ void FindArea(int *dev_field,int *dev_NewField,int radius,int rows,in
 }
 
 
-void BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutiae,int NoM) {
-	
-	
-	clock_t t1 = clock();
-	FieldFilling(field,rows,columns,IntMinutiae,NoM);
+void BuildWorkingArea(int *field,int rows,int columns,int radius,int *minutiaeXs, int *minutiaeYs, int number) {
+	FieldFilling(field, rows, columns, minutiaeXs, minutiaeYs, number);
 	
 	int *dev_field;
 	int *dev_NewField;
@@ -147,6 +154,5 @@ void BuildWorkingArea(int *field,int rows,int columns,int radius,int *IntMinutia
 	cudaMemcpy(field,dev_NewField,(size_t)(rows * columns * sizeof(int)), cudaMemcpyDeviceToHost);
 	cudaFree(dev_field);
 	cudaFree(dev_NewField);
-	clock_t t2 = clock() - t1;
 }
 //----------------------------------------

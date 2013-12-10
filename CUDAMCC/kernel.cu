@@ -39,6 +39,7 @@ __device__ const int cudaN = 10;
 __device__ const int cudaDictionaryCount = 360; // 720, 1440
 
 
+float previousSigmaS = -100500.0f, previousDeltaD = -100500.0f;
 
 float* integrals = NULL;
 
@@ -289,8 +290,6 @@ __global__ void cudaMCC (CUDAArray<Minutiae> minutiae, int minutiaeCount, CUDAAr
 //		cudaResult.Dispose();
 //}
 
-float previousSigmaS = -100500.0f, previousDeltaD = -100500.0f;
-
 void Init(float sigmaS, float deltaD)
 {
 	if(sigmaS != previousSigmaS || deltaD != previousDeltaD)
@@ -339,52 +338,39 @@ void main()
 	int width = 256;
 	int height = 364;
 
-	//int* sourceInt = (int*)malloc(width*height*sizeof(int));
-	//LoadImage(sourceInt, "C:\\Users\\Tanya\\Documents\\Studies\\SummerSch0ol2013\\SVN\\CUDAFingerprinting.TemplateBuilding.Minutiae.BinarizationThinking.Tests\\Resources\\104_61globalBinarization150Thinned.phg");
-
-	//Minutiae* minutiae = (Minutiae*)malloc(width*height*sizeof(Minutiae));
-	Minutiae* minutiae = (Minutiae*)malloc(4*sizeof(Minutiae));
-
-	int* minutiaeCounter = (int*)malloc(sizeof(int));
 	
 	int* workingArea = (int*)malloc(width*height*sizeof(int));
 
 	//FindBigMinutiaeCUDA(sourceInt, width, height, minutiae, minutiaeCounter, 5);
-	minutiae[0].x =  40;
-	minutiae[0].y =  60;
-	minutiae[0].angle = 0;
 
-	minutiae[1].x =  70;
-	minutiae[1].y =  100;
-	minutiae[1].angle = M_PI/6;
+	int* minutiaeXs = (int*)malloc(sizeof(int) * 3);
+	int* minutiaeYs = (int*)malloc(sizeof(int) * 3);
+	float* minutiaeAngles = (float*)malloc(sizeof(float) * 3);
 
-	minutiaeCounter[0] = 2;
-	int* minutiaeAsIntArr = (int*)malloc(minutiaeCounter[0] * 2 * sizeof(int));
+	minutiaeXs[0] =  40;
+	minutiaeYs[0] =  60;
+	minutiaeAngles[0] = 0;
 
-	for (int i = 0; i < minutiaeCounter[0] * 2; i++)
-	{
-		if (i % 2 == 0)
-		{
-			minutiaeAsIntArr[i] = minutiae[i / 2].x;
-		}
-		else
-		{
-			minutiaeAsIntArr[i] = minutiae[i / 2].y;
-		}
-	}
+	minutiaeXs[1] =  70;
+	minutiaeYs[1] =  100;
+	minutiaeAngles[1] = M_PI/6;
+
+	minutiaeXs[2] =  90;
+	minutiaeYs[2] =  80;
+	minutiaeAngles[2] = M_PI/2;
 
 	float deltaD = 2 * M_PI / Nd;
 
 	clock_t t1 = clock();
 	Init(SigmaS, deltaD);
+	
+
+	BuildWorkingArea(workingArea, height, width, Omega, minutiaeXs, minutiaeYs, 3);
 	clock_t t2 = clock() - t1;
-
-	BuildWorkingArea(workingArea, height, width, Omega, minutiaeAsIntArr, minutiaeCounter[0]);
-	
 	
 
-	Cell* result = (Cell*)malloc(Ns * Ns * Nd * minutiaeCounter[0] * sizeof(Cell)); 
-	int* resultOfCheck = (int*)malloc(sizeof(int)* minutiaeCounter[0]);
+	Cell* result = (Cell*)malloc(Ns * Ns * Nd * 3 * sizeof(Cell)); 
+	int* resultOfCheck = (int*)malloc(sizeof(int)* 3);
 	
 	
 	//MCCMethod(result, resultOfCheck, minutiae, minutiaeCounter[0], height, width, workingArea, 
@@ -392,8 +378,8 @@ void main()
 	
 	
 	//free(sourceInt);
-	cudaFree(minutiae);
-	cudaFree(minutiaeCounter);
-	cudaFree(minutiaeAsIntArr);
+	cudaFree(minutiaeXs);
+	cudaFree(minutiaeYs);
+	cudaFree(minutiaeAngles);
 	cudaFree(workingArea);
 }
