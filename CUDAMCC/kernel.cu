@@ -301,7 +301,7 @@ void Init(float sigmaS, float deltaD)
 		float step = M_PI * 2 / DictionaryCount;
 		int i=0;
 		for(float key = -M_PI; i < DictionaryCount; key += step, i++)
-			integrals[i] = expf(-1.0f /2 / sigmaS / SigmaS) / SigmaS / 2.0f / sqrt(2.0f) * (erff(key + deltaD / 2) - erff(key - deltaD / 2.0f));
+			integrals[i] = expf(0.5f / sigmaS / sigmaS) / sigmaS / 2.0f / sqrt(2.0f) * (erff(key + deltaD / 2) - erff(key - deltaD / 2.0f));
 	}
 }
 
