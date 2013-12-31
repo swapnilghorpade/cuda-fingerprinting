@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading;
@@ -90,19 +91,23 @@ namespace Obedience.Host
             int y = 0;
             try
             {
-                var bmp = captureResult.ToBitmap();
-                int rows = bmp.Height;
-                int columns = bmp.Width;
+                //Stopwatch sw = new Stopwatch();
+                //sw.Start();
+                // this hacky routine runs for around 1 ms - acceptable
+                // completely based on ACD2 bitmap representation
+                int rows = captureResult.Height;
+                int columns = captureResult.Width;
+                var src = captureResult.Array;
                 float[] arr = new float[rows * columns];
-
-                for (y = 0; y < rows; y++)
-                    for (x = 0; x < columns; x++)
+                for (x = 0; x < columns; x++)
+                {
+                    for (y = 0; y < rows; y++)
                     {
-                        arr[y * columns + x] = bmp.GetPixel(x, y).R;
+                        arr[(rows-1-y)*columns + x] = 255.0f - src[y*columns + x + 1078];
                     }
-
+                }
+                //sw.Stop();
                 _processor.ProcessFingerImage(arr, rows, columns);
-                bmp.Dispose();
                 
             }
             catch (Exception ex)
