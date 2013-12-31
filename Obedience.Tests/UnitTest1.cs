@@ -248,7 +248,7 @@ namespace Obedience.Tests
         public void ShowImage()
         {
             var path = Constants.Path + Guid.NewGuid() + ".png";
-            ImageHelper.SaveBinaryAsImage("C:\\temp\\orField.bin", path, true);
+            ImageHelper.SaveBinaryAsImage("C:\\temp\\field.bin", path, true);
             Process.Start(path);
         }
 
@@ -294,49 +294,84 @@ namespace Obedience.Tests
         public void DetermineNewPoint(int x1, int y1, int x2, int y2, int x3, int y3, out int x0, out int y0)
         {
             double a1, b1, c1;
+            DetermineLine(x1,y1,x2,y2,out a1, out b1, out c1);
             double a2, b2, c2;
+            DetermineLine(x2, y2, x3, y3, out a2, out b2, out c2);
 
-            ShiftLine(x1, y1, x2, y2, x3, y3, out a1, out b1, out c1);
-            ShiftLine(x3, y3, x2, y2, x1, y1, out a2, out b2, out c2);
+            double c11 = c1 + Math.Sqrt(a1 * a1 + b1 * b1) * delta;
+            double c12 = c1 - Math.Sqrt(a1 * a1 + b1 * b1) * delta;
+            double c21 = c2 + Math.Sqrt(a2 * a2 + b2 * b2) * delta;
+            double c22 = c2 - Math.Sqrt(a2 * a2 + b2 * b2) * delta;
 
-            x0 = (int) (-(c1*b2 - c2*b1)/(a1*b2 - a2*b1));
-            y0 = (int) (-(a1*c2 - a2*c1)/(a1*b2 - a2*b1));
+            double x, y;
+            IntersectionPoint(a1, b1, c11, a2, b2, c21, out x, out y);
+            if (!OnTheSameSide(x1, y1, x, y, a2, b2, c2) && !OnTheSameSide(x3, y3, x, y, a1, b1, c1))
+            {
+                x0 = (int)x;
+                y0 = (int) y;
+                return;
+            }
+
+            IntersectionPoint(a1, b1, c12, a2, b2, c21, out x, out y);
+            if (!OnTheSameSide(x1, y1, x, y, a2, b2, c2) && !OnTheSameSide(x3, y3, x, y, a1, b1, c1))
+            {
+                x0 = (int)x;
+                y0 = (int)y;
+                return;
+            }
+
+            IntersectionPoint(a1, b1, c11, a2, b2, c22, out x, out y);
+            if (!OnTheSameSide(x1, y1, x, y, a2, b2, c2) && !OnTheSameSide(x3, y3, x, y, a1, b1, c1))
+            {
+                x0 = (int)x;
+                y0 = (int)y;
+                return;
+            }
+
+            IntersectionPoint(a1, b1, c12, a2, b2, c22, out x, out y);
+            x0 = (int)x;
+            y0 = (int)y;
         }
 
-        private void ShiftLine(int x1, int y1, int x2, int y2, int x3, int y3, out double a1, out double b1, out double c1)
+        private bool OnTheSameSide(double x1, double y1, double x2, double y2, 
+            double a, double b, double c)
         {
-            y1 *= -1;
-            y2 *= -1;
-            y3 *= -1;
+            return Math.Sign(a*x1 + b*y1 + c)*Math.Sign(a*x2 + b*y2 + c) > 0;
+        }
+
+        private void IntersectionPoint(double a1, double b1, double c1,
+                                       double a2, double b2, double c2, out double x, out double y)
+        {
+            double det = a1*b2 - a2*b1;
+            x = (-b2*c1 + b1*c2)/det;
+            y = (-a1*c2 + a2*c1)/det;
+        }
+
+        private void DetermineLine(int x1, int y1, int x2, int y2, out double a1, out double b1, out double c1)
+        {
             // determine line coefficients
             a1 = y1 - y2;
             b1 = x2 - x1;
-            double c = x1*y2 - x2*y1;
+            c1 = x1 * y2 - x2 * y1;
 
             if (a1 != 0)
             {
-                c /= a1;
+                c1 /= a1;
                 b1 /= a1;
                 a1 = 1.0d;
             }
-
-            double c2 = c + Math.Sqrt(a1 * a1 + b1 * b1) * delta;
-
-            double xTest = 1000;
-            double yTest = (-c2 - xTest*a1)/b1;
-
-            if ((((double) y1 - y2)*((double) x3 - x1) + ((double) x2 - x1)*((double) y3 - y1))*
-                (((double) y1 - y2)*(xTest - x1) + ((double) x2 - x1)*(yTest - y1)) < 0)
+            else
             {
-                c1 = c - Math.Sqrt(a1*a1 + b1*b1)*delta;
+                c1 /= b1;
+                a1 /= b1;
+                b1 = 1.0d;
             }
-            else c1 = c2;
         }
 
         [TestMethod]
         public void TestFieldFilling()
         {
-            int[,] result = new int[100 + 4*delta,100 + 4*delta];
+            int[,] result = new int[100 + 8*delta,100 + 8*delta];
 
             List<int> xs = new List<int>() {30, 30, 60};
             List<int> ys = new List<int>() {30, 60, 30};
@@ -350,14 +385,31 @@ namespace Obedience.Tests
                 int y;
                 DetermineNewPoint(xs[(i + 2) % 3], ys[(i + 2) % 3], xs[i], ys[i], xs[(i + 1) % 3],
                                   ys[(i + 1)%3], out x, out y);
-                y = -y;
                 xResults.Add(x);
                 yResults.Add(y);
             }
             for (int i = 0; i < 3; i++)
             {
                 DrawLine(xResults[i], yResults[i], xResults[(i + 1) % 3], yResults[(i + 1) % 3], delta, delta, result);
-                DrawLine(xs[i], ys[i], xs[(i + 1) % 3], ys[(i + 1) % 3], 2*delta, 2*delta, result);
+                DrawLine(xs[i], ys[i], xs[(i + 1) % 3], ys[(i + 1) % 3], delta, delta, result);
+            }
+
+            for (int x = -30; x < 200; x++)
+            {
+                for (int y = -30; y < 200; y++)
+                {
+                    for (int i = 0; i < 3; i++)
+                    {
+                        double a, b, c;
+                        DetermineLine(xResults[i], yResults[i], xResults[(i + 1)%3], yResults[(i + 1)%3], out a, out b,
+                                      out c);
+                        if (!OnTheSameSide(x, y, xResults[(i + 2)%3], yResults[(i + 2)%3], a, b, c))
+                        {
+                            result[x + delta, y + delta] = 1;
+                            break;
+                        }
+                    }
+                }
             }
         
             var path = "C:\\temp\\LineTest.png";

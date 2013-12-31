@@ -53,27 +53,147 @@ void BuildHull(Point *arr, int number, Point *Hull,int *NHull) {
     }
 	*NHull = top+1;
 }
-//----------------------------------------
 
-
-
-__global__ void Fill(int *dev_field, Point *dev_Hull, int NHull) {
-	int curPoint = blockIdx.x * blockDim.x + threadIdx.x;
-
-	int result = 1;
-
-	for (int i = NHull-1; (i>0) && dev_field[curPoint]; i--)
-	{
-		if ((dev_Hull[i-1].X-dev_Hull[i].X)*((int)(threadIdx.x) - dev_Hull[i].Y) - (dev_Hull[i-1].Y-dev_Hull[i].Y)*((int)(blockIdx.x) - dev_Hull[i].X) < 0)
-			result = 0;
-	}
-	if ((dev_Hull[NHull-1].X-dev_Hull[0].X)*((int)(threadIdx.x) - dev_Hull[0].Y) - (dev_Hull[NHull-1].Y-dev_Hull[0].Y)*((int)(blockIdx.x) - dev_Hull[0].X) < 0)
-			result = 0;
-
-	dev_field[curPoint] = result;
+__host__ __device__ __inline__ bool OnTheSameSide(float x1, float y1, float x2, float y2, 
+            float a, float b, float c)
+{
+	float result1 = a*x1 + b*y1 + c;
+	result1 = result1 / abs(result1);
+	float result2 = a*x2 + b*y2 + c;
+	result2 = result2 / abs(result2);
+	return result1 * result2 > 0;
 }
 
-void FieldFilling(int *field,int rows, int columns,int *minutiaeXs, int* minutiaeYs, int number) {
+void IntersectionPoint(float a1, float b1, float c1,
+	float a2, float b2, float c2, float* x, float* y)
+{
+	float det = a1*b2 - a2*b1;
+	*x = (-b2*c1 + b1*c2)/det;
+	*y = (-a1*c2 + a2*c1)/det;
+}
+
+__host__ __device__ __inline__ void DetermineLine(int x1, int y1, int x2, int y2, float* a1, float* b1, float* c1)
+{
+	// determine line coefficients
+	*a1 = y1 - y2;
+	*b1 = x2 - x1;
+	*c1 = x1 * y2 - x2 * y1;
+
+	if (*a1 != 0)
+	{
+		*c1 /= *a1;
+		*b1 /= *a1;
+		*a1 = 1.0f;
+	}
+	else
+	{
+		*c1 /= *b1;
+		*a1 /= *b1;
+		*b1 = 1.0f;
+	}
+}
+
+void DetermineNewPoint(int x1, int y1, int x2, int y2, int x3, int y3, int* x0, int* y0, float radius)
+{
+	float a1, b1, c1;
+	DetermineLine(x1,y1,x2,y2, &a1, &b1, &c1);
+	float a2, b2, c2;
+	DetermineLine(x2, y2, x3, y3, &a2, &b2,  &c2);
+
+	float c11 = c1 + sqrt(a1 * a1 + b1 * b1) * radius;
+	float c12 = c1 - sqrt(a1 * a1 + b1 * b1) * radius;
+	float c21 = c2 + sqrt(a2 * a2 + b2 * b2) * radius;
+	float c22 = c2 - sqrt(a2 * a2 + b2 * b2) * radius;
+
+	float x, y;
+	IntersectionPoint(a1, b1, c11, a2, b2, c21, &x, &y);
+	if (!OnTheSameSide(x1, y1, x, y, a2, b2, c2) && !OnTheSameSide(x3, y3, x, y, a1, b1, c1))
+	{
+		*x0 = (int)x;
+		*y0 = (int) y;
+		return;
+	}
+
+	IntersectionPoint(a1, b1, c12, a2, b2, c21, &x, &y);
+	if (!OnTheSameSide(x1, y1, x, y, a2, b2, c2) && !OnTheSameSide(x3, y3, x, y, a1, b1, c1))
+	{
+		*x0 = (int)x;
+		*y0 = (int)y;
+		return;
+	}
+
+	IntersectionPoint(a1, b1, c11, a2, b2, c22, &x, &y);
+	if (!OnTheSameSide(x1, y1, x, y, a2, b2, c2) && !OnTheSameSide(x3, y3, x, y, a1, b1, c1))
+	{
+		*x0 = (int)x;
+		*y0 = (int)y;
+		return;
+	}
+
+	IntersectionPoint(a1, b1, c12, a2, b2, c22, &x, &y);
+	*x0 = (int)x;
+	*y0 = (int)y;
+}
+
+__global__ void fillConvexHull(CUDAArray<int> field, CUDAArray<int> xs, CUDAArray<int> ys)
+{
+	int y = defaultRow();
+	int x = defaultColumn();
+
+	if(y < field.Height && x < field.Width)
+	{
+		int result = 1;
+
+		int x1 = xs.At(0,0);
+		int y1 = ys.At(0,0);
+
+		int x2 = xs.At(0,1);
+		int y2 = ys.At(0,1);
+
+		int x3 = 0;
+		int y3 = 0;
+
+		for (int i = 0; i < xs.Width; i++)
+		{
+			x3 = xs.At(0, (i+2)%3);
+			y3 = ys.At(0, (i+2)%3);
+
+			float a, b, c;
+			a = y1 - y2;
+	b = x2 - x1;
+	c = x1 * y2 - x2 * y1;
+
+	if (a != 0)
+	{
+		c /= a;
+		b /= a;
+		a = 1.0f;
+	}
+	else
+	{
+		c /= b;
+		a /= b;
+		b = 1.0f;
+	}
+			if (!OnTheSameSide(x, y, x3, y3, a, b, c))
+			{
+				result = 0;
+				break;
+			}
+			x1 = x2;
+			y1 = y2;
+
+			x2 = x3;
+			y2 = y3;
+		}
+
+		field.SetAt(y, x, result);
+	}
+}
+
+
+int* BuildAreaOfInterest(int rows,int columns,int radius,int *minutiaeXs, int *minutiaeYs, int number) {
+
 	int NHull;
 	Point* Hull = (Point*) malloc (number *sizeof(Point));
 
@@ -86,73 +206,41 @@ void FieldFilling(int *field,int rows, int columns,int *minutiaeXs, int* minutia
 
 	BuildHull(minutiae, number, Hull, &NHull);
 
-	int *dev_field;
+	int* xs = (int*)malloc(sizeof(int)*NHull);
+	int* ys = (int*)malloc(sizeof(int)*NHull);
 
-	cudaMalloc(&dev_field,(rows*columns)*sizeof(int));
-
-	Point *dev_Hull;
-
-	cudaMalloc(&dev_Hull, number * sizeof(Point));
-
-	cudaMemcpy(dev_Hull,Hull,(size_t)(number * sizeof(Point)), cudaMemcpyHostToDevice);
-
-    Fill<<<rows,columns>>>(dev_field,dev_Hull,NHull);
-
-	cudaMemcpy(field,dev_field,(size_t)((rows*columns) * sizeof(int)), cudaMemcpyDeviceToHost);
-
-	cudaFree(dev_field);
-
-	cudaFree(dev_Hull);
-
-	free(Hull);
-}
-
-//----------------------------------------
-__device__ int fmax(int a,int b) {
-	int result = a;
-	if (a < b)
-		result = b;
-	return result;
-}
-
-
-__device__ int fmin(int a,int b) {
-	int result = a;
-	if (a > b)
-		result = b;
-	return result;
-}
-//----------------------------------------
-//blockId.x - number of a row
-//threadId.x - number of a column
-__global__ void FindArea(int *dev_field,int *dev_NewField,int radius,int rows,int columns) {
-
-	int curPoint = blockIdx.x * blockDim.x + threadIdx.x;
-
-	for (int i = fmax(blockIdx.x - radius, 0); (i <= fmin(rows - 1, blockIdx.x + radius)) && (!dev_NewField[curPoint]); i++)
+	for (int i = 0; i < NHull; i++)
 	{
-		for (int j = fmax(threadIdx.x - radius, 0); (j <= fmin(columns - 1, threadIdx.x+radius)) && (!dev_NewField[curPoint]); j++) 
-		{
-			if ((threadIdx.x - j)*(threadIdx.x-j) + (blockIdx.x-i)*(blockIdx.x-i) <= radius * radius)
-				if (dev_field[i * blockDim.x + j])
-					dev_NewField[curPoint] = 1;
-		}
+		int x;
+		int y;
+		DetermineNewPoint(Hull[(i + 2) % 3].X, Hull[(i + 2) % 3].Y, Hull[i].X, Hull[i].Y, Hull[(i + 1) % 3].X,
+			Hull[(i + 1)%3].Y, &x, &y, radius);
+		xs[i] = x+FirstPoint.X;
+		ys[i] = y+FirstPoint.Y;
 	}
-}
-
-
-void BuildWorkingArea(int *field,int rows,int columns,int radius,int *minutiaeXs, int *minutiaeYs, int number) {
-	FieldFilling(field, rows, columns, minutiaeXs, minutiaeYs, number);
 	
-	int *dev_field;
-	int *dev_NewField;
-	cudaMalloc(&dev_field,rows*columns*sizeof(int));
-	cudaMalloc(&dev_NewField,rows*columns*sizeof(int));
-	cudaMemcpy(dev_field,field,(size_t)(rows * columns * sizeof(int)), cudaMemcpyHostToDevice);
-	cudaMemcpy(dev_NewField,field,(size_t)(rows * columns * sizeof(int)), cudaMemcpyHostToDevice);
-	FindArea<<<rows,columns>>>(dev_field,dev_NewField,radius,rows,columns);
-	cudaMemcpy(field,dev_NewField,(size_t)(rows * columns * sizeof(int)), cudaMemcpyDeviceToHost);
-	cudaFree(dev_field);
-	cudaFree(dev_NewField);
+	CUDAArray<int> cudaXs = CUDAArray<int>(xs, NHull, 1);
+	cudaError_t error = cudaGetLastError();
+	CUDAArray<int> cudaYs = CUDAArray<int>(ys, NHull, 1);
+	error = cudaGetLastError();
+	CUDAArray<int> cudaField = CUDAArray<int>(columns, rows);
+	error = cudaGetLastError();
+
+	dim3 blockSize = dim3(16,16);
+	dim3 gridSize = 
+		dim3(ceilMod(cudaField.Width,16),
+		ceilMod(cudaField.Height,16));
+
+	fillConvexHull<<<gridSize, blockSize>>>(cudaField, cudaXs, cudaYs);
+
+	error = cudaGetLastError();
+
+	int* result = cudaField.GetData();
+	//SaveArray(cudaField, "C:\\temp\\field.bin");
+	cudaXs.Dispose();
+	cudaYs.Dispose();
+	cudaField.Dispose();
+	
+	return result;
 }
 //----------------------------------------

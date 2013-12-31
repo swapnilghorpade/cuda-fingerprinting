@@ -339,7 +339,6 @@ void main()
 	int height = 364;
 
 	
-	int* workingArea = (int*)malloc(width*height*sizeof(int));
 
 	//FindBigMinutiaeCUDA(sourceInt, width, height, minutiae, minutiaeCounter, 5);
 
@@ -347,16 +346,16 @@ void main()
 	int* minutiaeYs = (int*)malloc(sizeof(int) * 3);
 	float* minutiaeAngles = (float*)malloc(sizeof(float) * 3);
 
-	minutiaeXs[0] =  40;
-	minutiaeYs[0] =  60;
+	minutiaeXs[0] =  100;
+	minutiaeYs[0] =  100;
 	minutiaeAngles[0] = 0;
 
-	minutiaeXs[1] =  70;
+	minutiaeXs[1] =  200;
 	minutiaeYs[1] =  100;
 	minutiaeAngles[1] = M_PI/6;
 
-	minutiaeXs[2] =  90;
-	minutiaeYs[2] =  80;
+	minutiaeXs[2] =  150;
+	minutiaeYs[2] =  300;
 	minutiaeAngles[2] = M_PI/2;
 
 	float deltaD = 2 * M_PI / Nd;
@@ -365,9 +364,8 @@ void main()
 	Init(SigmaS, deltaD);
 	
 
-	BuildWorkingArea(workingArea, height, width, Omega, minutiaeXs, minutiaeYs, 3);
+	int* field = BuildAreaOfInterest(height, width, Omega, minutiaeXs, minutiaeYs, 3);
 	clock_t t2 = clock() - t1;
-	
 
 	Cell* result = (Cell*)malloc(Ns * Ns * Nd * 3 * sizeof(Cell)); 
 	int* resultOfCheck = (int*)malloc(sizeof(int)* 3);
@@ -378,8 +376,7 @@ void main()
 	
 	
 	//free(sourceInt);
-	cudaFree(minutiaeXs);
-	cudaFree(minutiaeYs);
-	cudaFree(minutiaeAngles);
-	cudaFree(workingArea);
+	free(minutiaeXs);
+	free(minutiaeYs);
+	free(minutiaeAngles);
 }
