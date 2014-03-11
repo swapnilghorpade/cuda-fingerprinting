@@ -89,9 +89,68 @@ __device__ __inline__ float GetSpatialContribution(int minutiaX, int minutiaY, i
 	return result;
 }
 
-__device__ bool IsEqualMinutiae(Minutiae m1, Minutiae m2)
+__device__ __inline__ bool IsEqualMinutiae(Minutiae m1, Minutiae m2)
 {
 	return m1.x == m2.x && m1.y == m2.y && m1.angle == m2.angle;
+}
+
+__host__ __device__ __inline__ int countBits(unsigned int x)
+{
+	x -= (x >> 1) & (0x55555555);
+	x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+	x = (x + (x >> 4)) & 0x0F0F0F0F;
+	x = (x & 0x00FF00FF) + ((x >> 8) & 0x00FF00FF);
+	x = (x & 0x0000FFFF) + (x >> 16);
+	return x;
+}
+
+__global__ void cudaMatchCylinders(CUDAArray<unsigned int> foldedDbCylinders, CUDAArray<unsigned int> foldedDbMasks, CUDAArray<unsigned int> foldedTargetCylinders, CUDAArray<unsigned int> foldedTargetMasks, CUDAArray<float> matrix, int cylinderLengthInInts)
+{
+	int dbCylinder = defaultColumn();
+	int targetCylinder = defaultRow();
+
+	float metric = 0.0f;
+
+	// magic
+	int targetIndex = cylinderLengthInInts * 32 * (targetCylinder / 32) + targetCylinder % 32;
+	int dbIndex = cylinderLengthInInts * 32 * (dbCylinder / 32) + dbCylinder % 32;
+
+	int targetBits = 0;
+	int dbBits = 0;
+	int combinedBits = 0;
+	int matchable = 0;
+
+	for(int i = 0; i < cylinderLengthInInts; i++)
+	{
+		unsigned int dbMask = foldedDbMasks.At(dbIndex, 0);
+		unsigned int targetMask = foldedTargetMasks.At(targetIndex, 0);
+
+		unsigned int combinedMask = dbMask & targetMask;
+		matchable += combinedMask;
+
+		unsigned int dbValue = foldedDbCylinders.At(dbIndex, 0);
+		unsigned int targetValue = foldedTargetCylinders.At(targetIndex, 0);
+
+		dbValue  = dbValue & combinedMask;
+		targetValue = targetValue & combinedMask;
+
+		unsigned int combinedValue = dbValue ^ targetValue;
+
+		targetBits += countBits(targetValue);
+		dbBits += countBits(dbValue);
+		combinedBits += countBits(combinedValue);
+	}
+
+	if(matchable)
+	{
+		float normTarget = sqrtf(targetBits);
+		float normDb = sqrtf(dbBits);
+		float normCombined = sqrtf(combinedBits);
+
+		metric = 1.0f - normCombined / (normDb + normTarget);
+	}
+
+	matrix.SetAt(targetCylinder, dbCylinder, metric);
 }
 
 __global__ void cudaMCC (CUDAArray<unsigned int> result, CUDAArray<unsigned int> validity,
@@ -282,16 +341,6 @@ int getTemplateLengthInBits()
 	return amountInCircle * Nd;
 }
 
-int countBits(unsigned int x)
-{
-	x -= (x >> 1) & (0x55555555);
-	x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
-	x = (x + (x >> 4)) & 0x0F0F0F0F;
-	x = (x & 0x00FF00FF) + ((x >> 8) & 0x00FF00FF);
-	x = (x & 0x0000FFFF) + (x >> 16);
-	return x;
-}
-
 void makeMCCTemplate(unsigned char* result, unsigned char* validity, int* templateCount,
 	int* minutiaeXs, int* minutiaeYs, float* minutiaeAngles, int minutiaeCount, 
 	int rows, int columns)
@@ -380,6 +429,66 @@ void makeMCCTemplate(unsigned char* result, unsigned char* validity, int* templa
 	}
 }
 
+int dbCount = 0;
+CUDAArray<unsigned int> cudaDbCylinders;
+CUDAArray<unsigned int> cudaDbMasks;
+
+void InitDb(unsigned int* foldedDbCylinders, unsigned int* foldedDbMasks, int dbCylinderCount)
+{
+	cudaDbCylinders = CUDAArray<unsigned int>(foldedDbCylinders, dbCylinderCount * getTemplateLengthInBits() / 8 / sizeof(unsigned int), 1);
+
+	cudaDbMasks = CUDAArray<unsigned int>(foldedDbMasks, dbCylinderCount * getTemplateLengthInBits() / 8 / sizeof(unsigned int), 1);
+}
+
+void DisposeDb()
+{
+	cudaDbCylinders.Dispose();
+	cudaDbMasks.Dispose();
+}
+
+void matchCylinders(unsigned int* foldedDbCylinders, unsigned int* foldedDbMasks, int dbCylinderCount, 
+	unsigned int* foldedTargetCylinders, unsigned int* foldedTargetMasks, int targetCylinderCount, float* matrix)
+{
+	CUDAArray<float> cudaMatrix = CUDAArray<float>(dbCylinderCount, targetCylinderCount);
+
+	CUDAArray<unsigned int> cudaTargetCylinders = CUDAArray<unsigned int>(foldedTargetCylinders, targetCylinderCount * getTemplateLengthInBits() / 8 / sizeof(unsigned int), 1);
+
+	CUDAArray<unsigned int> cudaTargetMasks = CUDAArray<unsigned int>(foldedTargetMasks, targetCylinderCount * getTemplateLengthInBits() / 8 / sizeof(unsigned int), 1);
+
+	dim3 threadCount = dim3(defaultThreadCount, defaultThreadCount);
+
+	dim3 blockCount = dim3(ceilMod(dbCylinderCount, defaultThreadCount), ceilMod(targetCylinderCount, defaultThreadCount));
+
+	cudaMatchCylinders<<<blockCount, threadCount>>>(cudaDbCylinders, cudaDbMasks, cudaTargetCylinders, cudaTargetMasks, cudaMatrix, getTemplateLengthInBits() / sizeof(unsigned int) / 8);
+
+	cudaError_t error = cudaGetLastError();
+
+	matrix = cudaMatrix.GetData();
+
+	cudaMatrix.Dispose();
+	cudaTargetCylinders.Dispose();
+	cudaTargetMasks.Dispose();
+}
+
+unsigned int* FoldDatabase(unsigned int* dBase, int count)
+{
+	unsigned int* folded = (unsigned int*)malloc(getTemplateLengthInBits()/8*count);
+
+	int lengthInInts = getTemplateLengthInBits()/8/sizeof(unsigned int*);
+
+	for(int i = 0; i < count; i++)
+	{
+		int baseIndex = lengthInInts*32*(i/32)+(i%32);
+
+		for(int j=0;j<lengthInInts;j++)
+		{
+			folded[baseIndex + j*32] = dBase[i*lengthInInts + j];
+		}
+	}
+
+	return folded;
+}
+
 void LoadImage(int* sourceInt, const char* name, bool sourceIsFloat = false)
 {
 	FILE* f = fopen(name,"rb");
@@ -415,7 +524,7 @@ void main()
 	int height = 364;
 
 	
-
+	cudaSetDevice(0);
 	//FindBigMinutiaeCUDA(sourceInt, width, height, minutiae, minutiaeCounter, 5);
 
 	int* minutiaeXs = (int*)malloc(sizeof(int) * 3);
@@ -449,3 +558,4 @@ void main()
 	free(minutiaeYs);
 	free(minutiaeAngles);
 }
+
