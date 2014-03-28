@@ -87,8 +87,8 @@ namespace CUDAFingerprinting.Common.OrientationField
             var dy = GenerateYGradients(bytes);
             int maxY = bytes.GetUpperBound(0);
             int maxX = bytes.GetUpperBound(1);
-            int maxResultY = (bytes.GetUpperBound(0) + 1)/(W - 1);
-            int maxResultX = (bytes.GetUpperBound(1) + 1)/(W - 1);
+            int maxResultY = (bytes.GetUpperBound(0) + 1)/(W);
+            int maxResultX = (bytes.GetUpperBound(1) + 1)/(W);
             double[,] result = new double[maxResultY,maxResultX];
             double[,] vx = new double[maxResultY,maxResultX];
             double[,] vy = new double[maxResultY,maxResultX];
@@ -102,42 +102,39 @@ namespace CUDAFingerprinting.Common.OrientationField
                     {
                         for (int v = 0; v < W; v++)
                         {
-                            int mY = y*(W - 1) + u;
-                            int mX = x*(W - 1) + v;
+                            int mY = y*(W ) + u;
+                            int mX = x*(W ) + v;
                             if (mY > dx.GetUpperBound(0) || mX > dy.GetUpperBound(1)) continue;
                             vx[y, x] += 2.0*(double) dx[mY, mX] * dy[mY, mX];
-                            vy[y, x] += -(double) dx[mY, mX] * dx[mY, mX] +
+                            vy[y, x] += (double) dx[mY, mX] * dx[mY, mX] -
                                         (double) dy[mY, mX] * dy[mY, mX];
                         }
                     }
 
-                    var hypotenuse = Math.Sqrt(vy[y, x] * vy[y, x] + vx[y, x] * vx[y, x]);
-                    vx[y, x] = vx[y, x] / hypotenuse;
-                    vy[y, x] = vy[y, x] / hypotenuse;
+                    //var hypotenuse = Math.Sqrt(vy[y, x] * vy[y, x] + vx[y, x] * vx[y, x]);
+                    //vx[y, x] = vx[y, x] / hypotenuse;
+                    //vy[y, x] = vy[y, x] / hypotenuse;
 
                 }                 
             }
-            
+
             for (int x = 0; x < maxResultX; x++)
             {
                 for (int y = 0; y < maxResultY; y++)
                 {
                     double resultX = 0, resultY = 0;
-                    int count = 0;
-                    for (int i = -1; i < 2; i++)
+                    resultX = vx[y, x];
+                    resultY = vy[y, x];
+
+                    result[y, x] = 0.0f;
+                    if (double.IsNaN(resultX) || double.IsNaN(resultY)) continue;
+
+                    if (!(resultX == 0.0f && resultY == 0.0f))
                     {
-                        if (y + i < 0 || y + i >= maxResultY) continue;
-                        for (int j = -1; j < 2; j++)
-                        {
-                            if (x + j < 0 || x + j >= maxResultX) continue;
-                            resultX += vx[y + i, x + j];
-                            resultY += vy[y + i, x + j];
-                            count++;
-                        }
+                        result[y, x] = Math.Atan2(resultX, resultY);
+                        result[y, x] = result[y, x]/2.0f + Math.PI/2.0f;
+                        if (result[y, x] > Math.PI) result[y, x] -= Math.PI;
                     }
-                    var xx = resultY / count;
-                    var yy = resultX / count;
-                    result[y, x] = 0.5 * Math.Atan2(yy, xx);              
                 }
             }
             return result;
